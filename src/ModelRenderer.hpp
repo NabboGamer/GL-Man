@@ -1,5 +1,6 @@
 #pragma once
 
+#include <vector>
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -7,24 +8,24 @@
 #include "Texture2D.hpp"
 #include "Shader.hpp"
 
-
 class ModelRenderer {
 
 public:
-    // Constructor: inits shaders, VAO, VBO and mesh.
-    // Mesh is a array of float that contain position, normal and texture coordinate per vertex of a mesh.
-    ModelRenderer(Shader &shader, unsigned int VAO, unsigned int VBO, float* mesh);
-    // Destructor
+    ModelRenderer(Shader& shader);
     ~ModelRenderer();
-    // Renders a defined model
-    void DrawModel(Texture2D &texture, glm::vec2 position);
+
+    // Returns the index of the initialized model
+    size_t InitModel(const std::vector<float>& mesh);
+
+    void DrawModel(size_t modelIndex, const glm::mat4 projection, const glm::mat4 view, const glm::vec3& position, const glm::vec3& direction, float scale, Texture2D& texture);
 
 private:
-    // Render state
-    Shader       shader; 
-    unsigned int VAO,VBO;
-    float*       mesh;
-    // Initializes and configures the quad's buffer and vertex attributes
-    void initRenderData();
+    Shader shader;
+    struct ModelData {
+        unsigned int VAO;
+        unsigned int VBO;
+        size_t vertexCount;
+    };
+    std::vector<ModelData> models;
 
 };

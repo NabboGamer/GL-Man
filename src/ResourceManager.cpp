@@ -1,17 +1,9 @@
-/*******************************************************************
-** This code is part of Breakout.
-**
-** Breakout is free software: you can redistribute it and/or modify
-** it under the terms of the CC BY 4.0 license as published by
-** Creative Commons, either version 4 of the License, or (at your
-** option) any later version.
-******************************************************************/
-#include "resource_manager.h"
-
 #include <iostream>
 #include <sstream>
 #include <fstream>
 
+#include "ResourceManager.hpp"
+#define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
 // Instantiate static variables
@@ -19,30 +11,25 @@ std::map<std::string, Texture2D>    ResourceManager::Textures;
 std::map<std::string, Shader>       ResourceManager::Shaders;
 
 
-Shader ResourceManager::LoadShader(const char *vShaderFile, const char *fShaderFile, const char *gShaderFile, std::string name)
-{
+Shader ResourceManager::LoadShader(const char *vShaderFile, const char *fShaderFile, const char *gShaderFile, std::string name) {
     Shaders[name] = loadShaderFromFile(vShaderFile, fShaderFile, gShaderFile);
     return Shaders[name];
 }
 
-Shader ResourceManager::GetShader(std::string name)
-{
+Shader ResourceManager::GetShader(std::string name) {
     return Shaders[name];
 }
 
-Texture2D ResourceManager::LoadTexture(const char *file, bool alpha, std::string name)
-{
+Texture2D ResourceManager::LoadTexture(const char *file, bool alpha, std::string name) {
     Textures[name] = loadTextureFromFile(file, alpha);
     return Textures[name];
 }
 
-Texture2D ResourceManager::GetTexture(std::string name)
-{
+Texture2D ResourceManager::GetTexture(std::string name) {
     return Textures[name];
 }
 
-void ResourceManager::Clear()
-{
+void ResourceManager::Clear() {
     // (properly) delete all shaders	
     for (auto iter : Shaders)
         glDeleteProgram(iter.second.ID);
@@ -51,14 +38,12 @@ void ResourceManager::Clear()
         glDeleteTextures(1, &iter.second.ID);
 }
 
-Shader ResourceManager::loadShaderFromFile(const char *vShaderFile, const char *fShaderFile, const char *gShaderFile)
-{
+Shader ResourceManager::loadShaderFromFile(const char *vShaderFile, const char *fShaderFile, const char *gShaderFile) {
     // 1. retrieve the vertex/fragment source code from filePath
     std::string vertexCode;
     std::string fragmentCode;
     std::string geometryCode;
-    try
-    {
+    try {
         // open files
         std::ifstream vertexShaderFile(vShaderFile);
         std::ifstream fragmentShaderFile(fShaderFile);
@@ -73,17 +58,14 @@ Shader ResourceManager::loadShaderFromFile(const char *vShaderFile, const char *
         vertexCode = vShaderStream.str();
         fragmentCode = fShaderStream.str();
         // if geometry shader path is present, also load a geometry shader
-        if (gShaderFile != nullptr)
-        {
+        if (gShaderFile != nullptr) {
             std::ifstream geometryShaderFile(gShaderFile);
             std::stringstream gShaderStream;
             gShaderStream << geometryShaderFile.rdbuf();
             geometryShaderFile.close();
             geometryCode = gShaderStream.str();
         }
-    }
-    catch (std::exception e)
-    {
+    } catch (std::exception e) {
         std::cout << "ERROR::SHADER: Failed to read shader files" << std::endl;
     }
     const char *vShaderCode = vertexCode.c_str();
@@ -95,12 +77,10 @@ Shader ResourceManager::loadShaderFromFile(const char *vShaderFile, const char *
     return shader;
 }
 
-Texture2D ResourceManager::loadTextureFromFile(const char *file, bool alpha)
-{
+Texture2D ResourceManager::loadTextureFromFile(const char *file, bool alpha) {
     // create texture object
     Texture2D texture;
-    if (alpha)
-    {
+    if (alpha) {
         texture.Internal_Format = GL_RGBA;
         texture.Image_Format = GL_RGBA;
     }
