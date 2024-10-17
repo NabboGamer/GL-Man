@@ -34,25 +34,39 @@ public:
     bool                    keys[1024];
     bool                    keysProcessed[1024];
     unsigned int            width, height;
+
     //std::vector<GameLevel>  Levels;
     //std::vector<PowerUp>    PowerUps;
-    unsigned int            level;
-    unsigned int            lives;
+    //unsigned int            level;
+    //unsigned int            lives;
+
     // constructor/destructor
     Game(unsigned int width, unsigned int height);
     ~Game();
+
     // initialize game state (load all shaders/textures/levels)
     void Init();
+
     // game loop
-    void ProcessInput(float dt);
+    /*void ProcessInput(float dt);
     void Update(float dt);
-    void Render();
+    void Render();*/
     //void DoCollisions();
+    
     // reset
     //void ResetLevel();
     //void ResetPlayer();
+    
     // powerups
     //void SpawnPowerUps(GameObject& block);
     //void UpdatePowerUps(float dt);
+
+private:
+    glm::vec3 cameraPos;		// Camera position
+    glm::vec3 cameraAt;			// Point where the camera "looks"
+    glm::vec3 up;				// Up vector
+    glm::vec3 cameraDir;		// Direction of gaze (the direction is reversed)
+    glm::vec3 cameraSide;		// Direction of the lateral movement 
+    glm::vec3 cameraUp;			// Vector that completes the orthonormal basis of the camera
 
 };
