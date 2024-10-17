@@ -32,16 +32,13 @@ size_t ModelRenderer::InitModel(const std::vector<float>& mesh) {
     return models.size() - 1;  // Return index model
 }
 
-void ModelRenderer::DrawModel(size_t modelIndex, const glm::mat4 projection, const glm::mat4 view, const glm::vec3& position, const glm::vec3& direction, float scale, Texture2D& texture) {
+void ModelRenderer::DrawModel(size_t modelIndex, const glm::vec3& position, const glm::vec3& direction, float scale, Texture2D& texture) {
     if (modelIndex >= models.size()) {
         std::cout << "ModelRenderer::ERROR Model not initialized" << std::endl;
         return;
     }
 
     shader.Use();
-
-    shader.SetMatrix4("projection", projection);
-    shader.SetMatrix4("view", view);
 
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::translate(model, position);

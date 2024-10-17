@@ -8,6 +8,9 @@
 #include "Texture2D.hpp"
 #include "Shader.hpp"
 
+// Object that is responsible for rendering game objects.
+// Each game object must expose its state to this object
+// in order to ask it to be rendered.
 class ModelRenderer {
 
 public:
@@ -17,7 +20,7 @@ public:
     // Returns the index of the initialized model
     size_t InitModel(const std::vector<float>& mesh);
 
-    void DrawModel(size_t modelIndex, const glm::mat4 projection, const glm::mat4 view, const glm::vec3& position, const glm::vec3& direction, float scale, Texture2D& texture);
+    void DrawModel(size_t modelIndex, const glm::vec3& position, const glm::vec3& direction, float scale, Texture2D& texture);
 
 private:
     Shader shader;

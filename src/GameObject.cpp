@@ -1,10 +1,11 @@
 #include "GameObject.hpp"
 
 
-GameObject::GameObject() : position(0.0f, 0.0f), direction(0.0f), sprite() { }
+GameObject::GameObject(glm::vec3 position, glm::vec3 direction, float scale, ModelRenderer& renderer, std::vector<float>& mesh, Texture2D& texture) :
+                       position(position), direction(direction), scale(scale), renderer(renderer), mesh(mesh), texture(texture) {
+    modelIndex = renderer.InitModel(mesh);
+}
 
-GameObject::GameObject(glm::vec2 pos, glm::vec2 size, glm::vec2 direction, Texture2D sprite) : position(pos), size(size), direction(velocity), Sprite(sprite) { }
-
-void GameObject::Draw(SpriteRenderer &renderer) {
-    renderer.DrawSprite(this->Sprite, this->Position, this->Size, this->Rotation, this->Color);
+void GameObject::Draw() {
+    renderer.DrawModel(modelIndex, position, direction, scale, texture);
 }

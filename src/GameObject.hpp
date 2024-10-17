@@ -14,13 +14,19 @@ class GameObject {
 
 public:
     // object state
-    glm::vec2   position, direction;
+    glm::vec3   position;
+    glm::vec3   direction;
+    float       scale
     // render state
-    Texture2D   texture;
-    // constructor(s)
-    GameObject();
-    GameObject(glm::vec2 pos, glm::vec2 direction, Texture2D texture);
-    // draw sprite
-    virtual void Draw(ModelRenderer &renderer);
+    ModelRenderer       renderer
+    std::vector<float>  mesh
+    Texture2D           texture;
+    // constructor
+    GameObject(glm::vec3 position, glm::vec3 direction, float scale, ModelRenderer& renderer, std::vector<float>& mesh, Texture2D& texture);
+    // draw model
+    virtual void Draw();
+
+private:
+    size_t modelIndex;
 
 };
