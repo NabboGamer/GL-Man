@@ -1,10 +1,9 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <iostream>
 
 #include "Game.hpp"
 #include "ResourceManager.hpp"
-
-#include <iostream>
 
 // GLFW function declarations
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -17,7 +16,7 @@ const unsigned int SCREEN_HEIGHT = 600;
 
 Game GLMan(SCREEN_WIDTH, SCREEN_HEIGHT);
 
-int main(int argc, char* argv[]) {
+int main() {
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);

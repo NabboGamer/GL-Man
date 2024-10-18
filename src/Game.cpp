@@ -74,7 +74,7 @@ std::vector<float> cube_mesh = {
 };
 
 
-Game::Game(unsigned int width, unsigned int height) : state(GAME_MENU), keys(), keysProcessed(), width(width), height(height) { }
+Game::Game(unsigned int width, unsigned int height) : state(GAME_ACTIVE), keys(), keysProcessed(), width(width), height(height) { }
 
 Game::~Game() {
     delete renderer;
@@ -100,6 +100,7 @@ void Game::Init() {
     cameraSide = glm::normalize(glm::cross(up, cameraDir));
     cameraUp = glm::normalize(glm::cross(cameraDir, cameraSide));
     glm::mat4 view = glm::lookAt(cameraPos, cameraAt, cameraUp);
+    ResourceManager::GetShader("baseShader").Use();
     ResourceManager::GetShader("baseShader").SetMatrix4("view", view);
 
     glm::mat4 projection = glm::perspective(glm::radians(45.0f), static_cast<float>(this->width) / static_cast<float>(this->height), 0.1f, 20.0f);
