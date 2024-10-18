@@ -14,17 +14,17 @@
 class ModelRenderer {
 
 public:
-    ModelRenderer(Shader* shader);
+    ModelRenderer();
     ~ModelRenderer();
 
     // Returns the index of the initialized model
-    size_t InitModel(const std::vector<float>& mesh);
+    size_t InitModel(Shader* shader, const std::vector<float>& mesh);
 
     void DrawModel(size_t modelIndex, const glm::vec3& position, const glm::vec3& direction, float scale, Texture2D* texture);
 
 private:
-    Shader* shader;
     struct ModelData {
+        Shader* shader;
         unsigned int VAO;
         unsigned int VBO;
         size_t vertexCount;

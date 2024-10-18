@@ -2,7 +2,6 @@
 
 #include <map>
 #include <string>
-
 #include <glad/glad.h>
 
 #include "Texture2D.hpp"

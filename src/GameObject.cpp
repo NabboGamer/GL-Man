@@ -1,9 +1,9 @@
 #include "GameObject.hpp"
 
 
-GameObject::GameObject(glm::vec3 position, glm::vec3 direction, float scale, ModelRenderer* renderer, std::vector<float>& mesh, Texture2D* texture) 
-          : position(position), direction(direction), scale(scale), renderer(renderer), mesh(mesh), texture(texture) {
-    modelIndex = renderer->InitModel(mesh);
+GameObject::GameObject(glm::vec3 position, glm::vec3 direction, float scale, Shader* shader, std::vector<float>& mesh, Texture2D* texture, ModelRenderer* renderer)
+          : position(position), direction(direction), scale(scale), shader(shader), mesh(mesh), texture(texture), renderer(renderer) {
+    modelIndex = renderer->InitModel(shader, mesh);
 }
 
 void GameObject::Draw() {

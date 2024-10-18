@@ -16,8 +16,8 @@
 
 
 // Game-related State data
-ModelRenderer     *renderer;
-GameObject        *player;
+ModelRenderer*    renderer = new ModelRenderer();
+GameObject*       player;
 //ParticleGenerator *Particles;
 //PostProcessor     *Effects;
 //ISoundEngine      *SoundEngine = createIrrKlangDevice();
@@ -93,6 +93,8 @@ void Game::Init() {
     ResourceManager::LoadShader("post_processing.vs", "post_processing.fs", nullptr, "postprocessing");*/
 
     // configure shaders
+    ResourceManager::GetShader("baseShader").Use();
+
     cameraPos = glm::vec3(5.0, 5.0, 5.0);
     cameraAt = glm::vec3(0.0, 0.0, 0.0);
     up = glm::vec3(0.0, 1.0, 0.0);
@@ -100,7 +102,6 @@ void Game::Init() {
     cameraSide = glm::normalize(glm::cross(up, cameraDir));
     cameraUp = glm::normalize(glm::cross(cameraDir, cameraSide));
     glm::mat4 view = glm::lookAt(cameraPos, cameraAt, cameraUp);
-    ResourceManager::GetShader("baseShader").Use();
     ResourceManager::GetShader("baseShader").SetMatrix4("view", view);
 
     glm::mat4 projection = glm::perspective(glm::radians(45.0f), static_cast<float>(this->width) / static_cast<float>(this->height), 0.1f, 20.0f);
@@ -121,9 +122,8 @@ void Game::Init() {
     //ResourceManager::LoadTexture(FileSystem::getPath("resources/textures/powerup_confuse.png").c_str(), true, "powerup_confuse");
     //ResourceManager::LoadTexture(FileSystem::getPath("resources/textures/powerup_chaos.png").c_str(), true, "powerup_chaos");
     //ResourceManager::LoadTexture(FileSystem::getPath("resources/textures/powerup_passthrough.png").c_str(), true, "powerup_passthrough");
-    // 
+     
     // set render-specific controls
-    renderer = new ModelRenderer(&ResourceManager::GetShader("baseShader"));
     /*Particles = new ParticleGenerator(ResourceManager::GetShader("particle"), ResourceManager::GetTexture("particle"), 500);
     Effects = new PostProcessor(ResourceManager::GetShader("postprocessing"), this->Width, this->Height);
     Text = new TextRenderer(this->Width, this->Height);
@@ -144,7 +144,7 @@ void Game::Init() {
     glm::vec3 playerDir = glm::vec3(1.0, 0.0, 1.0);
     float playerScale = 1.0;
 
-    player = new GameObject(playerPos, playerDir, playerScale, renderer, cube_mesh, &ResourceManager::GetTexture("baseTexture"));
+    player = new GameObject(playerPos, playerDir, playerScale, &ResourceManager::GetShader("baseShader"), cube_mesh, &ResourceManager::GetTexture("baseTexture"), renderer);
 
     // audio
     //SoundEngine->play2D(FileSystem::getPath("resources/audio/breakout.mp3").c_str(), true);

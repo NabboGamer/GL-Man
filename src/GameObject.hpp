@@ -18,11 +18,12 @@ public:
     glm::vec3   direction;
     float       scale;
     // render state
-    ModelRenderer*       renderer;
+    Shader*              shader;
     std::vector<float>   mesh;
     Texture2D*           texture;
+    ModelRenderer*       renderer;
     // constructor
-    GameObject(glm::vec3 position, glm::vec3 direction, float scale, ModelRenderer* renderer, std::vector<float>& mesh, Texture2D* texture);
+    GameObject(glm::vec3 position, glm::vec3 direction, float scale, Shader* shader, std::vector<float>& mesh, Texture2D* texture, ModelRenderer* renderer);
     // draw model
     virtual void Draw();
 
