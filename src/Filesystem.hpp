@@ -1,17 +1,17 @@
 #pragma once
 
-#include <string>
-#include <cstdlib>
-
-
 #ifndef ROOT_PATH
 #define ROOT_PATH "C:/Users/stolf/dev/Progetto Grafica Tridimensionale Avanzata/GL-Man" // Insert here your root path for the project
 #endif
 
+#include <string>
+#include <cstdlib>
+#include <iostream>
+
 class FileSystem {
 
 private:
-    typedef std::string(*Builder) (const std::string& path);
+    typedef std::string(*Builder)(const std::string& path);
 
 public:
     static std::string getPath(const std::string& path) {
@@ -21,9 +21,14 @@ public:
 
 private:
     static std::string const& getRoot() {
-        static char const* envRoot = getenv("ROOT_PATH");
-        static char const* givenRoot = (envRoot != nullptr ? envRoot : ROOT_PATH);
-        static std::string root = (givenRoot != nullptr ? givenRoot : "");
+        static char* envRoot = nullptr;
+        size_t size = 0;
+
+        // Use _dupenv_s instead of getenv
+        _dupenv_s(&envRoot, &size, "ROOT_PATH");
+
+        static std::string root = (envRoot != nullptr ? envRoot : ROOT_PATH);
+        if (envRoot != nullptr) free(envRoot); // Free the allocated memory
         return root;
     }
 

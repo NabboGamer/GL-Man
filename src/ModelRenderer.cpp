@@ -1,6 +1,7 @@
+#include <iostream>
 #include "ModelRenderer.hpp"
 
-ModelRenderer::ModelRenderer(Shader& shader) : shader(shader) {}
+ModelRenderer::ModelRenderer(Shader* shader) : shader(shader) {}
 
 ModelRenderer::~ModelRenderer() {
     for (const auto& model : models) {
@@ -32,24 +33,24 @@ size_t ModelRenderer::InitModel(const std::vector<float>& mesh) {
     return models.size() - 1;  // Return index model
 }
 
-void ModelRenderer::DrawModel(size_t modelIndex, const glm::vec3& position, const glm::vec3& direction, float scale, Texture2D& texture) {
+void ModelRenderer::DrawModel(size_t modelIndex, const glm::vec3& position, const glm::vec3& direction, float scale, Texture2D* texture) {
     if (modelIndex >= models.size()) {
         std::cout << "ModelRenderer::ERROR Model not initialized" << std::endl;
         return;
     }
 
-    shader.Use();
+    shader->Use();
 
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::translate(model, position);
     float angle = glm::atan(direction.x, direction.z);
     model = glm::rotate(model, angle, glm::vec3(0.0f, 1.0f, 0.0f));
     model = glm::scale(model, glm::vec3(scale));
-    shader.SetMatrix4("model", model);
+    shader->SetMatrix4("model", model);
 
-    shader.SetInteger("texture_diffuse1", 0, false);
+    shader->SetInteger("texture_diffuse1", 0, false);
     glActiveTexture(GL_TEXTURE0);
-    texture.Bind();
+    texture->Bind();
 
     glBindVertexArray(models[modelIndex].VAO);
     glDrawArrays(GL_TRIANGLES, 0, models[modelIndex].vertexCount);

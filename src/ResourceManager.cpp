@@ -16,7 +16,7 @@ Shader ResourceManager::LoadShader(const char *vShaderFile, const char *fShaderF
     return Shaders[name];
 }
 
-Shader ResourceManager::GetShader(std::string name) {
+Shader& ResourceManager::GetShader(std::string name) {
     return Shaders[name];
 }
 
@@ -25,17 +25,17 @@ Texture2D ResourceManager::LoadTexture(const char *file, bool alpha, std::string
     return Textures[name];
 }
 
-Texture2D ResourceManager::GetTexture(std::string name) {
+Texture2D& ResourceManager::GetTexture(std::string name) {
     return Textures[name];
 }
 
 void ResourceManager::Clear() {
     // (properly) delete all shaders	
     for (auto iter : Shaders)
-        glDeleteProgram(iter.second.ID);
+        glDeleteProgram(iter.second.id);
     // (properly) delete all textures
     for (auto iter : Textures)
-        glDeleteTextures(1, &iter.second.ID);
+        glDeleteTextures(1, &iter.second.id);
 }
 
 Shader ResourceManager::loadShaderFromFile(const char *vShaderFile, const char *fShaderFile, const char *gShaderFile) {
@@ -81,8 +81,8 @@ Texture2D ResourceManager::loadTextureFromFile(const char *file, bool alpha) {
     // create texture object
     Texture2D texture;
     if (alpha) {
-        texture.Internal_Format = GL_RGBA;
-        texture.Image_Format = GL_RGBA;
+        texture.internalFormat = GL_RGBA;
+        texture.imageFormat = GL_RGBA;
     }
     // load image
     int width, height, nrChannels;

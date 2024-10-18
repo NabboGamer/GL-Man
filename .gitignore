@@ -1,1 +1,4 @@
 ﻿.vs
+src/Debug
+src/x64
+x64

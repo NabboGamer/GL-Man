@@ -107,7 +107,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <EnableModules>true</EnableModules>
-      <AdditionalIncludeDirectories>$(SolutionDir)\src\dependencies\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\stolf\dev\Progetto Grafica Tridimensionale Avanzata\GL-Man\src\dependencies\include\glad;C:\Users\stolf\dev\Progetto Grafica Tridimensionale Avanzata\GL-Man\src\dependencies\include\GLFW;C:\Users\stolf\dev\Progetto Grafica Tridimensionale Avanzata\GL-Man\src\dependencies\include\glm;C:\Users\stolf\dev\Progetto Grafica Tridimensionale Avanzata\GL-Man\src\dependencies\include\KHR;C:\Users\stolf\dev\Progetto Grafica Tridimensionale Avanzata\GL-Man\src\dependencies\include\stb;$(SolutionDir)\src\dependencies\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -127,7 +127,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <EnableModules>true</EnableModules>
-      <AdditionalIncludeDirectories>$(SolutionDir)\src\dependencies\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\stolf\dev\Progetto Grafica Tridimensionale Avanzata\GL-Man\src\dependencies\include\glad;C:\Users\stolf\dev\Progetto Grafica Tridimensionale Avanzata\GL-Man\src\dependencies\include\GLFW;C:\Users\stolf\dev\Progetto Grafica Tridimensionale Avanzata\GL-Man\src\dependencies\include\glm;C:\Users\stolf\dev\Progetto Grafica Tridimensionale Avanzata\GL-Man\src\dependencies\include\KHR;C:\Users\stolf\dev\Progetto Grafica Tridimensionale Avanzata\GL-Man\src\dependencies\include\stb;$(SolutionDir)\src\dependencies\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -149,7 +149,7 @@
     <ClCompile Include="Texture2D.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Filesystem.hpp" />
+    <ClInclude Include="FileSystem.hpp" />
     <ClInclude Include="Game.hpp" />
     <ClInclude Include="GameObject.hpp" />
     <ClInclude Include="ModelRenderer.hpp" />
