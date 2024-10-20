@@ -7,17 +7,16 @@
 
 #include "Game.hpp"
 #include "FileSystem.hpp"
-#include "GameObject.hpp"
 #include "ResourceManager.hpp"
-#include "Shader.hpp"
+#include "GameObjectBase.hpp"
+#include "GameObjectCustom.hpp"
 //#include "particle_generator.h"
 //#include "post_processor.h"
 //#include "text_renderer.h"
 
 
 // Game-related State data
-ModelRenderer*    renderer = new ModelRenderer();
-GameObject*       player;
+GameObjectBase*       player;
 //ParticleGenerator *Particles;
 //PostProcessor     *Effects;
 //ISoundEngine      *SoundEngine = createIrrKlangDevice();
@@ -77,7 +76,6 @@ std::vector<float> cube_mesh = {
 Game::Game(unsigned int width, unsigned int height) : state(GAME_ACTIVE), keys(), keysProcessed(), width(width), height(height) { }
 
 Game::~Game() {
-    delete renderer;
     delete player;
     /*delete Ball;
     delete Particles;
@@ -144,7 +142,7 @@ void Game::Init() {
     glm::vec3 playerDir = glm::vec3(1.0, 0.0, 1.0);
     float playerScale = 1.0;
 
-    player = new GameObject(playerPos, playerDir, playerScale, &ResourceManager::GetShader("baseShader"), cube_mesh, &ResourceManager::GetTexture("baseTexture"), renderer);
+    player = new GameObjectCustom(playerPos, playerDir, playerScale, &ResourceManager::GetShader("baseShader"), cube_mesh, &ResourceManager::GetTexture("baseTexture"));
 
     // audio
     //SoundEngine->play2D(FileSystem::getPath("resources/audio/breakout.mp3").c_str(), true);
@@ -250,7 +248,7 @@ void Game::Init() {
 //}
 
 void Game::Render() {
-    if (this->state == GAME_ACTIVE || this->state == GAME_MENU || this->state == GAME_WIN) {
+    if (this->state == GAME_ACTIVE || this->state == GAME_WIN) {
         // begin rendering to postprocessing framebuffer
         //Effects->BeginRender();
         //    // draw background

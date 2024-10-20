@@ -140,9 +140,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Game.cpp" />
-    <ClCompile Include="GameObject.cpp" />
+    <ClCompile Include="GameObjectBase.cpp" />
+    <ClCompile Include="GameObjectCustom.cpp" />
     <ClCompile Include="glad.c" />
-    <ClCompile Include="ModelRenderer.cpp" />
     <ClCompile Include="program.cpp" />
     <ClCompile Include="ResourceManager.cpp" />
     <ClCompile Include="Shader.cpp" />
@@ -151,8 +151,8 @@
   <ItemGroup>
     <ClInclude Include="FileSystem.hpp" />
     <ClInclude Include="Game.hpp" />
-    <ClInclude Include="GameObject.hpp" />
-    <ClInclude Include="ModelRenderer.hpp" />
+    <ClInclude Include="GameObjectBase.hpp" />
+    <ClInclude Include="GameObjectCustom.hpp" />
     <ClInclude Include="ResourceManager.hpp" />
     <ClInclude Include="Shader.hpp" />
     <ClInclude Include="Texture2D.hpp" />

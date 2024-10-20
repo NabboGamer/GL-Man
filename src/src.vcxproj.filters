@@ -24,7 +24,7 @@
     <ClCompile Include="glad.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GameObject.cpp">
+    <ClCompile Include="GameObjectBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ResourceManager.cpp">
@@ -36,10 +36,10 @@
     <ClCompile Include="Texture2D.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ModelRenderer.cpp">
+    <ClCompile Include="Shader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Shader.cpp">
+    <ClCompile Include="GameObjectCustom.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -50,7 +50,7 @@
     <ClInclude Include="Game.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GameObject.hpp">
+    <ClInclude Include="GameObjectBase.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ResourceManager.hpp">
@@ -59,10 +59,10 @@
     <ClInclude Include="Texture2D.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ModelRenderer.hpp">
+    <ClInclude Include="Shader.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Shader.hpp">
+    <ClInclude Include="GameObjectCustom.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
