@@ -158,8 +158,8 @@
     <ClInclude Include="Texture2D.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\base.fs" />
-    <None Include="shaders\base.vs" />
+    <None Include="shaders\mazeWall.fs" />
+    <None Include="shaders\mazeWall.vs" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

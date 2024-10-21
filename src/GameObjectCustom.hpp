@@ -11,9 +11,10 @@ class GameObjectCustom : public GameObjectBase {
 
 public:
     std::vector<float>   mesh;
-    Texture2D*           texture;
+    Texture2D*           diffuseTexture;
+    Texture2D*           specularTexture;
 
-    GameObjectCustom(glm::vec3 position, glm::vec3 direction, float scale, Shader* shader, std::vector<float>& mesh, Texture2D* texture);
+    GameObjectCustom(glm::vec3 position, glm::vec3 direction, float scale, Shader* shader, std::vector<float>& mesh, Texture2D* diffuseTexture, Texture2D* specularTexture);
 	~GameObjectCustom();
 
     // Override del metodo Draw

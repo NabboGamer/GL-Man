@@ -40,8 +40,8 @@ int main() {
     // OpenGL configuration
     // --------------------
     glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    /*glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);*/
 
     // initialize game
     // ---------------
@@ -49,13 +49,15 @@ int main() {
 
     // deltaTime variables
     // -------------------
-    float deltaTime = 0.0f;
-    float lastFrame = 0.0f;
+    double deltaTime = 0.0f;
+    double lastFrame = 0.0f;
+
+    glEnable(GL_DEPTH_TEST);
 
     while (!glfwWindowShouldClose(window)) {
         // calculate delta time
         // --------------------
-        float currentFrame = glfwGetTime();
+        double currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
         glfwPollEvents();
@@ -71,7 +73,7 @@ int main() {
         // render
         // ------
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         GLMan.Render();
 
         glfwSwapBuffers(window);

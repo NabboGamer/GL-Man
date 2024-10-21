@@ -23,54 +23,55 @@ GameObjectBase*       player;
 //TextRenderer      *Text;
 
 std::vector<float> cube_mesh = {
-    // FACE 1 (LOWER)
-    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,   // vertex 1
-     0.5f, -0.5f, -0.5f,  1.0f, 0.0f,   // vertex 2
-     0.5f, -0.5f,  0.5f,  1.0f, 1.0f,   // vertex 3
-     0.5f, -0.5f,  0.5f,  1.0f, 1.0f,   // vertex 4
-    -0.5f, -0.5f,  0.5f,  0.0f, 1.0f,   // vertex 5
-    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,   // vertex 6
+    // Front face (z = +0.5)
+    -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,  // bottom-left
+     0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  0.0f,  // bottom-right
+     0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  1.0f,  // top-right
+     0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  1.0f,  // top-right
+    -0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  1.0f,  // top-left
+    -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,  // bottom-left
 
-    // FACE 2 (UPPER)
-    -0.5f,  0.5f, -0.5f,  0.0f, 0.0f,   // vertex 7
-     0.5f,  0.5f, -0.5f,  1.0f, 0.0f,   // vertex 8
-     0.5f,  0.5f,  0.5f,  1.0f, 1.0f,   // vertex 9
-     0.5f,  0.5f,  0.5f,  1.0f, 1.0f,   // vertex 10
-    -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,   // vertex 11
-    -0.5f,  0.5f, -0.5f,  0.0f, 0.0f,   // vertex 12
+    // Back face (z = -0.5)
+    -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,  // bottom-left
+     0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  0.0f,  // bottom-right
+     0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f,  // top-right
+     0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f,  // top-right
+    -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  1.0f,  // top-left
+    -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,  // bottom-left
 
-    // FACE 3 (FRONT)
-    -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,   // vertex 13
-     0.5f,  0.5f,  0.5f,  1.0f, 1.0f,   // vertex 14
-     0.5f, -0.5f,  0.5f,  1.0f, 0.0f,   // vertex 15
-     0.5f, -0.5f,  0.5f,  1.0f, 0.0f,   // vertex 16
-    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,   // vertex 17
-    -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,   // vertex 18
+    // -X Face (corretto)
+    -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  1.0f, // top-right
+    -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f, // top-left
+    -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  0.0f, // bottom-left
+    -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  0.0f, // bottom-left
+    -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  0.0f, // bottom-right
+    -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  1.0f,  // top-right
 
-    // FACE 4 (BACK)
-    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,   // vertex 19
-     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,   // vertex 20
-     0.5f, -0.5f, -0.5f,  1.0f, 0.0f,   // vertex 21
-     0.5f, -0.5f, -0.5f,  1.0f, 0.0f,   // vertex 22
-    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,   // vertex 23
-    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,   // vertex 24
+    // +X Face (corretto)
+    0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  1.0f, // top-right
+    0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f, // top-left
+    0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f, // bottom-left
+    0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f, // bottom-left
+    0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f, // bottom-right
+    0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  1.0f,  // top-right
 
-    // FACE 5 (RIGHT)
-     0.5f,  0.5f,  0.5f,  1.0f, 1.0f,   // vertex 25
-     0.5f,  0.5f, -0.5f,  0.0f, 1.0f,   // vertex 26
-     0.5f, -0.5f, -0.5f,  0.0f, 0.0f,   // vertex 27
-     0.5f, -0.5f, -0.5f,  0.0f, 0.0f,   // vertex 28
-     0.5f, -0.5f,  0.5f,  1.0f, 0.0f,   // vertex 29
-     0.5f,  0.5f,  0.5f,  1.0f, 1.0f,   // vertex 30
+     // Bottom face (y = -0.5)
+     -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f,  // top-left
+      0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  1.0f,  // top-right
+      0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  0.0f,  // bottom-right
+      0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  0.0f,  // bottom-right
+     -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  0.0f,  // bottom-left
+     -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f,  // top-left
 
-     // FACE 6 (LEFT)
-     -0.5f,  0.5f,  0.5f,  1.0f, 1.0f,   // vertex 31
-     -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,   // vertex 32
-     -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,   // vertex 33
-     -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,   // vertex 34
-     -0.5f, -0.5f,  0.5f,  1.0f, 0.0f,   // vertex 35
-     -0.5f,  0.5f,  0.5f,  1.0f, 1.0f    // vertex 36
+     // Top face (y = +0.5)
+     -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f,  // top-left
+      0.5f,  0.5f, -0.5f,  0.0f,  1.0f,   0.0f,  1.0f,  1.0f,  // top-right
+      0.5f,  0.5f,  0.5f,  0.0f,  1.0f,   0.0f,  1.0f,  0.0f,  // bottom-right
+      0.5f,  0.5f,  0.5f,  0.0f,  1.0f,   0.0f,  1.0f,  0.0f,  // bottom-right
+     -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,   0.0f,  0.0f,  0.0f,  // bottom-left
+     -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,   0.0f,  0.0f,  1.0f   // top-left
 };
+
 
 
 Game::Game(unsigned int width, unsigned int height) : state(GAME_ACTIVE), keys(), keysProcessed(), width(width), height(height) { }
@@ -86,63 +87,46 @@ Game::~Game() {
 
 void Game::Init() {
     // load shaders
-    ResourceManager::LoadShader("shaders/base.vs", "shaders/base.fs", nullptr, "baseShader");
+    ResourceManager::LoadShader("shaders/mazeWall.vs", "shaders/mazeWall.fs", nullptr, "mazeWallShader");
     /*ResourceManager::LoadShader("particle.vs", "particle.fs", nullptr, "particle");
     ResourceManager::LoadShader("post_processing.vs", "post_processing.fs", nullptr, "postprocessing");*/
 
-    // configure shaders
-    ResourceManager::GetShader("baseShader").Use();
-
-    cameraPos = glm::vec3(5.0, 5.0, 5.0);
+    // Configure Shaders
+    // Insert uniform variable in vertex shader(only global variables, i.e. the same for all shaders)
+    cameraPos = glm::vec3(3.0, 2.0, 3.0);
     cameraAt = glm::vec3(0.0, 0.0, 0.0);
     up = glm::vec3(0.0, 1.0, 0.0);
     cameraDir = glm::normalize(cameraPos - cameraAt);
     cameraSide = glm::normalize(glm::cross(up, cameraDir));
     cameraUp = glm::normalize(glm::cross(cameraDir, cameraSide));
     glm::mat4 view = glm::lookAt(cameraPos, cameraAt, cameraUp);
-    ResourceManager::GetShader("baseShader").SetMatrix4("view", view);
-
+    ResourceManager::GetShader("mazeWallShader").Use().SetMatrix4("view", view);
     glm::mat4 projection = glm::perspective(glm::radians(45.0f), static_cast<float>(this->width) / static_cast<float>(this->height), 0.1f, 20.0f);
-    ResourceManager::GetShader("baseShader").SetMatrix4("projection", projection);
-    /*ResourceManager::GetShader("particle").Use().SetInteger("sprite", 0);
-    ResourceManager::GetShader("particle").SetMatrix4("projection", projection);*/
+    ResourceManager::GetShader("mazeWallShader").Use().SetMatrix4("projection", projection);
+
+    // Insert uniform variable in fragment shader(only global variables, i.e. the same for all shaders)
+    ResourceManager::GetShader("mazeWallShader").Use().SetVector3f("viewPos", cameraPos);
+    ResourceManager::GetShader("mazeWallShader").Use().SetVector3f("dirLight.direction", glm::normalize(cameraAt - cameraPos));
+    ResourceManager::GetShader("mazeWallShader").Use().SetVector3f("dirLight.ambient", glm::vec3(0.5f, 0.5f, 0.5f));
+    ResourceManager::GetShader("mazeWallShader").Use().SetVector3f("dirLight.diffuse", glm::vec3(0.6f, 0.6f, 0.6f));
+    ResourceManager::GetShader("mazeWallShader").Use().SetVector3f("dirLight.specular", glm::vec3(0.5f, 0.5f, 0.5f));
 
     // load textures
-    ResourceManager::LoadTexture(FileSystem::getPath("res/textures/base.jpeg").c_str(), false, "baseTexture");
-    //ResourceManager::LoadTexture(FileSystem::getPath("resources/textures/awesomeface.png").c_str(), true, "face");
-    //ResourceManager::LoadTexture(FileSystem::getPath("resources/textures/block.png").c_str(), false, "block");
-    //ResourceManager::LoadTexture(FileSystem::getPath("resources/textures/block_solid.png").c_str(), false, "block_solid");
-    //ResourceManager::LoadTexture(FileSystem::getPath("resources/textures/paddle.png").c_str(), true, "paddle");
-    //ResourceManager::LoadTexture(FileSystem::getPath("resources/textures/particle.png").c_str(), true, "particle");
-    //ResourceManager::LoadTexture(FileSystem::getPath("resources/textures/powerup_speed.png").c_str(), true, "powerup_speed");
-    //ResourceManager::LoadTexture(FileSystem::getPath("resources/textures/powerup_sticky.png").c_str(), true, "powerup_sticky");
-    //ResourceManager::LoadTexture(FileSystem::getPath("resources/textures/powerup_increase.png").c_str(), true, "powerup_increase");
-    //ResourceManager::LoadTexture(FileSystem::getPath("resources/textures/powerup_confuse.png").c_str(), true, "powerup_confuse");
-    //ResourceManager::LoadTexture(FileSystem::getPath("resources/textures/powerup_chaos.png").c_str(), true, "powerup_chaos");
-    //ResourceManager::LoadTexture(FileSystem::getPath("resources/textures/powerup_passthrough.png").c_str(), true, "powerup_passthrough");
-     
-    // set render-specific controls
-    /*Particles = new ParticleGenerator(ResourceManager::GetShader("particle"), ResourceManager::GetTexture("particle"), 500);
-    Effects = new PostProcessor(ResourceManager::GetShader("postprocessing"), this->Width, this->Height);
-    Text = new TextRenderer(this->Width, this->Height);
-    Text->Load(FileSystem::getPath("resources/fonts/OCRAEXT.TTF").c_str(), 24);*/
-    // load levels
-    /*GameLevel one; one.Load(FileSystem::getPath("resources/levels/one.lvl").c_str(), this->Width, this->Height / 2);
-    GameLevel two; two.Load(FileSystem::getPath("resources/levels/two.lvl").c_str(), this->Width, this->Height /2 );
-    GameLevel three; three.Load(FileSystem::getPath("resources/levels/three.lvl").c_str(), this->Width, this->Height / 2);
-    GameLevel four; four.Load(FileSystem::getPath("resources/levels/four.lvl").c_str(), this->Width, this->Height / 2);
-    this->Levels.push_back(one);
-    this->Levels.push_back(two);
-    this->Levels.push_back(three);
-    this->Levels.push_back(four);
-    this->Level = 0;*/
+    ResourceManager::LoadTexture(FileSystem::getPath("res/textures/maze_wall_diffuse.png").c_str(), true, "mazeWallDiffuseTexture");
+    ResourceManager::LoadTexture(FileSystem::getPath("res/textures/maze_wall_specular.png").c_str(), true, "mazeWallSpecularTexture");
 
     // configure game objects
     glm::vec3 playerPos = glm::vec3(0.0, 0.0, 0.0);
-    glm::vec3 playerDir = glm::vec3(1.0, 0.0, 1.0);
+    glm::vec3 playerDir = glm::vec3(0.0, 0.0, 1.0);
     float playerScale = 1.0;
 
-    player = new GameObjectCustom(playerPos, playerDir, playerScale, &ResourceManager::GetShader("baseShader"), cube_mesh, &ResourceManager::GetTexture("baseTexture"));
+    player = new GameObjectCustom(playerPos, 
+                                  playerDir, 
+                                  playerScale, 
+                                  &ResourceManager::GetShader("mazeWallShader"), 
+                                  cube_mesh, 
+                                  &ResourceManager::GetTexture("mazeWallDiffuseTexture"),
+                                  &ResourceManager::GetTexture("mazeWallSpecularTexture"));
 
     // audio
     //SoundEngine->play2D(FileSystem::getPath("resources/audio/breakout.mp3").c_str(), true);
@@ -256,7 +240,7 @@ void Game::Render() {
         //    // draw level
         //    this->Levels[this->Level].Draw(*Renderer);
             // draw player
-            player->Draw();
+        player->Draw();
         //    // draw PowerUps
         //    for (PowerUp &powerUp : this->PowerUps)
         //        if (!powerUp.Destroyed)
