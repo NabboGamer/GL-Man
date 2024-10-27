@@ -32,7 +32,7 @@ public:
     virtual void Draw() = 0;
 
 protected:
-    size_t numInstance;
+    size_t numInstances;
 
 private:
     void validityCheck();

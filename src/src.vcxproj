@@ -107,13 +107,13 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <EnableModules>true</EnableModules>
-      <AdditionalIncludeDirectories>C:\Users\stolf\dev\Progetto Grafica Tridimensionale Avanzata\GL-Man\src\dependencies\include\glad;C:\Users\stolf\dev\Progetto Grafica Tridimensionale Avanzata\GL-Man\src\dependencies\include\GLFW;C:\Users\stolf\dev\Progetto Grafica Tridimensionale Avanzata\GL-Man\src\dependencies\include\glm;C:\Users\stolf\dev\Progetto Grafica Tridimensionale Avanzata\GL-Man\src\dependencies\include\KHR;C:\Users\stolf\dev\Progetto Grafica Tridimensionale Avanzata\GL-Man\src\dependencies\include\stb;$(SolutionDir)\src\dependencies\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\src\dependencies\include\glad;$(SolutionDir)\src\dependencies\include\GLFW;$(SolutionDir)\src\dependencies\include\glm;$(SolutionDir)\src\dependencies\include\KHR;$(SolutionDir)\src\dependencies\include\stb;$(SolutionDir)\src\dependencies\include\assimp;$(SolutionDir)\src\dependencies\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)\src\dependencies\lib</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glfw3.lib;opengl32.lib;user32.lib;gdi32.lib;shell32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;user32.lib;gdi32.lib;shell32.lib;glfw3.lib;assimp.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -127,7 +127,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <EnableModules>true</EnableModules>
-      <AdditionalIncludeDirectories>C:\Users\stolf\dev\Progetto Grafica Tridimensionale Avanzata\GL-Man\src\dependencies\include\glad;C:\Users\stolf\dev\Progetto Grafica Tridimensionale Avanzata\GL-Man\src\dependencies\include\GLFW;C:\Users\stolf\dev\Progetto Grafica Tridimensionale Avanzata\GL-Man\src\dependencies\include\glm;C:\Users\stolf\dev\Progetto Grafica Tridimensionale Avanzata\GL-Man\src\dependencies\include\KHR;C:\Users\stolf\dev\Progetto Grafica Tridimensionale Avanzata\GL-Man\src\dependencies\include\stb;$(SolutionDir)\src\dependencies\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\src\dependencies\include\glad;$(SolutionDir)\src\dependencies\include\GLFW;$(SolutionDir)\src\dependencies\include\glm;$(SolutionDir)\src\dependencies\include\KHR;$(SolutionDir)\src\dependencies\include\stb;$(SolutionDir)\src\dependencies\include\assimp;$(SolutionDir)\src\dependencies\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -135,14 +135,17 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)\src\dependencies\lib</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glfw3.lib;opengl32.lib;user32.lib;gdi32.lib;shell32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;user32.lib;gdi32.lib;shell32.lib;glfw3.lib;assimp.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GameObjectBase.cpp" />
     <ClCompile Include="GameObjectCustom.cpp" />
+    <ClCompile Include="GameObjectFromModel.cpp" />
     <ClCompile Include="glad.c" />
+    <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="Model.cpp" />
     <ClCompile Include="program.cpp" />
     <ClCompile Include="ResourceManager.cpp" />
     <ClCompile Include="Shader.cpp" />
@@ -153,6 +156,9 @@
     <ClInclude Include="Game.hpp" />
     <ClInclude Include="GameObjectBase.hpp" />
     <ClInclude Include="GameObjectCustom.hpp" />
+    <ClInclude Include="GameObjectFromModel.hpp" />
+    <ClInclude Include="Mesh.hpp" />
+    <ClInclude Include="Model.hpp" />
     <ClInclude Include="ResourceManager.hpp" />
     <ClInclude Include="Shader.hpp" />
     <ClInclude Include="Texture2D.hpp" />
@@ -160,6 +166,8 @@
   <ItemGroup>
     <None Include="shaders\mazeWall.fs" />
     <None Include="shaders\mazeWall.vs" />
+    <None Include="shaders\model.fs" />
+    <None Include="shaders\model.vs" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

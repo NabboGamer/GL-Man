@@ -48,8 +48,8 @@ void GameObjectCustom::initRenderData() {
 
 void GameObjectCustom::Draw() {
     this->shader->Use();
-    std::vector<glm::mat4> modelMatrices(this->numInstance, glm::mat4(1.0f));
-    for (size_t i = 0; i < this->numInstance; i++) {
+    std::vector<glm::mat4> modelMatrices(this->numInstances, glm::mat4(1.0f));
+    for (size_t i = 0; i < this->numInstances; i++) {
         glm::mat4 model = glm::mat4(1.0f);
 
         model = glm::translate(model, this->positions[i]);
@@ -80,8 +80,8 @@ void GameObjectCustom::Draw() {
     this->shader->SetFloat("material.shininess", 1.0f);
 
     glBindVertexArray(this->VAO);
-    if (this->numInstance > 1) {
-        glDrawArraysInstanced(GL_TRIANGLES, 0, static_cast<GLsizei>(this->vertexCount), this->numInstance);
+    if (this->numInstances > 1) {
+        glDrawArraysInstanced(GL_TRIANGLES, 0, static_cast<GLsizei>(this->vertexCount), this->numInstances);
     } else {
         glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(this->vertexCount));
     }

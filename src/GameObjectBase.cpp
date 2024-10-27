@@ -18,11 +18,11 @@ void GameObjectBase::validityCheck() {
     if (this->positions.size() == this->directions.size() &&
         this->directions.size() == this->rotations.size() &&
         this->rotations.size() == this->scaling.size()) {
-        this->numInstance = this->positions.size();
+        this->numInstances = this->positions.size();
     } else {
         // Set text color to red
         std::cerr << "\033[31m";
-        std::cerr << "GameObjectBase::ERROR The sizes of the initialization vectors passed to the constructor are inconsistent!" << std::endl;
+        std::cerr << "ERROR::GameObjectBase:: The sizes of the initialization vectors passed to the constructor are inconsistent!" << std::endl;
         // Reset text color to default
         std::cerr << "\033[0m";
         exit(1);

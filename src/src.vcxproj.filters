@@ -42,6 +42,15 @@
     <ClCompile Include="GameObjectCustom.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Mesh.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Model.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GameObjectFromModel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FileSystem.hpp">
@@ -65,12 +74,27 @@
     <ClInclude Include="GameObjectCustom.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Mesh.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Model.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GameObjectFromModel.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\mazeWall.fs">
       <Filter>Resource Files\Shaders</Filter>
     </None>
     <None Include="shaders\mazeWall.vs">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="shaders\model.fs">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="shaders\model.vs">
       <Filter>Resource Files\Shaders</Filter>
     </None>
   </ItemGroup>
