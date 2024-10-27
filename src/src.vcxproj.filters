@@ -73,5 +73,11 @@
     <None Include="shaders\mazeWall.vs">
       <Filter>Resource Files\Shaders</Filter>
     </None>
+    <None Include="shaders\mazeWallInstanced.fs">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="shaders\mazeWallInstanced.vs">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

@@ -160,6 +160,8 @@
   <ItemGroup>
     <None Include="shaders\mazeWall.fs" />
     <None Include="shaders\mazeWall.vs" />
+    <None Include="shaders\mazeWallInstanced.fs" />
+    <None Include="shaders\mazeWallInstanced.vs" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

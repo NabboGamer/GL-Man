@@ -1,5 +1,6 @@
 #pragma once
 
+#include <vector>
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 
@@ -13,18 +14,27 @@ class GameObjectBase {
 
 public:
     // object state
-    glm::vec3   position;
-    glm::vec3   direction;
-    float       scale;
+    std::vector<glm::vec3>   positions;
+    std::vector<glm::vec3>   directions;
+    std::vector<float>       rotations;
+    std::vector<glm::vec3>   scaling;
     
     // render state
     Shader* shader;
 
     // constructor/destructor
-    GameObjectBase(glm::vec3 position, glm::vec3 direction, float scale, Shader* shader);
+    GameObjectBase(std::vector<glm::vec3> positions, std::vector<glm::vec3> directions, 
+                   std::vector<float> rotations, std::vector<glm::vec3> scaling,
+                   Shader* shader);
     virtual ~GameObjectBase();
 
     // Pure virtual method that forces subclasses to implement their own Draw method
     virtual void Draw() = 0;
+
+protected:
+    size_t numInstance;
+
+private:
+    void validityCheck();
 
 };

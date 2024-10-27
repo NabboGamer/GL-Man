@@ -85,7 +85,7 @@ Game::~Game() {
 
 void Game::Init() {
     // load shaders
-    ResourceManager::LoadShader("shaders/mazeWall.vs", "shaders/mazeWall.fs", nullptr, "mazeWallShader");
+    ResourceManager::LoadShader("shaders/mazeWallInstanced.vs", "shaders/mazeWallInstanced.fs", nullptr, "mazeWallShader");
     /*ResourceManager::LoadShader("particle.vs", "particle.fs", nullptr, "particle");
     ResourceManager::LoadShader("post_processing.vs", "post_processing.fs", nullptr, "postprocessing");*/
 
@@ -114,13 +114,21 @@ void Game::Init() {
     ResourceManager::LoadTexture(FileSystem::getPath("res/textures/maze_wall_specular.png").c_str(), true, "mazeWallSpecularTexture");
 
     // configure game objects
-    glm::vec3 playerPos = glm::vec3(0.0, 0.0, 0.0);
-    glm::vec3 playerDir = glm::vec3(0.0, 0.0, 1.0);
-    float playerScale = 1.0;
+    std::vector<glm::vec3> playerPositions = { glm::vec3(0.0, 0.0, 0.0),
+                                               glm::vec3(2.0, 0.0, 0.0),
+                                               glm::vec3(0.0, 0.0, 2.0) };
+    std::vector<glm::vec3> playerDirections = { glm::vec3(0.0, 0.0, 1.0),
+                                                glm::vec3(1.0, 0.0, 0.0),
+                                                glm::vec3(0.0, 0.0, 1.0) };
+    std::vector<float> playerRotations = { 0.0f, 0.0f, 0.0f };
+    std::vector<glm::vec3> playerScaling = { glm::vec3(1.0, 1.0, 1.0),
+                                             glm::vec3(1.0, 1.0, 1.0),
+                                             glm::vec3(1.0, 1.0, 1.0) };
 
-    player = new GameObjectCustom(playerPos, 
-                                  playerDir, 
-                                  playerScale, 
+    player = new GameObjectCustom(playerPositions,
+                                  playerDirections,
+                                  playerRotations,
+                                  playerScaling,
                                   &ResourceManager::GetShader("mazeWallShader"), 
                                   cube_mesh, 
                                   &ResourceManager::GetTexture("mazeWallDiffuseTexture"),
