@@ -85,7 +85,7 @@ Game::~Game() {
 
 void Game::Init() {
     // load shaders
-    ResourceManager::LoadShader("shaders/mazeWallInstanced.vs", "shaders/mazeWallInstanced.fs", nullptr, "mazeWallShader");
+    ResourceManager::LoadShader("shaders/mazeWall.vs", "shaders/mazeWall.fs", nullptr, "mazeWallShader");
     /*ResourceManager::LoadShader("particle.vs", "particle.fs", nullptr, "particle");
     ResourceManager::LoadShader("post_processing.vs", "post_processing.fs", nullptr, "postprocessing");*/
 
