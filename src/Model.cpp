@@ -8,9 +8,9 @@ Model::~Model() {
 
 }
 
-void Model::Draw(Shader& shader) {
+void Model::Draw(Shader& shader, size_t numInstances) {
     for (unsigned int i = 0; i < meshes.size(); i++) {
-        meshes[i].Draw(shader);
+        meshes[i].Draw(shader, numInstances);
     }   
 }
 

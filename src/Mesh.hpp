@@ -43,7 +43,7 @@ public:
   ~Mesh();
    
   // render the mesh
-  void Draw(Shader& shader);
+  void Draw(Shader& shader, size_t numInstances);
 
 private:
   // render data 

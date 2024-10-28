@@ -136,9 +136,9 @@ void Game::Init() {
                                   &ResourceManager::GetTexture("mazeWallDiffuseTexture"),
                                   &ResourceManager::GetTexture("mazeWallSpecularTexture"));*/
 
-    std::vector<glm::vec3> playerPositions = { glm::vec3(0.0, 0.0, 0.0),
-                                               glm::vec3(2.0, 0.0, 0.0), 
-                                               glm::vec3(0.0, 0.0, 2.0)};
+    std::vector<glm::vec3> playerPositions =  { glm::vec3(0.0, 0.0, 0.0),
+                                                glm::vec3(2.0, 0.0, 0.0), 
+                                                glm::vec3(0.0, 0.0, 2.0)};
     std::vector<glm::vec3> playerDirections = { glm::vec3(0.0, 0.0, 1.0),
                                                 glm::vec3(1.0, 0.0, 0.0), 
                                                 glm::vec3(0.0, 0.0, 1.0)};

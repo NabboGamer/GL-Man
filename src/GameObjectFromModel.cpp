@@ -12,8 +12,8 @@ GameObjectFromModel::~GameObjectFromModel() {
 }
 
 void GameObjectFromModel::initRenderData() {
-    for (unsigned int i = 0; i < model->meshes.size(); i++) {
-        unsigned int VAO = model->meshes[0].VAO;
+    for (unsigned int i = 0; i < this->model->meshes.size(); i++) {
+        unsigned int VAO = this->model->meshes[i].VAO;
         glBindVertexArray(VAO);
         glGenBuffers(1, &this->instanceVBO);
 
@@ -56,27 +56,7 @@ void GameObjectFromModel::Draw() {
     glBufferData(GL_ARRAY_BUFFER, modelMatrices.size() * sizeof(glm::mat4), &modelMatrices[0], GL_DYNAMIC_DRAW);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-    // Bind diffuse map
-    this->shader->SetInteger("texture_diffuse1", 0);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, model->textures_loaded[0].id);
-    // Bind specular map
-    this->shader->SetInteger("texture_specular1", 1);
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, model->textures_loaded[1].id);
-
     this->shader->SetFloat("material.shininess", 1.0f);
 
-    for (unsigned int i = 0; i < model->meshes.size(); i++) {
-        unsigned int VAO = model->meshes[i].VAO;
-        glBindVertexArray(VAO);
-        
-        if (this->numInstances > 1) {
-            glDrawElementsInstanced(GL_TRIANGLES, model->meshes[i].indices.size(), GL_UNSIGNED_INT, 0, this->numInstances);
-        } else {
-            glDrawElements(GL_TRIANGLES, model->meshes[i].indices.size(), GL_UNSIGNED_INT, 0);
-        }
-        
-        glBindVertexArray(0);
-    }
+    this->model->Draw(*this->shader, this->numInstances);
 }
