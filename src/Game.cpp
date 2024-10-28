@@ -87,7 +87,7 @@ Game::~Game() {
 void Game::Init() {
     // load shaders
     //ResourceManager::LoadShader("shaders/mazeWall.vs", "shaders/mazeWall.fs", nullptr, "mazeWallShader");
-    ResourceManager::LoadShader("shaders/model.vs", "shaders/model.fs", nullptr, "modelShader");
+    ResourceManager::LoadShader("shaders/model.vs", "shaders/model.fs", nullptr, "playerShader");
     /*ResourceManager::LoadShader("particle.vs", "particle.fs", nullptr, "particle");
     ResourceManager::LoadShader("post_processing.vs", "post_processing.fs", nullptr, "postprocessing");*/
 
@@ -100,16 +100,16 @@ void Game::Init() {
     cameraSide = glm::normalize(glm::cross(up, cameraDir));
     cameraUp = glm::normalize(glm::cross(cameraDir, cameraSide));
     glm::mat4 view = glm::lookAt(cameraPos, cameraAt, cameraUp);
-    ResourceManager::GetShader("modelShader").Use().SetMatrix4("view", view);
+    ResourceManager::GetShader("playerShader").Use().SetMatrix4("view", view);
     glm::mat4 projection = glm::perspective(glm::radians(45.0f), static_cast<float>(this->width) / static_cast<float>(this->height), 0.1f, 20.0f);
-    ResourceManager::GetShader("modelShader").Use().SetMatrix4("projection", projection);
+    ResourceManager::GetShader("playerShader").Use().SetMatrix4("projection", projection);
 
     // Insert uniform variable in fragment shader(only global variables, i.e. the same for all shaders)
-    ResourceManager::GetShader("modelShader").Use().SetVector3f("viewPos", cameraPos);
-    ResourceManager::GetShader("modelShader").Use().SetVector3f("dirLight.direction", glm::normalize(cameraAt - cameraPos));
-    ResourceManager::GetShader("modelShader").Use().SetVector3f("dirLight.ambient", glm::vec3(0.5f, 0.5f, 0.5f));
-    ResourceManager::GetShader("modelShader").Use().SetVector3f("dirLight.diffuse", glm::vec3(0.6f, 0.6f, 0.6f));
-    ResourceManager::GetShader("modelShader").Use().SetVector3f("dirLight.specular", glm::vec3(0.5f, 0.5f, 0.5f));
+    ResourceManager::GetShader("playerShader").Use().SetVector3f("viewPos", cameraPos);
+    ResourceManager::GetShader("playerShader").Use().SetVector3f("dirLight.direction", glm::normalize(cameraAt - cameraPos));
+    ResourceManager::GetShader("playerShader").Use().SetVector3f("dirLight.ambient", glm::vec3(0.5f, 0.5f, 0.5f));
+    ResourceManager::GetShader("playerShader").Use().SetVector3f("dirLight.diffuse", glm::vec3(0.6f, 0.6f, 0.6f));
+    ResourceManager::GetShader("playerShader").Use().SetVector3f("dirLight.specular", glm::vec3(0.5f, 0.5f, 0.5f));
 
     // load textures
     /*ResourceManager::LoadTexture(FileSystem::getPath("res/textures/maze_wall_diffuse.png").c_str(), true, "mazeWallDiffuseTexture");
@@ -144,14 +144,15 @@ void Game::Init() {
                                                 glm::vec3(0.0, 0.0, 1.0)};
     std::vector<float> playerRotations = { 0.0f, 0.0f, 0.0f };
     std::vector<glm::vec3> playerScaling = { glm::vec3(0.010f), glm::vec3(0.010f), glm::vec3(0.010f) };
-    ResourceManager::GetShader("modelShader").Use();
-    Model* modelBackpack = new Model(FileSystem::getPath("res/objects/asteroid/asteroid.obj"));
+
+    ResourceManager::GetShader("playerShader").Use();
+    ResourceManager::LoadModel("res/objects/asteroid/asteroid.obj", "playerModel");
     player = new GameObjectFromModel(playerPositions,
                                      playerDirections,
                                      playerRotations,
                                      playerScaling, 
-                                     &ResourceManager::GetShader("modelShader"),
-                                     modelBackpack);
+                                     &ResourceManager::GetShader("playerShader"),
+                                     &ResourceManager::GetModel("playerModel"));
     // audio
     //SoundEngine->play2D(FileSystem::getPath("resources/audio/breakout.mp3").c_str(), true);
 }

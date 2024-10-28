@@ -3,12 +3,14 @@
 #include <fstream>
 
 #include "ResourceManager.hpp"
+#include "Filesystem.hpp"
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
 // Instantiate static variables
 std::map<std::string, Texture2D>    ResourceManager::Textures;
 std::map<std::string, Shader>       ResourceManager::Shaders;
+std::map<std::string, Model>        ResourceManager::Models;
 
 
 Shader ResourceManager::LoadShader(const char *vShaderFile, const char *fShaderFile, const char *gShaderFile, std::string name) {
@@ -27,6 +29,15 @@ Texture2D ResourceManager::LoadTexture(const char *file, bool alpha, std::string
 
 Texture2D& ResourceManager::GetTexture(std::string name) {
     return Textures[name];
+}
+
+Model ResourceManager::LoadModel(const std::string& path, std::string name) {
+    Models[name] = Model(FileSystem::getPath(path));
+    return Models[name];
+}
+
+Model& ResourceManager::GetModel(std::string name) {
+    return Models[name];
 }
 
 void ResourceManager::Clear() {

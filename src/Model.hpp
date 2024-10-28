@@ -29,6 +29,9 @@ public:
   bool             gammaCorrection;
 
   // constructor, expects a filepath to a 3D model.
+  // The need for a no-arg constructor comes from the fact that the ResourceManager class uses std::map to store Model instances. 
+  // For std::map to create or copy objects internally, the type of the stored objects (in this case, Model) must be constructible and assignable.
+  Model() { }
   Model(string const& path, bool gamma = false);
   ~Model();
 
