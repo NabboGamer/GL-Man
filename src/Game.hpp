@@ -10,7 +10,7 @@
 #include <glm/gtx/rotate_vector.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-//#include "game_level.h"
+#include "GameLevel.hpp"
 //#include "power_up.h"
 
 // Represents the current state of the game
@@ -35,9 +35,9 @@ public:
     bool                    keysProcessed[1024];
     unsigned int            width, height;
 
-    //std::vector<GameLevel>  Levels;
+    std::vector<GameLevel>  Levels;
     //std::vector<PowerUp>    PowerUps;
-    //unsigned int            level;
+    unsigned int            level;
     //unsigned int            lives;
 
     // constructor/destructor

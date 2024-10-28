@@ -23,56 +23,6 @@ GameObjectBase*       player;
 //ISoundEngine      *SoundEngine = createIrrKlangDevice();
 //TextRenderer      *Text;
 
-std::vector<float> cube_mesh = {
-    // Front face (z = +0.5)
-    -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,  // bottom-left
-     0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  0.0f,  // bottom-right
-     0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  1.0f,  // top-right
-     0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  1.0f,  // top-right
-    -0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  1.0f,  // top-left
-    -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,  // bottom-left
-
-    // Back face (z = -0.5)
-    -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,  // bottom-left
-     0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  0.0f,  // bottom-right
-     0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f,  // top-right
-     0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f,  // top-right
-    -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  1.0f,  // top-left
-    -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,  // bottom-left
-
-     // Left face (x = -0.5)
-     -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  1.0f, // top-right
-     -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f, // top-left
-     -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  0.0f, // bottom-left
-     -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  0.0f, // bottom-left
-     -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  0.0f, // bottom-right
-     -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  1.0f,  // top-right
-
-     // Right face (x = +0.5)
-     0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  1.0f, // top-right
-     0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f, // top-left
-     0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f, // bottom-left
-     0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f, // bottom-left
-     0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f, // bottom-right
-     0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  1.0f,  // top-right
-
-     // Bottom face (y = -0.5)
-     -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f,  // top-left
-      0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  1.0f,  // top-right
-      0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  0.0f,  // bottom-right
-      0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  0.0f,  // bottom-right
-     -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  0.0f,  // bottom-left
-     -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f,  // top-left
-
-     // Top face (y = +0.5)
-     -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f,  // top-left
-      0.5f,  0.5f, -0.5f,  0.0f,  1.0f,   0.0f,  1.0f,  1.0f,  // top-right
-      0.5f,  0.5f,  0.5f,  0.0f,  1.0f,   0.0f,  1.0f,  0.0f,  // bottom-right
-      0.5f,  0.5f,  0.5f,  0.0f,  1.0f,   0.0f,  1.0f,  0.0f,  // bottom-right
-     -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,   0.0f,  0.0f,  0.0f,  // bottom-left
-     -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,   0.0f,  0.0f,  1.0f   // top-left
-};
-
 Game::Game(unsigned int width, unsigned int height) : state(GAME_ACTIVE), keys(), keysProcessed(), width(width), height(height) { }
 
 Game::~Game() {
@@ -85,40 +35,44 @@ Game::~Game() {
 }
 
 void Game::Init() {
-    // load shaders
-    //ResourceManager::LoadShader("shaders/mazeWall.vs", "shaders/mazeWall.fs", nullptr, "mazeWallShader");
-    ResourceManager::LoadShader("shaders/model.vs", "shaders/model.fs", nullptr, "playerShader");
+    /// Load Shaders
+    ResourceManager::LoadShader("shaders/mazeWall.vs", "shaders/mazeWall.fs", nullptr, "mazeWallShader");
     /*ResourceManager::LoadShader("particle.vs", "particle.fs", nullptr, "particle");
     ResourceManager::LoadShader("post_processing.vs", "post_processing.fs", nullptr, "postprocessing");*/
 
-    // Configure Shaders
+    /// Configure Shaders
     // Insert uniform variable in vertex shader(only global variables, i.e. the same for all shaders)
-    cameraPos = glm::vec3(3.0, 2.0, 3.0);
-    cameraAt = glm::vec3(0.0, 0.0, 0.0);
-    up = glm::vec3(0.0, 1.0, 0.0);
+    cameraPos = glm::vec3(-6.0, 6.0, 3.0);
+    cameraAt  = glm::vec3( 3.0, 1.0, 3.0);
+    up        = glm::vec3( 0.0, 1.0, 0.0);
     cameraDir = glm::normalize(cameraPos - cameraAt);
     cameraSide = glm::normalize(glm::cross(up, cameraDir));
     cameraUp = glm::normalize(glm::cross(cameraDir, cameraSide));
     glm::mat4 view = glm::lookAt(cameraPos, cameraAt, cameraUp);
-    ResourceManager::GetShader("playerShader").Use().SetMatrix4("view", view);
     glm::mat4 projection = glm::perspective(glm::radians(45.0f), static_cast<float>(this->width) / static_cast<float>(this->height), 0.1f, 20.0f);
-    ResourceManager::GetShader("playerShader").Use().SetMatrix4("projection", projection);
-
+    ResourceManager::GetShader("mazeWallShader").Use().SetMatrix4("view", view);
+    ResourceManager::GetShader("mazeWallShader").Use().SetMatrix4("projection", projection);
     // Insert uniform variable in fragment shader(only global variables, i.e. the same for all shaders)
-    ResourceManager::GetShader("playerShader").Use().SetVector3f("viewPos", cameraPos);
-    ResourceManager::GetShader("playerShader").Use().SetVector3f("dirLight.direction", glm::normalize(cameraAt - cameraPos));
-    ResourceManager::GetShader("playerShader").Use().SetVector3f("dirLight.ambient", glm::vec3(0.5f, 0.5f, 0.5f));
-    ResourceManager::GetShader("playerShader").Use().SetVector3f("dirLight.diffuse", glm::vec3(0.6f, 0.6f, 0.6f));
-    ResourceManager::GetShader("playerShader").Use().SetVector3f("dirLight.specular", glm::vec3(0.5f, 0.5f, 0.5f));
+    ResourceManager::GetShader("mazeWallShader").Use().SetVector3f("viewPos", cameraPos);
+    ResourceManager::GetShader("mazeWallShader").Use().SetVector3f("dirLight.direction", glm::normalize(cameraAt - cameraPos));
+    ResourceManager::GetShader("mazeWallShader").Use().SetVector3f("dirLight.ambient", glm::vec3(0.5f, 0.5f, 0.5f));
+    ResourceManager::GetShader("mazeWallShader").Use().SetVector3f("dirLight.diffuse", glm::vec3(0.6f, 0.6f, 0.6f));
+    ResourceManager::GetShader("mazeWallShader").Use().SetVector3f("dirLight.specular", glm::vec3(0.5f, 0.5f, 0.5f));
 
-    // load textures
-    /*ResourceManager::LoadTexture(FileSystem::getPath("res/textures/maze_wall_diffuse.png").c_str(), true, "mazeWallDiffuseTexture");
-    ResourceManager::LoadTexture(FileSystem::getPath("res/textures/maze_wall_specular.png").c_str(), true, "mazeWallSpecularTexture");*/
+    /// Load Textures
+    ResourceManager::LoadTexture(FileSystem::getPath("../res/textures/maze_wall_diffuse.png").c_str(), true, "mazeWallDiffuseTexture");
+    ResourceManager::LoadTexture(FileSystem::getPath("../res/textures/maze_wall_specular.png").c_str(), true, "mazeWallSpecularTexture");
 
-    // configure game objects
+    /// Load Levels
+    GameLevel levelOne;
+    levelOne.Load(FileSystem::getPath("../res/levels/one.lvl").c_str());
+    this->Levels.push_back(levelOne);
+    this->level = 0;
+
+    /// Configure Game Objects
     /*std::vector<glm::vec3> playerPositions = { glm::vec3(0.0, 0.0, 0.0),
-                                               glm::vec3(2.0, 0.0, 0.0),
-                                               glm::vec3(0.0, 0.0, 2.0) };
+                                                 glm::vec3(2.0, 0.0, 0.0),
+                                                 glm::vec3(0.0, 0.0, 2.0) };
     std::vector<glm::vec3> playerDirections = { glm::vec3(0.0, 0.0, 1.0),
                                                 glm::vec3(1.0, 0.0, 0.0),
                                                 glm::vec3(0.0, 0.0, 1.0) };
@@ -136,13 +90,13 @@ void Game::Init() {
                                   &ResourceManager::GetTexture("mazeWallDiffuseTexture"),
                                   &ResourceManager::GetTexture("mazeWallSpecularTexture"));*/
 
-    std::vector<glm::vec3> playerPositions =  { glm::vec3(0.0, 0.0, 0.0),
+    /*std::vector<glm::vec3> playerPositions =  { glm::vec3(0.0, 0.0, 0.0),
                                                 glm::vec3(2.0, 0.0, 0.0), 
                                                 glm::vec3(0.0, 0.0, 2.0)};
     std::vector<glm::vec3> playerDirections = { glm::vec3(0.0, 0.0, 1.0),
                                                 glm::vec3(1.0, 0.0, 0.0), 
                                                 glm::vec3(0.0, 0.0, 1.0)};
-    std::vector<float> playerRotations = { 0.0f, 0.0f, 0.0f };
+    std::vector<float> playerRotations = { 0.0f, -90.0f, 0.0f };
     std::vector<glm::vec3> playerScaling = { glm::vec3(0.010f), glm::vec3(0.010f), glm::vec3(0.010f) };
 
     ResourceManager::GetShader("playerShader").Use();
@@ -152,7 +106,7 @@ void Game::Init() {
                                      playerRotations,
                                      playerScaling, 
                                      &ResourceManager::GetShader("playerShader"),
-                                     &ResourceManager::GetModel("playerModel"));
+                                     &ResourceManager::GetModel("playerModel"));*/
     // audio
     //SoundEngine->play2D(FileSystem::getPath("resources/audio/breakout.mp3").c_str(), true);
 }
@@ -263,9 +217,9 @@ void Game::Render() {
         //    // draw background
         //    Renderer->DrawSprite(ResourceManager::GetTexture("background"), glm::vec2(0.0f, 0.0f), glm::vec2(this->Width, this->Height), 0.0f);
         //    // draw level
-        //    this->Levels[this->Level].Draw(*Renderer);
+        this->Levels[this->level].Draw();
             // draw player
-        player->Draw();
+        //player->Draw();
         //    // draw PowerUps
         //    for (PowerUp &powerUp : this->PowerUps)
         //        if (!powerUp.Destroyed)
