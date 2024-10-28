@@ -146,7 +146,7 @@ void Game::Init() {
     std::vector<glm::vec3> playerScaling = { glm::vec3(0.010f), glm::vec3(0.010f), glm::vec3(0.010f) };
 
     ResourceManager::GetShader("playerShader").Use();
-    ResourceManager::LoadModel("res/objects/asteroid/asteroid.obj", "playerModel");
+    ResourceManager::LoadModel("../res/objects/asteroid/asteroid.obj", "playerModel");
     player = new GameObjectFromModel(playerPositions,
                                      playerDirections,
                                      playerRotations,

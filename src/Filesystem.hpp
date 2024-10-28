@@ -1,7 +1,7 @@
 #pragma once
 
 #ifndef ROOT_PATH
-#define ROOT_PATH "C:/Users/stolf/dev/Progetto Grafica Tridimensionale Avanzata/GL-Man" // Insert here your root path for the project
+#define ROOT_PATH "C:/Users/stolf/dev/Progetto Grafica Tridimensionale Avanzata/GL-Man/src" // Insert here your root path for the project src dir
 #endif
 
 #include <string>
