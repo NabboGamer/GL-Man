@@ -42,14 +42,14 @@ void Game::Init() {
 
     /// Configure Shaders
     // Insert uniform variable in vertex shader(only global variables, i.e. the same for all shaders)
-    cameraPos = glm::vec3(-17.0, 22.5, 15.0);
-    cameraAt  = glm::vec3( 16.0,  1.0, 15.0);
-    up        = glm::vec3(  0.0,  1.0,  0.0);
+    cameraPos = glm::vec3( -17.0, 22.5, 15.0);
+    cameraAt  = glm::vec3(  10.0,  1.0, 15.0);
+    up        = glm::vec3(   0.0,  1.0,  0.0);
     cameraDir = glm::normalize(cameraPos - cameraAt);
     cameraSide = glm::normalize(glm::cross(up, cameraDir));
     cameraUp = glm::normalize(glm::cross(cameraDir, cameraSide));
     glm::mat4 view = glm::lookAt(cameraPos, cameraAt, cameraUp);
-    glm::mat4 projection = glm::perspective(glm::radians(40.0f), static_cast<float>(this->width) / static_cast<float>(this->height), 0.1f, 100.0f);
+    glm::mat4 projection = glm::perspective(glm::radians(35.0f), static_cast<float>(this->width) / static_cast<float>(this->height), 0.1f, 55.0f);
     ResourceManager::GetShader("mazeWallShader").Use().SetMatrix4("view", view);
     ResourceManager::GetShader("mazeWallShader").Use().SetMatrix4("projection", projection);
     // Insert uniform variable in fragment shader(only global variables, i.e. the same for all shaders)
@@ -60,8 +60,8 @@ void Game::Init() {
     ResourceManager::GetShader("mazeWallShader").Use().SetVector3f("dirLight.specular", glm::vec3(0.5f, 0.5f, 0.5f));
 
     /// Load Textures
-    ResourceManager::LoadTexture(FileSystem::getPath("../res/textures/maze_wall_diffuse.png").c_str(), true, "mazeWallDiffuseTexture");
-    ResourceManager::LoadTexture(FileSystem::getPath("../res/textures/maze_wall_specular.png").c_str(), true, "mazeWallSpecularTexture");
+    ResourceManager::LoadTexture(FileSystem::getPath("../res/textures/wall_diffuse_1k.png").c_str(), false, "mazeWallDiffuseTexture");
+    ResourceManager::LoadTexture(FileSystem::getPath("../res/textures/wall_specular_1k.png").c_str(), false, "mazeWallSpecularTexture");
 
     /// Load Levels
     GameLevel levelOne;
