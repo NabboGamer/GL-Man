@@ -38,6 +38,7 @@ void Game::Init() {
     /// Load Shaders
     ResourceManager::LoadShader("shaders/mazeWall.vs", "shaders/mazeWall.fs", nullptr, "mazeWallShader");
     ResourceManager::LoadShader("shaders/mazeFloor.vs", "shaders/mazeFloor.fs", nullptr, "mazeFloorShader");
+    ResourceManager::LoadShader("shaders/dot.vs", "shaders/dot.fs", nullptr, "dotShader");
     /*ResourceManager::LoadShader("particle.vs", "particle.fs", nullptr, "particle");
     ResourceManager::LoadShader("post_processing.vs", "post_processing.fs", nullptr, "postprocessing");*/
 
@@ -55,6 +56,8 @@ void Game::Init() {
     ResourceManager::GetShader("mazeWallShader").Use().SetMatrix4("projection", projection);
     ResourceManager::GetShader("mazeFloorShader").Use().SetMatrix4("view", view);
     ResourceManager::GetShader("mazeFloorShader").Use().SetMatrix4("projection", projection);
+    ResourceManager::GetShader("dotShader").Use().SetMatrix4("view", view);
+    ResourceManager::GetShader("dotShader").Use().SetMatrix4("projection", projection);
     // Insert uniform variable in fragment shader(only global variables, i.e. the same for all shaders)
     ResourceManager::GetShader("mazeWallShader").Use().SetVector3f("viewPos", cameraPos);
     ResourceManager::GetShader("mazeWallShader").Use().SetVector3f("dirLight.direction", glm::normalize(cameraAt - cameraPos));
@@ -66,12 +69,20 @@ void Game::Init() {
     ResourceManager::GetShader("mazeFloorShader").Use().SetVector3f("dirLight.ambient", glm::vec3(0.5f, 0.5f, 0.5f));
     ResourceManager::GetShader("mazeFloorShader").Use().SetVector3f("dirLight.diffuse", glm::vec3(0.6f, 0.6f, 0.6f));
     ResourceManager::GetShader("mazeFloorShader").Use().SetVector3f("dirLight.specular", glm::vec3(0.5f, 0.5f, 0.5f));
+    ResourceManager::GetShader("dotShader").Use().SetVector3f("viewPos", cameraPos);
+    ResourceManager::GetShader("dotShader").Use().SetVector3f("dirLight.direction", glm::normalize(cameraAt - cameraPos));
+    ResourceManager::GetShader("dotShader").Use().SetVector3f("dirLight.ambient", glm::vec3(0.5f, 0.5f, 0.5f));
+    ResourceManager::GetShader("dotShader").Use().SetVector3f("dirLight.diffuse", glm::vec3(0.6f, 0.6f, 0.6f));
+    ResourceManager::GetShader("dotShader").Use().SetVector3f("dirLight.specular", glm::vec3(0.5f, 0.5f, 0.5f));
+
 
     /// Load Textures
     ResourceManager::LoadTexture(FileSystem::getPath("../res/textures/wall_diffuse_1k.png").c_str(), "mazeWallDiffuseTexture");
     ResourceManager::LoadTexture(FileSystem::getPath("../res/textures/wall_specular_1k.png").c_str(), "mazeWallSpecularTexture");
     ResourceManager::LoadTexture(FileSystem::getPath("../res/textures/floor_diffuse_1k.png").c_str(), "mazeFloorDiffuseTexture");
     ResourceManager::LoadTexture(FileSystem::getPath("../res/textures/floor_specular_1k.png").c_str(), "mazeFloorSpecularTexture");
+    ResourceManager::LoadTexture(FileSystem::getPath("../res/textures/dot_diffuse_4k.jpeg").c_str(), "dotDiffuseTexture");
+    ResourceManager::LoadTexture(FileSystem::getPath("../res/textures/dot_specular_4k.jpeg").c_str(), "dotSpecularTexture");
 
     /// Load Levels
     GameLevel levelOne;

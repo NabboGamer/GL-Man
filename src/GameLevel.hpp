@@ -13,10 +13,14 @@ class GameLevel {
 
 public:
     // level state
-    std::vector<glm::vec3> mazeWallPositions;
-    GameObjectBase*        mazeWall;
-    std::vector<glm::vec3> mazeFloorPositions;
-    GameObjectBase*        mazeFloor;
+    std::vector<glm::vec3>  mazeWallPositions;
+    GameObjectBase*         mazeWall;
+    std::vector<glm::vec3>  mazeFloorPositions;
+    GameObjectBase*         mazeFloor;
+    std::vector<glm::vec3>  dotPositions;
+    GameObjectBase*         dot;
+    std::vector<glm::vec3>  energizerPositions;
+    GameObjectBase*         energizer;
 
     // constructor
     GameLevel() { }

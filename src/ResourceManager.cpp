@@ -111,7 +111,7 @@ Texture2D ResourceManager::loadTextureFromFile(const char* file) {
                 data = reinterpret_cast<unsigned char*>(dataFloat);
             }
             else {
-                // If all uploads fail, report the error and exit
+                // If all loading fail, report the error and exit
                 std::cerr << "ERROR::RESOURCEMANAGER: Failed to load image file: " << file << std::endl;
                 return texture;
             }

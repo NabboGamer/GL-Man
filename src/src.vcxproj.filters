@@ -109,5 +109,11 @@
     <None Include="shaders\mazeFloor.vs">
       <Filter>Resource Files\Shaders</Filter>
     </None>
+    <None Include="shaders\dot.fs">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="shaders\dot.vs">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

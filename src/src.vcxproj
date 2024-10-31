@@ -166,6 +166,8 @@
     <ClInclude Include="Texture2D.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="shaders\dot.fs" />
+    <None Include="shaders\dot.vs" />
     <None Include="shaders\mazeFloor.fs" />
     <None Include="shaders\mazeFloor.vs" />
     <None Include="shaders\mazeWall.fs" />
