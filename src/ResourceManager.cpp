@@ -22,8 +22,8 @@ Shader& ResourceManager::GetShader(std::string name) {
     return Shaders[name];
 }
 
-Texture2D ResourceManager::LoadTexture(const char *file, bool alpha, std::string name) {
-    Textures[name] = loadTextureFromFile(file, alpha);
+Texture2D ResourceManager::LoadTexture(const char *file, std::string name) {
+    Textures[name] = loadTextureFromFile(file);
     return Textures[name];
 }
 
@@ -77,7 +77,7 @@ Shader ResourceManager::loadShaderFromFile(const char *vShaderFile, const char *
             geometryCode = gShaderStream.str();
         }
     } catch (std::exception e) {
-        std::cout << "ERROR::SHADER: Failed to read shader files" << std::endl;
+        std::cout << "ERROR::RESOURCEMANAGER: Failed to read shader files" << std::endl;
     }
     const char *vShaderCode = vertexCode.c_str();
     const char *fShaderCode = fragmentCode.c_str();
@@ -88,19 +88,85 @@ Shader ResourceManager::loadShaderFromFile(const char *vShaderFile, const char *
     return shader;
 }
 
-Texture2D ResourceManager::loadTextureFromFile(const char *file, bool alpha) {
-    // create texture object
+Texture2D ResourceManager::loadTextureFromFile(const char* file) {
+    // Create the texture object
     Texture2D texture;
-    if (alpha) {
-        texture.internalFormat = GL_RGBA;
+
+    int width, height, nrChannels;
+    unsigned char* data = nullptr;
+    GLenum dataType = GL_UNSIGNED_BYTE;  // Let's start with the 8-bit data type
+
+    // Attempting to load as 8-bit image
+    data = stbi_load(file, &width, &height, &nrChannels, 0);
+    if (!data) {  // If that fails, try the 16-bit data type.
+        unsigned short* data16 = stbi_load_16(file, &width, &height, &nrChannels, 0);
+        if (data16) {
+            dataType = GL_UNSIGNED_SHORT;
+            data = reinterpret_cast<unsigned char*>(data16);
+        }
+        else {  // If even 16-bit fails, try the float data type.
+            float* dataFloat = stbi_loadf(file, &width, &height, &nrChannels, 0);
+            if (dataFloat) {
+                dataType = GL_FLOAT;
+                data = reinterpret_cast<unsigned char*>(dataFloat);
+            }
+            else {
+                // If all uploads fail, report the error and exit
+                std::cerr << "ERROR::RESOURCEMANAGER: Failed to load image file: " << file << std::endl;
+                return texture;
+            }
+        }
+    }
+
+
+    // Set formats based on `nrChannels` and `dataType`
+    if (nrChannels == 1) {
+        if (dataType == GL_UNSIGNED_BYTE) {
+            texture.internalFormat = GL_R8;
+        }
+        else if (dataType == GL_UNSIGNED_SHORT) {
+            texture.internalFormat = GL_R16;
+        }
+        else if (dataType == GL_FLOAT) {
+            texture.internalFormat = GL_R32F;
+        }
+        texture.imageFormat = GL_RED;
+    }
+    else if (nrChannels == 3) {
+        if (dataType == GL_UNSIGNED_BYTE) {
+            texture.internalFormat = GL_RGB8;
+        }
+        else if (dataType == GL_UNSIGNED_SHORT) {
+            texture.internalFormat = GL_RGB16;
+        }
+        else if (dataType == GL_FLOAT) {
+            texture.internalFormat = GL_RGB32F;
+        }
+        texture.imageFormat = GL_RGB;
+    }
+    else if (nrChannels == 4) {
+        if (dataType == GL_UNSIGNED_BYTE) {
+            texture.internalFormat = GL_RGBA8;
+        }
+        else if (dataType == GL_UNSIGNED_SHORT) {
+            texture.internalFormat = GL_RGBA16;
+        }
+        else if (dataType == GL_FLOAT) {
+            texture.internalFormat = GL_RGBA32F;
+        }
         texture.imageFormat = GL_RGBA;
     }
-    // load image
-    int width, height, nrChannels;
-    unsigned char* data = stbi_load(file, &width, &height, &nrChannels, 0);
-    // now generate texture
-    texture.Generate(width, height, data);
-    // and finally free image data
+    else {
+        std::cerr << "ERROR::RESOURCEMANAGER: Unsupported image format: " << nrChannels << " channels." << std::endl;
+        stbi_image_free(data);
+        return texture;
+    }
+
+    // Genera la texture con il tipo di dato corretto
+    texture.Generate(width, height, data, dataType);
+
+    // Libera la memoria dell'immagine
     stbi_image_free(data);
+
     return texture;
 }
