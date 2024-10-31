@@ -55,6 +55,60 @@ std::vector<float> cube_mesh = {
     -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,   0.0f,  0.0f,  1.0f   // top-left
 };
 
+const float L = 1.0f;  // Depth along  x
+const float W = 0.1f;  // Height along y
+const float H = 1.0f;  // Length along z
+
+std::vector<float> parallelepiped_mesh = {
+    // Front face (z = +H/2)
+    -L / 2, -W / 2,  H / 2,   0.0f,  0.0f,  1.0f,   0.0f,  0.0f,  // bottom-left
+     L / 2, -W / 2,  H / 2,   0.0f,  0.0f,  1.0f,   1.0f,  0.0f,  // bottom-right
+     L / 2,  W / 2,  H / 2,   0.0f,  0.0f,  1.0f,   1.0f,  1.0f,  // top-right
+     L / 2,  W / 2,  H / 2,   0.0f,  0.0f,  1.0f,   1.0f,  1.0f,  // top-right
+    -L / 2,  W / 2,  H / 2,   0.0f,  0.0f,  1.0f,   0.0f,  1.0f,  // top-left
+    -L / 2, -W / 2,  H / 2,   0.0f,  0.0f,  1.0f,   0.0f,  0.0f,  // bottom-left
+
+    // Back face (z = -H/2)
+    -L / 2, -W / 2, -H / 2,   0.0f,  0.0f, -1.0f,   0.0f,  0.0f,  // bottom-left
+     L / 2, -W / 2, -H / 2,   0.0f,  0.0f, -1.0f,   1.0f,  0.0f,  // bottom-right
+     L / 2,  W / 2, -H / 2,   0.0f,  0.0f, -1.0f,   1.0f,  1.0f,  // top-right
+     L / 2,  W / 2, -H / 2,   0.0f,  0.0f, -1.0f,   1.0f,  1.0f,  // top-right
+    -L / 2,  W / 2, -H / 2,   0.0f,  0.0f, -1.0f,   0.0f,  1.0f,  // top-left
+    -L / 2, -W / 2, -H / 2,   0.0f,  0.0f, -1.0f,   0.0f,  0.0f,  // bottom-left
+
+    // Left face (x = -L/2)
+    -L / 2,  W / 2,  H / 2,  -1.0f,  0.0f,  0.0f,   1.0f,  1.0f,  // top-right
+    -L / 2,  W / 2, -H / 2,  -1.0f,  0.0f,  0.0f,   0.0f,  1.0f,  // top-left
+    -L / 2, -W / 2, -H / 2,  -1.0f,  0.0f,  0.0f,   0.0f,  0.0f,  // bottom-left
+    -L / 2, -W / 2, -H / 2,  -1.0f,  0.0f,  0.0f,   0.0f,  0.0f,  // bottom-left
+    -L / 2, -W / 2,  H / 2,  -1.0f,  0.0f,  0.0f,   1.0f,  0.0f,  // bottom-right
+    -L / 2,  W / 2,  H / 2,  -1.0f,  0.0f,  0.0f,   1.0f,  1.0f,  // top-right
+
+    // Right face (x = +L/2)
+     L / 2,  W / 2,  H / 2,   1.0f,  0.0f,  0.0f,   1.0f,  1.0f,  // top-right
+     L / 2,  W / 2, -H / 2,   1.0f,  0.0f,  0.0f,   0.0f,  1.0f,  // top-left
+     L / 2, -W / 2, -H / 2,   1.0f,  0.0f,  0.0f,   0.0f,  0.0f,  // bottom-left
+     L / 2, -W / 2, -H / 2,   1.0f,  0.0f,  0.0f,   0.0f,  0.0f,  // bottom-left
+     L / 2, -W / 2,  H / 2,   1.0f,  0.0f,  0.0f,   1.0f,  0.0f,  // bottom-right
+     L / 2,  W / 2,  H / 2,   1.0f,  0.0f,  0.0f,   1.0f,  1.0f,  // top-right
+
+     // Bottom face (y = -W/2)
+     -L / 2, -W / 2, -H / 2,   0.0f, -1.0f,  0.0f,   0.0f,  1.0f,  // top-left
+      L / 2, -W / 2, -H / 2,   0.0f, -1.0f,  0.0f,   1.0f,  1.0f,  // top-right
+      L / 2, -W / 2,  H / 2,   0.0f, -1.0f,  0.0f,   1.0f,  0.0f,  // bottom-right
+      L / 2, -W / 2,  H / 2,   0.0f, -1.0f,  0.0f,   1.0f,  0.0f,  // bottom-right
+     -L / 2, -W / 2,  H / 2,   0.0f, -1.0f,  0.0f,   0.0f,  0.0f,  // bottom-left
+     -L / 2, -W / 2, -H / 2,   0.0f, -1.0f,  0.0f,   0.0f,  1.0f,  // top-left
+
+     // Top face (y = +W/2)
+     -L / 2,  W / 2, -H / 2,   0.0f,  1.0f,  0.0f,   0.0f,  1.0f,  // top-left
+      L / 2,  W / 2, -H / 2,   0.0f,  1.0f,  0.0f,   1.0f,  1.0f,  // top-right
+      L / 2,  W / 2,  H / 2,    0.0f,  1.0f,  0.0f,  1.0f,  0.0f,  // bottom-right
+      L / 2,  W / 2,  H / 2,    0.0f,  1.0f,  0.0f,  1.0f,  0.0f,  // bottom-right
+     -L / 2,  W / 2,  H / 2,    0.0f,  1.0f,  0.0f,  0.0f,  0.0f,  // bottom-left
+     -L / 2,  W / 2, -H / 2,   0.0f,  1.0f,  0.0f,   0.0f,  1.0f   // top-left
+};
+
 
 GameLevel::~GameLevel() {
     //delete mazeWall;
@@ -90,6 +144,7 @@ void GameLevel::Load(const char *file) {
 }
 
 void GameLevel::Draw() {
+    this->mazeFloor->Draw();
     this->mazeWall->Draw();
 }
 
@@ -117,15 +172,16 @@ void GameLevel::init(std::vector<std::vector<unsigned int>> wallData) {
             } else if (wallData[x][z] == 2) {
 
             } else if (wallData[x][z] == 0) {
-
+                glm::vec3 position = glm::vec3(L/2 + static_cast<float>(height - (x + 1)), -W/2, H/2 + static_cast<float>(z));
+                this->mazeFloorPositions.push_back(position);
             }
         }
     }
-    size_t numInstances = this->mazeWallPositions.size();
-    std::vector<glm::vec3> mazeWallDirections(numInstances, glm::vec3(1.0f, 0.0f, 0.0f));
-    std::vector<float>     mazeWallRotations(numInstances, 0.0f);
-    std::vector<glm::vec3> mazeWallScaling(numInstances, glm::vec3(1.0f));
-    this->mazeWall = new GameObjectCustom(mazeWallPositions,
+    size_t numInstancesMazeWall = this->mazeWallPositions.size();
+    std::vector<glm::vec3> mazeWallDirections(numInstancesMazeWall, glm::vec3(1.0f, 0.0f, 0.0f));
+    std::vector<float>     mazeWallRotations(numInstancesMazeWall, 0.0f);
+    std::vector<glm::vec3> mazeWallScaling(numInstancesMazeWall, glm::vec3(1.0f));
+    this->mazeWall = new GameObjectCustom(this->mazeWallPositions,
                                           mazeWallDirections,
                                           mazeWallRotations,
                                           mazeWallScaling,
@@ -133,4 +189,17 @@ void GameLevel::init(std::vector<std::vector<unsigned int>> wallData) {
                                           cube_mesh,
                                           &ResourceManager::GetTexture("mazeWallDiffuseTexture"),
                                           &ResourceManager::GetTexture("mazeWallSpecularTexture"));
+
+    size_t numInstancesMazeFloor = this->mazeFloorPositions.size();
+    std::vector<glm::vec3> mazeFloorDirections(numInstancesMazeFloor, glm::vec3(0.0f, 0.0f, 1.0f));
+    std::vector<float>     mazeFloorRotations(numInstancesMazeFloor, 0.0f);
+    std::vector<glm::vec3> mazeFloorScaling(numInstancesMazeFloor, glm::vec3(1.0f));
+    this->mazeFloor = new GameObjectCustom(this->mazeFloorPositions,
+                                           mazeFloorDirections,
+                                           mazeFloorRotations,
+                                           mazeFloorScaling,
+                                           &ResourceManager::GetShader("mazeFloorShader"),
+                                           parallelepiped_mesh,
+                                           &ResourceManager::GetTexture("mazeFloorDiffuseTexture"),
+                                           &ResourceManager::GetTexture("mazeFloorSpecularTexture"));
 }
