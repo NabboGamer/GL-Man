@@ -7,6 +7,8 @@ GameObjectCustom::GameObjectCustom(std::vector<glm::vec3> positions, std::vector
 	            : GameObjectBase(positions, directions, rotations, scaling, shader), 
                   mesh(mesh), diffuseTexture(diffuseTexture), specularTexture(specularTexture) {
 	this->initRenderData();
+    this->calculatePmin();
+    this->calculatePmax();
 }
 
 GameObjectCustom::~GameObjectCustom() {
@@ -52,6 +54,9 @@ void GameObjectCustom::Draw() {
     for (size_t i = 0; i < this->numInstances; i++) {
         glm::mat4 model = glm::mat4(1.0f);
 
+        // Translation to exactly position the pmin vertex at the origin
+        model = glm::translate(model, -this->pMin);
+
         model = glm::translate(model, this->positions[i]);
 
         float angle = glm::atan(this->directions[i].x, this->directions[i].z);
@@ -86,4 +91,42 @@ void GameObjectCustom::Draw() {
         glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(this->vertexCount));
     }
     glBindVertexArray(0);
+}
+
+void GameObjectCustom::calculatePmin() {
+    glm::vec3 exactPmin(this->mesh[0], this->mesh[1], this->mesh[2]);
+
+    for (size_t i = 0; i < this->mesh.size(); i += 8) { // Each vertex has 8 values ​​(xyz + normals + uv)
+        float x = this->mesh[i];
+        float y = this->mesh[i + 1];
+        float z = this->mesh[i + 2];
+
+        // If we find a vertex with a smaller y value, we select it as the new pmin
+        if (y < exactPmin.y ||
+            (y == exactPmin.y && x < exactPmin.x) ||
+            (y == exactPmin.y && x == exactPmin.x && z < exactPmin.z)) {
+            exactPmin = glm::vec3(x, y, z);
+        }
+    }
+
+    this->pMin = exactPmin;
+}
+
+void GameObjectCustom::calculatePmax() {
+    glm::vec3 exactPmax(this->mesh[0], this->mesh[1], this->mesh[2]);
+
+    for (size_t i = 0; i < this->mesh.size(); i += 8) { // Each vertex has 8 values ​​(xyz + normals + uv)
+        float x = this->mesh[i];
+        float y = this->mesh[i + 1];
+        float z = this->mesh[i + 2];
+
+        // If we find a vertex with a higher y value, we select it as the new pmax
+        if (y > exactPmax.y ||
+            (y == exactPmax.y && x > exactPmax.x) ||
+            (y == exactPmax.y && x == exactPmax.x && z > exactPmax.z)) {
+            exactPmax = glm::vec3(x, y, z);
+        }
+    }
+
+    this->pMax = exactPmax;
 }
