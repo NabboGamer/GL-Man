@@ -1,0 +1,26 @@
+# Blender 4.2.2 LTS MTL File: 'grape.blend'
+# www.blender.org
+
+newmtl fruit
+Ns 226.865952
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd grape_base_color.png
+map_refl grape_roughness.png
+map_Bump -bm 10.000000 grape_normal.png
+
+newmtl wood_grape
+Ns 44.482635
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd wood_grape_base_color.png
+map_refl wood_grape_roughness.png
+map_Bump -bm 10.000000 wood_grape_normal.png
