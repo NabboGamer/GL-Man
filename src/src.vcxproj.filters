@@ -51,6 +51,9 @@
     <ClCompile Include="GameObjectFromModel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="GameLevel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FileSystem.hpp">
@@ -83,6 +86,9 @@
     <ClInclude Include="GameObjectFromModel.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="GameLevel.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\mazeWall.fs">
@@ -95,6 +101,18 @@
       <Filter>Resource Files\Shaders</Filter>
     </None>
     <None Include="shaders\model.vs">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="shaders\mazeFloor.fs">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="shaders\mazeFloor.vs">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="shaders\dot.fs">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="shaders\dot.vs">
       <Filter>Resource Files\Shaders</Filter>
     </None>
   </ItemGroup>

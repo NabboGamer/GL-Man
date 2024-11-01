@@ -10,9 +10,9 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
 
 // The Width of the screen
-const unsigned int SCREEN_WIDTH = 1920;
+const unsigned int SCREEN_WIDTH = 3840;
 // The height of the screen
-const unsigned int SCREEN_HEIGHT = 1080;
+const unsigned int SCREEN_HEIGHT = 2160;
 
 Game GLMan(SCREEN_WIDTH, SCREEN_HEIGHT);
 

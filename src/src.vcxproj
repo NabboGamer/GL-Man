@@ -140,6 +140,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Game.cpp" />
+    <ClCompile Include="GameLevel.cpp" />
     <ClCompile Include="GameObjectBase.cpp" />
     <ClCompile Include="GameObjectCustom.cpp" />
     <ClCompile Include="GameObjectFromModel.cpp" />
@@ -154,6 +155,7 @@
   <ItemGroup>
     <ClInclude Include="FileSystem.hpp" />
     <ClInclude Include="Game.hpp" />
+    <ClInclude Include="GameLevel.hpp" />
     <ClInclude Include="GameObjectBase.hpp" />
     <ClInclude Include="GameObjectCustom.hpp" />
     <ClInclude Include="GameObjectFromModel.hpp" />
@@ -164,6 +166,10 @@
     <ClInclude Include="Texture2D.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="shaders\dot.fs" />
+    <None Include="shaders\dot.vs" />
+    <None Include="shaders\mazeFloor.fs" />
+    <None Include="shaders\mazeFloor.vs" />
     <None Include="shaders\mazeWall.fs" />
     <None Include="shaders\mazeWall.vs" />
     <None Include="shaders\model.fs" />

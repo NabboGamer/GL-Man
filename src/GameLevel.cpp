@@ -233,13 +233,13 @@ void GameLevel::init(std::vector<std::vector<unsigned int>> wallData) {
     std::vector<float>     dotRotations(numInstancesDot, 0.0f);
     std::vector<glm::vec3> dotScaling(numInstancesDot, glm::vec3(0.25f));
     this->dot = new GameObjectCustom(this->dotPositions,
-                                     dotDirections,
-                                     dotRotations,
-                                     dotScaling,
-                                     &ResourceManager::GetShader("dotShader"),
-                                     cube_mesh,
-                                     &ResourceManager::GetTexture("dotDiffuseTexture"),
-                                     &ResourceManager::GetTexture("dotSpecularTexture"));
+                                          dotDirections,
+                                          dotRotations,
+                                          dotScaling,
+                                          &ResourceManager::GetShader("dotShader"),
+                                          cube_mesh,
+                                          &ResourceManager::GetTexture("dotDiffuseTexture"),
+                                          &ResourceManager::GetTexture("dotSpecularTexture"));
 
     size_t numInstancesEnergizer = this->energizerPositions.size();
     std::vector<glm::vec3> energizerDirections(numInstancesEnergizer, glm::vec3(1.0f, 0.0f, 0.0f));
