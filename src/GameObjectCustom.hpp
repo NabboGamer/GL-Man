@@ -28,7 +28,11 @@ private:
     unsigned int  VBO;
     unsigned int  instanceVBO;
     size_t        vertexCount;
+    glm::vec3     pMin;
+    glm::vec3     pMax;
 
     void initRenderData();
+    void calculatePmin();
+    void calculatePmax();
 
 };
