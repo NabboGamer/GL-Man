@@ -56,7 +56,7 @@ void GameObjectFromModel::Draw() {
     glBufferData(GL_ARRAY_BUFFER, modelMatrices.size() * sizeof(glm::mat4), &modelMatrices[0], GL_DYNAMIC_DRAW);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-    this->shader->SetFloat("material.shininess", 1.0f);
+    //this->shader->SetFloat("material.shininess", 1.0f);
 
     this->model->Draw(*this->shader, this->numInstances);
 }

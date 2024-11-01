@@ -82,7 +82,7 @@ void GameObjectCustom::Draw() {
     glActiveTexture(GL_TEXTURE1);
     this->specularTexture->Bind();
 
-    this->shader->SetFloat("material.shininess", 1.0f);
+    //this->shader->SetFloat("material.shininess", 1.0f);
 
     glBindVertexArray(this->VAO);
     if (this->numInstances > 1) {

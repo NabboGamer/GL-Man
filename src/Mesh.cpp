@@ -1,9 +1,9 @@
 #include "Mesh.hpp"
 
-Mesh::Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<Texture> textures){
-    this->vertices = vertices;
-    this->indices = indices;
-    this->textures = textures;
+Mesh::Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<Texture> textures,
+           glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular, bool hasDiffuseTexture)
+    : vertices(vertices), indices(indices), textures(textures), ambientColor(ambient), 
+      diffuseColor(diffuse), specularColor(specular), hasTextureDiffuse(hasDiffuseTexture) {
 
     // now that we have all the required data, set the vertex buffers and its attribute pointers.
     setupMesh();
@@ -73,6 +73,16 @@ void Mesh::Draw(Shader& shader, size_t numInstances) {
         glUniform1i(glGetUniformLocation(shader.id, (name + number).c_str()), i);
         // and finally bind the texture
         glBindTexture(GL_TEXTURE_2D, textures[i].id);
+    }
+
+    if (hasTextureDiffuse) {
+        shader.SetBool("useTextures", true);
+    }
+    else {
+        shader.SetBool("useTextures", false);
+        shader.SetVector3f("ambientColor", this->ambientColor);
+        shader.SetVector3f("diffuseColor", this->diffuseColor);
+        shader.SetVector3f("specularColor", this->specularColor);
     }
 
     // draw mesh

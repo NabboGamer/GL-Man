@@ -106,21 +106,36 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene) {
     // specular: texture_specularN
     // normal: texture_normalN
 
-    // 1. diffuse maps
-    vector<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
-    textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
-    // 2. specular maps
-    vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
-    textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
-    // 3. normal maps
-    std::vector<Texture> normalMaps = loadMaterialTextures(material, aiTextureType_HEIGHT, "texture_normal");
-    textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
-    // 4. height maps
-    std::vector<Texture> heightMaps = loadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height");
-    textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
+    glm::vec3 ambientColor(1.0f), diffuseColor(1.0f), specularColor(0.5f);
+    bool hasDiffuseTexture = false;
+
+    if (material->GetTextureCount(aiTextureType_DIFFUSE) > 0) {
+        // 1. diffuse maps
+        vector<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
+        textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
+        // 2. specular maps
+        vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
+        textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
+        // 3. normal maps
+        std::vector<Texture> normalMaps = loadMaterialTextures(material, aiTextureType_HEIGHT, "texture_normal");
+        textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
+        // 4. height maps
+        std::vector<Texture> heightMaps = loadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height");
+        textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
+        hasDiffuseTexture = true;
+    }
+    else {
+        aiColor3D color;
+        if (AI_SUCCESS == material->Get(AI_MATKEY_COLOR_AMBIENT, color))
+            ambientColor = glm::vec3(color.r, color.g, color.b);
+        if (AI_SUCCESS == material->Get(AI_MATKEY_COLOR_DIFFUSE, color))
+            diffuseColor = glm::vec3(color.r, color.g, color.b);
+        if (AI_SUCCESS == material->Get(AI_MATKEY_COLOR_SPECULAR, color))
+            specularColor = glm::vec3(color.r, color.g, color.b);
+    }
 
     // return a mesh object created from the extracted mesh data
-    return Mesh(vertices, indices, textures);
+    return Mesh(vertices, indices, textures, ambientColor, diffuseColor, specularColor, hasDiffuseTexture);
 }
 
 vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType type, string typeName) {

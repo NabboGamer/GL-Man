@@ -1,6 +1,4 @@
 #version 330 core
-// For the maze wall, being a hand-built object, it is very complex to implement Normal Mapping. 
-// Since it requires manually calculating the tangent and bitangent vectors for each point that makes up the mesh.
 
 out vec4 FragColor;
 
@@ -26,6 +24,15 @@ uniform vec3 viewPos;
 uniform DirLight dirLight;
 uniform Material material;
 
+// Flag to indicate whether to use textures
+uniform bool useTextures;
+
+// Colors for material when textures are not available
+uniform vec3 ambientColor;
+uniform vec3 diffuseColor;
+uniform vec3 specularColor;
+
+// Textures
 uniform sampler2D texture_diffuse1;
 uniform sampler2D texture_specular1;
 
@@ -33,11 +40,6 @@ uniform sampler2D texture_specular1;
 vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir);
 
 void main() {    
-    // properties
-    // Uniform Variable cannot be modified inside the shader
-    //material.diffuse = texture_diffuse1;
-    //material.specular = texture_specular1;
-
     vec3 norm = normalize(Normal);
     vec3 viewDir = normalize(viewPos - FragPos);
     
@@ -55,9 +57,20 @@ vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir) {
     // specular shading
     vec3 reflectDir = reflect(-lightDir, normal);
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
+    
+    vec3 ambient, diffuse, specular;
     // combine results
-    vec3 ambient = light.ambient * vec3(texture(texture_diffuse1, TexCoords));
-    vec3 diffuse = light.diffuse * diff * vec3(texture(texture_diffuse1, TexCoords));
-    vec3 specular = light.specular * spec * vec3(texture(texture_specular1, TexCoords));
+    if (useTextures) {
+        // Use textures for components
+        ambient = light.ambient * vec3(texture(texture_diffuse1, TexCoords));
+        diffuse = light.diffuse * diff * vec3(texture(texture_diffuse1, TexCoords));
+        specular = light.specular * spec * vec3(texture(texture_specular1, TexCoords));
+    } else {
+        // Use uniform colors for components
+        ambient = light.ambient * ambientColor;
+        diffuse = light.diffuse * diff * diffuseColor;
+        specular = light.specular * spec * specularColor;
+    }
+    
     return (ambient + diffuse + specular);
 }

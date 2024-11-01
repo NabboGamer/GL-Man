@@ -169,7 +169,6 @@ void GameLevel::init(std::vector<std::vector<unsigned int>> wallData) {
             // is a wall? is a dot? or is a hallway?
             if (wallData[x][z] == 1) {
                 // Wall
-                // 0.5f is the preliminary movement which serves to bring the pmin of the cube to (0,0,0)
                 glm::vec3 position = glm::vec3(static_cast<float>(height - (x + 1)), 0.0f, static_cast<float>(z));
                 this->mazeWallPositions.push_back(position);
             }
