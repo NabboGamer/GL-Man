@@ -32,28 +32,28 @@ struct Texture {
 class Mesh {
 
 public:
-  // mesh Data
-  vector<Vertex>       vertices;
-  vector<unsigned int> indices;
-  vector<Texture>      textures;
-  unsigned int		   VAO;
-  glm::vec3 ambientColor  = glm::vec3(1.0f); // Ka, ambient color
-  glm::vec3 diffuseColor  = glm::vec3(1.0f); // Kd, diffusive color
-  glm::vec3 specularColor = glm::vec3(0.5f); // Ks, specular color
-  bool hasTextureDiffuse  = false;           // Flag to check if there is a texture
-
-  // constructor
-  Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<Texture> textures,
-      glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular, bool hasDiffuseTexture);
-  ~Mesh();
-   
-  // render the mesh
-  void Draw(Shader& shader, size_t numInstances);
+    // mesh Data
+    vector<Vertex>       vertices;
+    vector<unsigned int> indices;
+    vector<Texture>      textures;
+    unsigned int		   VAO;
+    glm::vec3 ambientColor  = glm::vec3(1.0f); // Ka, ambient color
+    glm::vec3 diffuseColor  = glm::vec3(1.0f); // Kd, diffusive color
+    glm::vec3 specularColor = glm::vec3(0.5f); // Ks, specular color
+    bool hasTextureDiffuse  = false;           // Flag to check if there is a texture
+    
+    // constructor
+    Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<Texture> textures,
+         glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular, bool hasDiffuseTexture);
+    ~Mesh();
+     
+    // render the mesh
+    void Draw(Shader& shader, size_t numInstances);
 
 private:
-  // render data 
-  unsigned int VBO, EBO, instanceVBO;
-  // initializes all the buffer objects/arrays
-  void setupMesh();
+    // render data 
+    unsigned int VBO, EBO, instanceVBO;
+    // initializes all the buffer objects/arrays
+    void setupMesh();
 
 };

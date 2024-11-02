@@ -5,10 +5,10 @@ GameObjectCustom::GameObjectCustom(std::vector<glm::vec3> positions, std::vector
                                    Shader* shader, std::vector<float>& mesh, 
                                    Texture2D* diffuseTexture, Texture2D* specularTexture)
 	            : GameObjectBase(positions, directions, rotations, scaling, shader), 
-                  mesh(mesh), diffuseTexture(diffuseTexture), specularTexture(specularTexture) {
+                  mesh(mesh), diffuseTexture(diffuseTexture), specularTexture(specularTexture), 
+                  minBounds(FLT_MAX), maxBounds(-FLT_MAX) {
 	this->initRenderData();
-    this->calculatePmin();
-    this->calculatePmax();
+    this->calculateBoundingBox();
 }
 
 GameObjectCustom::~GameObjectCustom() {
@@ -55,7 +55,7 @@ void GameObjectCustom::Draw() {
         glm::mat4 model = glm::mat4(1.0f);
 
         // Translation to exactly position the pmin vertex at the origin
-        model = glm::translate(model, -this->pMin);
+        model = glm::translate(model, -this->GetBoundingBox().first);
 
         model = glm::translate(model, this->positions[i]);
 
@@ -93,40 +93,24 @@ void GameObjectCustom::Draw() {
     glBindVertexArray(0);
 }
 
-void GameObjectCustom::calculatePmin() {
-    glm::vec3 exactPmin(this->mesh[0], this->mesh[1], this->mesh[2]);
+void GameObjectCustom::calculateBoundingBox() {
 
-    for (size_t i = 0; i < this->mesh.size(); i += 8) { // Each vertex has 8 values ​​(xyz + normals + uv)
-        float x = this->mesh[i];
-        float y = this->mesh[i + 1];
-        float z = this->mesh[i + 2];
+    // Itera sui vertici, saltando 8 valori alla volta per passare da un vertice all'altro
+    for (size_t i = 0; i < this->mesh.size(); i += 8) {
+        glm::vec3 vertex(this->mesh[i], this->mesh[i + 1], this->mesh[i + 2]);
 
-        // If we find a vertex with a smaller y value, we select it as the new pmin
-        if (y < exactPmin.y ||
-            (y == exactPmin.y && x < exactPmin.x) ||
-            (y == exactPmin.y && x == exactPmin.x && z < exactPmin.z)) {
-            exactPmin = glm::vec3(x, y, z);
-        }
+        // Aggiorna il minimo e massimo per ogni coordinata
+        this->minBounds.x = std::min(this->minBounds.x, vertex.x);
+        this->minBounds.y = std::min(this->minBounds.y, vertex.y);
+        this->minBounds.z = std::min(this->minBounds.z, vertex.z);
+
+        this->maxBounds.x = std::max(this->maxBounds.x, vertex.x);
+        this->maxBounds.y = std::max(this->maxBounds.y, vertex.y);
+        this->maxBounds.z = std::max(this->maxBounds.z, vertex.z);
     }
 
-    this->pMin = exactPmin;
 }
 
-void GameObjectCustom::calculatePmax() {
-    glm::vec3 exactPmax(this->mesh[0], this->mesh[1], this->mesh[2]);
-
-    for (size_t i = 0; i < this->mesh.size(); i += 8) { // Each vertex has 8 values ​​(xyz + normals + uv)
-        float x = this->mesh[i];
-        float y = this->mesh[i + 1];
-        float z = this->mesh[i + 2];
-
-        // If we find a vertex with a higher y value, we select it as the new pmax
-        if (y > exactPmax.y ||
-            (y == exactPmax.y && x > exactPmax.x) ||
-            (y == exactPmax.y && x == exactPmax.x && z > exactPmax.z)) {
-            exactPmax = glm::vec3(x, y, z);
-        }
-    }
-
-    this->pMax = exactPmax;
+std::pair<glm::vec3, glm::vec3> GameObjectCustom::GetBoundingBox() const {
+    return { this->minBounds, this->maxBounds };
 }

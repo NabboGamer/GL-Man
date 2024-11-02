@@ -40,6 +40,9 @@ void GameObjectFromModel::Draw() {
     for (size_t i = 0; i < this->numInstances; i++) {
         glm::mat4 model = glm::mat4(1.0f);
 
+        // Translation to exactly position the pmin vertex at the origin
+        model = glm::translate(model, -this->GetBoundingBox().first);
+
         model = glm::translate(model, this->positions[i]);
 
         float angle = glm::atan(this->directions[i].x, this->directions[i].z);
@@ -59,4 +62,8 @@ void GameObjectFromModel::Draw() {
     //this->shader->SetFloat("material.shininess", 1.0f);
 
     this->model->Draw(*this->shader, this->numInstances);
+}
+
+std::pair<glm::vec3, glm::vec3> GameObjectFromModel::GetBoundingBox() const {
+    return this->model->GetBoundingBox();
 }

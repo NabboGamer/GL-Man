@@ -103,14 +103,13 @@ void Game::Init() {
     this->level = 0;
 
     /// Configure Game Objects
-    std::vector<glm::vec3> modelPositions  = { glm::vec3(5.0, 0.0, 5.0) };
-    std::vector<glm::vec3> modelDirections = { glm::vec3(1.0, 0.0, 0.0)};
-    std::vector<float>     modelRotations  = { 135.0f };
+    std::vector<glm::vec3> modelPositions  = { glm::vec3(0.0, 0.0, 0.0) };
+    std::vector<glm::vec3> modelDirections = { glm::vec3(0.0, 0.0, 1.0)};
+    std::vector<float>     modelRotations  = { 0.0f };
     std::vector<glm::vec3> modelScaling    = { glm::vec3(1.0f)};
 
     ResourceManager::GetShader("modelShader").Use();
     ResourceManager::LoadModel("../res/objects/powerup/coin/coin.obj", "model");
-    //ResourceManager::LoadModel("../res/objects/asteroid/asteroid.obj", "model");
     player = new GameObjectFromModel(modelPositions,
                                      modelDirections,
                                      modelRotations,

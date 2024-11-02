@@ -1,6 +1,6 @@
 #include "Model.hpp"
 
-Model::Model(string const& path, bool gamma) : gammaCorrection(gamma) {
+Model::Model(string const& path, bool gamma) : gammaCorrection(gamma), minBounds(FLT_MAX), maxBounds(-FLT_MAX) {
     loadModel(path);
 }
 
@@ -36,7 +36,20 @@ void Model::processNode(aiNode* node, const aiScene* scene) {
         // the node object only contains indices to index the actual objects in the scene. 
         // the scene contains all the data, node is just to keep stuff organized (like relations between nodes).
         aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-        meshes.push_back(processMesh(mesh, scene));
+        Mesh processedMesh = processMesh(mesh, scene);
+
+        // Aggiornamento globale della bounding box con i vertici della mesh
+        for (const auto& vertex : processedMesh.vertices) {
+            this->minBounds.x = std::min(this->minBounds.x, vertex.Position.x);
+            this->minBounds.y = std::min(this->minBounds.y, vertex.Position.y);
+            this->minBounds.z = std::min(this->minBounds.z, vertex.Position.z);
+
+            this->maxBounds.x = std::max(this->maxBounds.x, vertex.Position.x);
+            this->maxBounds.y = std::max(this->maxBounds.y, vertex.Position.y);
+            this->maxBounds.z = std::max(this->maxBounds.z, vertex.Position.z);
+        }
+
+        meshes.push_back(processedMesh);
     }
     // after we've processed all of the meshes (if any) we then recursively process each of the children nodes
     for (unsigned int i = 0; i < node->mNumChildren; i++) {
@@ -198,4 +211,8 @@ unsigned int Model::TextureFromFile(const char* path, const string& directory, b
     }
 
     return textureID;
+}
+
+std::pair<glm::vec3, glm::vec3> Model::GetBoundingBox() const {
+    return { this->minBounds, this->maxBounds };
 }

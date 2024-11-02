@@ -7,8 +7,8 @@
 #include "GameObjectBase.hpp"
 
 
-// GameLevel holds all GameObject as part of a Breakout level and 
-// hosts functionality to load/render levels from the harddisk.
+// GameLevel holds all GameObject as part of a GLMan level and 
+// hosts functionality to load/render levels from the hard disk.
 class GameLevel {
 
 public:

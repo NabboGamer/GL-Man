@@ -31,6 +31,9 @@ public:
     // Pure virtual method that forces subclasses to implement their own Draw method
     virtual void Draw() = 0;
 
+    // Pure virtual method that forces subclasses to implement their own GetBoundingBox method
+    virtual std::pair<glm::vec3, glm::vec3> GetBoundingBox() const = 0;
+
 protected:
     size_t numInstances;
 
