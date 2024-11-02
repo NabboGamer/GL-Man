@@ -64,16 +64,16 @@ void Game::Init() {
     // Insert uniform variable in fragment shader(only global variables, i.e. the same for all shaders)
     ResourceManager::GetShader("mazeWallShader").Use().SetVector3f("viewPos", cameraPos);
     ResourceManager::GetShader("mazeWallShader").Use().SetVector3f("dirLight.direction", glm::normalize(cameraAt - cameraPos));
-    ResourceManager::GetShader("mazeWallShader").Use().SetVector3f("dirLight.ambient", glm::vec3(0.5f, 0.5f, 0.5f));
-    ResourceManager::GetShader("mazeWallShader").Use().SetVector3f("dirLight.diffuse", glm::vec3(0.6f, 0.6f, 0.6f));
-    ResourceManager::GetShader("mazeWallShader").Use().SetVector3f("dirLight.specular", glm::vec3(0.5f, 0.5f, 0.5f));
-    ResourceManager::GetShader("mazeWallShader").Use().SetFloat("material.shininess", 1.0f);
+    ResourceManager::GetShader("mazeWallShader").Use().SetVector3f("dirLight.ambient", glm::vec3(0.4f, 0.4f, 0.4f));
+    ResourceManager::GetShader("mazeWallShader").Use().SetVector3f("dirLight.diffuse", glm::vec3(0.5f, 0.5f, 0.5f));
+    ResourceManager::GetShader("mazeWallShader").Use().SetVector3f("dirLight.specular", glm::vec3(0.2f, 0.2f, 0.2f));
+    ResourceManager::GetShader("mazeWallShader").Use().SetFloat("material.shininess", 8.0f);
     ResourceManager::GetShader("mazeFloorShader").Use().SetVector3f("viewPos", cameraPos);
     ResourceManager::GetShader("mazeFloorShader").Use().SetVector3f("dirLight.direction", glm::normalize(cameraAt - cameraPos));
-    ResourceManager::GetShader("mazeFloorShader").Use().SetVector3f("dirLight.ambient", glm::vec3(0.5f, 0.5f, 0.5f));
-    ResourceManager::GetShader("mazeFloorShader").Use().SetVector3f("dirLight.diffuse", glm::vec3(0.6f, 0.6f, 0.6f));
-    ResourceManager::GetShader("mazeFloorShader").Use().SetVector3f("dirLight.specular", glm::vec3(0.5f, 0.5f, 0.5f));
-    ResourceManager::GetShader("mazeFloorShader").Use().SetFloat("material.shininess", 1.0f);
+    ResourceManager::GetShader("mazeFloorShader").Use().SetVector3f("dirLight.ambient", glm::vec3(0.4f, 0.4f, 0.4f));
+    ResourceManager::GetShader("mazeFloorShader").Use().SetVector3f("dirLight.diffuse", glm::vec3(0.5f, 0.5f, 0.5f));
+    ResourceManager::GetShader("mazeFloorShader").Use().SetVector3f("dirLight.specular", glm::vec3(0.2f, 0.2f, 0.2f));
+    ResourceManager::GetShader("mazeFloorShader").Use().SetFloat("material.shininess", 8.0f);
     ResourceManager::GetShader("dotShader").Use().SetVector3f("viewPos", cameraPos);
     ResourceManager::GetShader("dotShader").Use().SetVector3f("dirLight.direction", glm::normalize(cameraAt - cameraPos));
     ResourceManager::GetShader("dotShader").Use().SetVector3f("dirLight.ambient", glm::vec3(0.3f, 0.3f, 0.3f));
@@ -105,6 +105,7 @@ void Game::Init() {
     this->level = 0;
 
     /// Configure Game Objects
+
     // audio
     //SoundEngine->play2D(FileSystem::getPath("resources/audio/breakout.mp3").c_str(), true);
 }
