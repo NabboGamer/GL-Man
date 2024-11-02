@@ -97,12 +97,6 @@
     <None Include="shaders\mazeWall.vs">
       <Filter>Resource Files\Shaders</Filter>
     </None>
-    <None Include="shaders\model.fs">
-      <Filter>Resource Files\Shaders</Filter>
-    </None>
-    <None Include="shaders\model.vs">
-      <Filter>Resource Files\Shaders</Filter>
-    </None>
     <None Include="shaders\mazeFloor.fs">
       <Filter>Resource Files\Shaders</Filter>
     </None>

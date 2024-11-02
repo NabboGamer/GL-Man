@@ -4,6 +4,7 @@
 #include "GameLevel.hpp"
 #include "ResourceManager.hpp"
 #include "GameObjectCustom.hpp"
+#include "GameObjectFromModel.hpp"
 
 std::vector<float> cube_mesh = {
     // Front face (z = +0.5)
@@ -179,7 +180,7 @@ void GameLevel::init(std::vector<std::vector<unsigned int>> wallData) {
                 // Dot
                 if (x + 1 < height && z + 1 < width) { // Checking the limits to avoid exceeding the array
                     if (wallData[x][z + 1] == 2 && wallData[x + 1][z] == 2 && wallData[x + 1][z + 1] == 2) {
-                        glm::vec3 position = glm::vec3(static_cast<float>(height - (x + 1)) - 0.5f, 0.2f, static_cast<float>(z) + 0.5f);
+                        glm::vec3 position = glm::vec3(static_cast<float>(height - (x + 1)) - 0.5f, -0.75f, static_cast<float>(z));
                         this->dotPositions.push_back(position);
                     }
                 }
@@ -190,7 +191,7 @@ void GameLevel::init(std::vector<std::vector<unsigned int>> wallData) {
                 // Energizer
                 if (x + 1 < height && z + 1 < width) { // Checking the limits to avoid exceeding the array
                     if (wallData[x][z + 1] == 3 && wallData[x + 1][z] == 3 && wallData[x + 1][z + 1] == 3) {
-                        glm::vec3 position = glm::vec3(static_cast<float>(height - (x + 1)) - 0.5f, 0.4f, static_cast<float>(z) + 0.5f);
+                        glm::vec3 position = glm::vec3(static_cast<float>(height - (x + 1)) - 0.5f, -0.5f, static_cast<float>(z));
                         this->energizerPositions.push_back(position);
                     }
                 }
@@ -228,28 +229,24 @@ void GameLevel::init(std::vector<std::vector<unsigned int>> wallData) {
                                            &ResourceManager::GetTexture("mazeFloorSpecularTexture"));
 
     size_t numInstancesDot = this->dotPositions.size();
-    std::vector<glm::vec3> dotDirections(numInstancesDot, glm::vec3(1.0f, 0.0f, 0.0f));
+    std::vector<glm::vec3> dotDirections(numInstancesDot, glm::vec3(0.0f, 0.0f, 1.0f));
     std::vector<float>     dotRotations(numInstancesDot, 0.0f);
     std::vector<glm::vec3> dotScaling(numInstancesDot, glm::vec3(0.25f));
-    this->dot = new GameObjectCustom(this->dotPositions,
-                                     dotDirections,
-                                     dotRotations,
-                                     dotScaling,
-                                     &ResourceManager::GetShader("dotShader"),
-                                     cube_mesh,
-                                     &ResourceManager::GetTexture("dotDiffuseTexture"),
-                                     &ResourceManager::GetTexture("dotSpecularTexture"));
+    this->dot = new GameObjectFromModel(this->dotPositions,
+                                        dotDirections,
+                                        dotRotations,
+                                        dotScaling,
+                                        &ResourceManager::GetShader("dotShader"),
+                                        &ResourceManager::GetModel("dotModel"));
 
     size_t numInstancesEnergizer = this->energizerPositions.size();
     std::vector<glm::vec3> energizerDirections(numInstancesEnergizer, glm::vec3(0.0f, 0.0f, 1.0f));
     std::vector<float>     energizerRotations(numInstancesEnergizer, 0.0f);
     std::vector<glm::vec3> energizerScaling(numInstancesEnergizer, glm::vec3(0.5f));
-    this->energizer = new GameObjectCustom(this->energizerPositions,
-                                           energizerDirections,
-                                           energizerRotations,
-                                           energizerScaling,
-                                           &ResourceManager::GetShader("dotShader"),
-                                           cube_mesh,
-                                           &ResourceManager::GetTexture("dotDiffuseTexture"),
-                                           &ResourceManager::GetTexture("dotSpecularTexture"));
+    this->energizer = new GameObjectFromModel(this->energizerPositions,
+                                              energizerDirections,
+                                              energizerRotations,
+                                              energizerScaling,
+                                              &ResourceManager::GetShader("energizerShader"),
+                                              &ResourceManager::GetModel("energizerModel"));
 }

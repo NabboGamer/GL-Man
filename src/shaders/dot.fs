@@ -1,6 +1,4 @@
 #version 330 core
-// For the maze wall, being a hand-built object, it is very complex to implement Normal Mapping. 
-// Since it requires manually calculating the tangent and bitangent vectors for each point that makes up the mesh.
 
 out vec4 FragColor;
 
@@ -26,11 +24,22 @@ uniform vec3 viewPos;
 uniform DirLight dirLight;
 uniform Material material;
 
+// Flag to indicate whether to use textures
+uniform bool useTextures;
+
+// Colors for material when textures are not available
+uniform vec3 ambientColor;
+uniform vec3 diffuseColor;
+uniform vec3 specularColor;
+
+// Textures
+uniform sampler2D texture_diffuse1;
+uniform sampler2D texture_specular1;
+
 // function prototypes
 vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir);
 
 void main() {    
-    // properties
     vec3 norm = normalize(Normal);
     vec3 viewDir = normalize(viewPos - FragPos);
     
@@ -43,28 +52,25 @@ void main() {
 // calculates the color when using a directional light.
 vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir) {
     vec3 lightDir = normalize(-light.direction);
-    
     // diffuse shading
     float diff = max(dot(normal, lightDir), 0.0);
-    
     // specular shading
     vec3 reflectDir = reflect(-lightDir, normal);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
     
-    // Read the roughness from texture_specular1 and invert to get the specularity
-    // Load only the red roughness channel because, by convention, roughness and 
-    // specularity textures are often grayscale images. This means that all channels 
-    // (red, green, and blue) contain the same value, representing the intensity of 
-    // roughness or specularity uniformly(optimization).
-    float roughness = texture(material.specular, TexCoords).r;
-    // Specularity is the inverse of Roughness
-    float specularStrength = 1.0 - roughness;
-    
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess) * specularStrength;
-    
+    vec3 ambient, diffuse, specular;
     // combine results
-    vec3 ambient = light.ambient  * vec3(texture(material.diffuse, TexCoords));
-    vec3 diffuse = light.diffuse * diff  * vec3(texture(material.diffuse, TexCoords));
-    vec3 specular = light.specular * spec;
+    if (useTextures) {
+        // Use textures for components
+        ambient = light.ambient * vec3(texture(texture_diffuse1, TexCoords));
+        diffuse = light.diffuse * diff * vec3(texture(texture_diffuse1, TexCoords));
+        specular = light.specular * spec * vec3(texture(texture_specular1, TexCoords));
+    } else {
+        // Use uniform colors for components
+        ambient = light.ambient * ambientColor;
+        diffuse = light.diffuse * diff * diffuseColor;
+        specular = light.specular * spec * specularColor;
+    }
     
     return (ambient + diffuse + specular);
 }

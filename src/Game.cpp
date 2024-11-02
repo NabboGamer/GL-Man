@@ -39,7 +39,7 @@ void Game::Init() {
     ResourceManager::LoadShader("shaders/mazeWall.vs", "shaders/mazeWall.fs", nullptr, "mazeWallShader");
     ResourceManager::LoadShader("shaders/mazeFloor.vs", "shaders/mazeFloor.fs", nullptr, "mazeFloorShader");
     ResourceManager::LoadShader("shaders/dot.vs", "shaders/dot.fs", nullptr, "dotShader");
-    ResourceManager::LoadShader("shaders/model.vs", "shaders/model.fs", nullptr, "modelShader");
+    ResourceManager::LoadShader("shaders/dot.vs", "shaders/dot.fs", nullptr, "energizerShader");
     /*ResourceManager::LoadShader("particle.vs", "particle.fs", nullptr, "particle");
     ResourceManager::LoadShader("post_processing.vs", "post_processing.fs", nullptr, "postprocessing");*/
 
@@ -59,8 +59,8 @@ void Game::Init() {
     ResourceManager::GetShader("mazeFloorShader").Use().SetMatrix4("projection", projection);
     ResourceManager::GetShader("dotShader").Use().SetMatrix4("view", view);
     ResourceManager::GetShader("dotShader").Use().SetMatrix4("projection", projection);
-    ResourceManager::GetShader("modelShader").Use().SetMatrix4("view", view);
-    ResourceManager::GetShader("modelShader").Use().SetMatrix4("projection", projection);
+    ResourceManager::GetShader("energizerShader").Use().SetMatrix4("view", view);
+    ResourceManager::GetShader("energizerShader").Use().SetMatrix4("projection", projection);
     // Insert uniform variable in fragment shader(only global variables, i.e. the same for all shaders)
     ResourceManager::GetShader("mazeWallShader").Use().SetVector3f("viewPos", cameraPos);
     ResourceManager::GetShader("mazeWallShader").Use().SetVector3f("dirLight.direction", glm::normalize(cameraAt - cameraPos));
@@ -76,16 +76,16 @@ void Game::Init() {
     ResourceManager::GetShader("mazeFloorShader").Use().SetFloat("material.shininess", 1.0f);
     ResourceManager::GetShader("dotShader").Use().SetVector3f("viewPos", cameraPos);
     ResourceManager::GetShader("dotShader").Use().SetVector3f("dirLight.direction", glm::normalize(cameraAt - cameraPos));
-    ResourceManager::GetShader("dotShader").Use().SetVector3f("dirLight.ambient", glm::vec3(0.5f, 0.5f, 0.5f));
-    ResourceManager::GetShader("dotShader").Use().SetVector3f("dirLight.diffuse", glm::vec3(0.6f, 0.6f, 0.6f));
-    ResourceManager::GetShader("dotShader").Use().SetVector3f("dirLight.specular", glm::vec3(0.5f, 0.5f, 0.5f));
-    ResourceManager::GetShader("dotShader").Use().SetFloat("material.shininess", 1.0f);
-    ResourceManager::GetShader("modelShader").Use().SetVector3f("viewPos", cameraPos);
-    ResourceManager::GetShader("modelShader").Use().SetVector3f("dirLight.direction", glm::normalize(cameraAt - cameraPos));
-    ResourceManager::GetShader("modelShader").Use().SetVector3f("dirLight.ambient", glm::vec3(0.3f, 0.3f, 0.3f));
-    ResourceManager::GetShader("modelShader").Use().SetVector3f("dirLight.diffuse", glm::vec3(0.7f, 0.7f, 0.7f));
-    ResourceManager::GetShader("modelShader").Use().SetVector3f("dirLight.specular", glm::vec3(0.2f, 0.2f, 0.2f));
-    ResourceManager::GetShader("modelShader").Use().SetFloat("material.shininess", 32.0f);
+    ResourceManager::GetShader("dotShader").Use().SetVector3f("dirLight.ambient", glm::vec3(0.3f, 0.3f, 0.3f));
+    ResourceManager::GetShader("dotShader").Use().SetVector3f("dirLight.diffuse", glm::vec3(0.7f, 0.7f, 0.7f));
+    ResourceManager::GetShader("dotShader").Use().SetVector3f("dirLight.specular", glm::vec3(0.2f, 0.2f, 0.2f));
+    ResourceManager::GetShader("dotShader").Use().SetFloat("material.shininess", 32.0f);
+    ResourceManager::GetShader("energizerShader").Use().SetVector3f("viewPos", cameraPos);
+    ResourceManager::GetShader("energizerShader").Use().SetVector3f("dirLight.direction", glm::normalize(cameraAt - cameraPos));
+    ResourceManager::GetShader("energizerShader").Use().SetVector3f("dirLight.ambient", glm::vec3(0.3f, 0.3f, 0.3f));
+    ResourceManager::GetShader("energizerShader").Use().SetVector3f("dirLight.diffuse", glm::vec3(0.7f, 0.7f, 0.7f));
+    ResourceManager::GetShader("energizerShader").Use().SetVector3f("dirLight.specular", glm::vec3(0.2f, 0.2f, 0.2f));
+    ResourceManager::GetShader("energizerShader").Use().SetFloat("material.shininess", 32.0f);
 
 
     /// Load Textures
@@ -93,8 +93,10 @@ void Game::Init() {
     ResourceManager::LoadTexture(FileSystem::getPath("../res/textures/wall_specular_1k.png").c_str(), "mazeWallSpecularTexture");
     ResourceManager::LoadTexture(FileSystem::getPath("../res/textures/floor_diffuse_1k.png").c_str(), "mazeFloorDiffuseTexture");
     ResourceManager::LoadTexture(FileSystem::getPath("../res/textures/floor_specular_1k.png").c_str(), "mazeFloorSpecularTexture");
-    ResourceManager::LoadTexture(FileSystem::getPath("../res/textures/dot_diffuse_4k.jpeg").c_str(), "dotDiffuseTexture");
-    ResourceManager::LoadTexture(FileSystem::getPath("../res/textures/dot_specular_4k.jpeg").c_str(), "dotSpecularTexture");
+
+    /// Load Models
+    ResourceManager::LoadModel("../res/objects/powerup/coin/coin.obj", "dotModel");
+    ResourceManager::LoadModel("../res/objects/powerup/coin/coin.obj", "energizerModel");
 
     /// Load Levels
     GameLevel levelOne;
@@ -103,19 +105,6 @@ void Game::Init() {
     this->level = 0;
 
     /// Configure Game Objects
-    std::vector<glm::vec3> modelPositions  = { glm::vec3(0.0, 0.0, 0.0) };
-    std::vector<glm::vec3> modelDirections = { glm::vec3(0.0, 0.0, 1.0)};
-    std::vector<float>     modelRotations  = { 0.0f };
-    std::vector<glm::vec3> modelScaling    = { glm::vec3(1.0f)};
-
-    ResourceManager::GetShader("modelShader").Use();
-    ResourceManager::LoadModel("../res/objects/powerup/coin/coin.obj", "model");
-    player = new GameObjectFromModel(modelPositions,
-                                     modelDirections,
-                                     modelRotations,
-                                     modelScaling, 
-                                     &ResourceManager::GetShader("modelShader"),
-                                     &ResourceManager::GetModel("model"));
     // audio
     //SoundEngine->play2D(FileSystem::getPath("resources/audio/breakout.mp3").c_str(), true);
 }
@@ -226,9 +215,9 @@ void Game::Render() {
         //    // draw background
         //    Renderer->DrawSprite(ResourceManager::GetTexture("background"), glm::vec2(0.0f, 0.0f), glm::vec2(this->Width, this->Height), 0.0f);
         //    // draw level
-        //this->Levels[this->level].Draw();
+        this->Levels[this->level].Draw();
             // draw player
-        player->Draw();
+        //player->Draw();
         //    // draw PowerUps
         //    for (PowerUp &powerUp : this->PowerUps)
         //        if (!powerUp.Destroyed)
