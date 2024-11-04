@@ -45,10 +45,10 @@ void GameObjectFromModel::Draw() {
 
         model = glm::translate(model, this->positions[i]);
 
+        model = glm::rotate(model, glm::radians(this->rotations[i]), glm::vec3(0.0f, 1.0f, 0.0f));
+
         float angle = glm::atan(this->directions[i].x, this->directions[i].z);
         model = glm::rotate(model, angle, glm::vec3(0.0f, 1.0f, 0.0f));
-
-        model = glm::rotate(model, this->rotations[i], glm::vec3(0.0f, 1.0f, 0.0f));
 
         model = glm::scale(model, this->scaling[i]);
 
