@@ -37,14 +37,17 @@ public:
     vector<unsigned int> indices;
     vector<Texture>      textures;
     unsigned int		   VAO;
-    glm::vec3 ambientColor  = glm::vec3(1.0f); // Ka, ambient color
-    glm::vec3 diffuseColor  = glm::vec3(1.0f); // Kd, diffusive color
-    glm::vec3 specularColor = glm::vec3(0.5f); // Ks, specular color
-    bool hasTextureDiffuse  = false;           // Flag to check if there is a texture
+    glm::vec3 ambientColor;     // Ka, ambient color
+    glm::vec3 diffuseColor;     // Kd, diffusive color
+    glm::vec3 specularColor;    // Ks, specular color
+    bool hasAmbientTexture;     // Flag to check if there is a texture
+    bool hasDiffuseTexture;     // Flag to check if there is a texture
+    bool hasSpecularTexture;     // Flag to check if there is a texture
     
     // constructor
     Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<Texture> textures,
-         glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular, bool hasDiffuseTexture);
+         glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular, bool hasAmbientTexture,
+         bool hasDiffuseTexture, bool hasSpecularTexture);
     ~Mesh();
      
     // render the mesh

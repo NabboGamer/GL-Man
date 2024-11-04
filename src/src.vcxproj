@@ -172,6 +172,8 @@
     <None Include="shaders\mazeFloor.vs" />
     <None Include="shaders\mazeWall.fs" />
     <None Include="shaders\mazeWall.vs" />
+    <None Include="shaders\pacman.fs" />
+    <None Include="shaders\pacman.vs" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

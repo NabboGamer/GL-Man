@@ -9,6 +9,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.500000
 d 1.000000
 illum 3
+map_Ka prova.png
 map_Kd prova.png
-map_refl prova_roughness.png
+map_Ks prova_roughness.png
 map_Bump -bm 0.100000 prova_normali.png
