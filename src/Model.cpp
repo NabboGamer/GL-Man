@@ -1,4 +1,5 @@
 #include "Model.hpp"
+#include "LoggerManager.hpp"
 
 Model::Model(string const& path, bool gamma) : gammaCorrection(gamma), minBounds(FLT_MAX), maxBounds(-FLT_MAX) {
     loadModel(path);
@@ -20,7 +21,7 @@ void Model::loadModel(string const& path) {
     const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
     // check for errors
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
-        cout << "ERROR::ASSIMP:: " << importer.GetErrorString() << endl;
+        LoggerManager::LogError("ASSIMP {}", importer.GetErrorString());
         return;
     }
     // retrieve the directory path of the filepath
@@ -122,16 +123,21 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene) {
     aiString materialName;
     aiReturn ret;
     ret = material->Get(AI_MATKEY_NAME, materialName);
-    std::cout << "Mesh Material: " << materialName.C_Str() << std::endl;
+    
+    LoggerManager::LogDebug("Mesh Material: {}", materialName.C_Str());
     aiColor3D color;
+    glm::vec3 vecColor;
     if (AI_SUCCESS == material->Get(AI_MATKEY_COLOR_AMBIENT, color))
-        std::cout << "Ka=" << "("<< glm::vec3(color.r, color.g, color.b).x << ","<< glm::vec3(color.r, color.g, color.b).y << "," << glm::vec3(color.r, color.g, color.b).z << ")" << std::endl;
+        vecColor = glm::vec3(color.r, color.g, color.b);
+        LoggerManager::LogDebug("Ka=({},{},{})", vecColor.x ,vecColor.y ,vecColor.z);
     if (AI_SUCCESS == material->Get(AI_MATKEY_COLOR_DIFFUSE, color))
-        std::cout << "Kd=" << "(" << glm::vec3(color.r, color.g, color.b).x << "," << glm::vec3(color.r, color.g, color.b).y << "," << glm::vec3(color.r, color.g, color.b).z << ")" << std::endl;
+        vecColor = glm::vec3(color.r, color.g, color.b);
+    LoggerManager::LogDebug("Kd=({},{},{})", vecColor.x, vecColor.y, vecColor.z);
     if (AI_SUCCESS == material->Get(AI_MATKEY_COLOR_SPECULAR, color))
-        std::cout << "Ks=" << "(" << glm::vec3(color.r, color.g, color.b).x << "," << glm::vec3(color.r, color.g, color.b).y << "," << glm::vec3(color.r, color.g, color.b).z << ")" << std::endl;
+        vecColor = glm::vec3(color.r, color.g, color.b);
+        LoggerManager::LogDebug("Ks=({},{},{})", vecColor.x, vecColor.y, vecColor.z);
 
-    glm::vec3 ambientColor(1.0f), diffuseColor(1.0f), specularColor(0.5f);
+    glm::vec3 ambientColor(1.0f), diffuseColor(1.0f), specularColor(1.0f);
     bool hasAmbientTexture = false;
     bool hasDiffuseTexture = false;
     bool hasSpecularTexture = false;
@@ -185,12 +191,11 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene) {
         }
             
     }
-    std::cout << "hasAmbientTexture=" << hasAmbientTexture << std::endl;
-    std::cout << "hasDiffuseTexture=" << hasDiffuseTexture << std::endl;
-    std::cout << "hasSpecularTexture=" << hasSpecularTexture << std::endl;
-    std::cout << "" << std::endl;
 
-
+    LoggerManager::LogDebug("hasAmbientTexture={}",(hasAmbientTexture==true)?"true":"false");
+    LoggerManager::LogDebug("hasDiffuseTexture={}",(hasDiffuseTexture ==true)?"true":"false");
+    LoggerManager::LogDebug("hasSpecularTexture={}",(hasSpecularTexture ==true)?"true":"false");
+    LoggerManager::LogDebug("");
 
     // return a mesh object created from the extracted mesh data
     return Mesh(vertices, indices, textures, ambientColor, diffuseColor, specularColor, hasAmbientTexture, hasDiffuseTexture, hasSpecularTexture);
@@ -251,7 +256,7 @@ unsigned int Model::TextureFromFile(const char* path, const string& directory, b
 
         stbi_image_free(data);
     } else {
-        std::cout << "Texture failed to load at path: " << path << std::endl;
+        LoggerManager::LogError("MODEL: Texture failed to load at path: {}", path);
         stbi_image_free(data);
     }
 

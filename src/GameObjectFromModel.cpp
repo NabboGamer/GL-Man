@@ -67,3 +67,5 @@ void GameObjectFromModel::Draw() {
 std::pair<glm::vec3, glm::vec3> GameObjectFromModel::GetBoundingBox() const {
     return this->model->GetBoundingBox();
 }
+
+///TODO: Scalare rispetto a matrice di modello altrimenti non si adatta

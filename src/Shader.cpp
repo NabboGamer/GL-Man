@@ -1,6 +1,5 @@
 #include "Shader.hpp"
-
-#include <iostream>
+#include "LoggerManager.hpp"
 
 Shader &Shader::Use(){
     glUseProgram(this->id);
@@ -101,6 +100,10 @@ void Shader::SetMatrix4(const char *name, const glm::mat4 &matrix, bool useShade
     glUniformMatrix4fv(glGetUniformLocation(this->id, name), 1, false, glm::value_ptr(matrix));
 }
 
+void removeNewlines(std::string& str) {
+    str.erase(std::remove(str.begin(), str.end(), '\n'), str.end());
+    str.erase(std::remove(str.begin(), str.end(), '\r'), str.end());
+}
 
 void Shader::checkCompileErrors(unsigned int object, std::string type) {
     int success;
@@ -109,17 +112,23 @@ void Shader::checkCompileErrors(unsigned int object, std::string type) {
         glGetShaderiv(object, GL_COMPILE_STATUS, &success);
         if (!success) {
             glGetShaderInfoLog(object, 1024, NULL, infoLog);
-            std::cout << "| ERROR::SHADER: Compile-time error: Type: " << type << "\n"
-                << infoLog << "\n -- --------------------------------------------------- -- "
-                << std::endl;
+            std::string infoLogStr(infoLog);
+            removeNewlines(infoLogStr);
+            LoggerManager::LogError("-------------------------------------------------------");
+            LoggerManager::LogError("Compile-time error: Type: {}", type);
+            LoggerManager::LogError("{}", infoLogStr);
+            LoggerManager::LogError("-------------------------------------------------------");
         }
     } else {
         glGetProgramiv(object, GL_LINK_STATUS, &success);
         if (!success) {
             glGetProgramInfoLog(object, 1024, NULL, infoLog);
-            std::cout << "| ERROR::Shader: Link-time error: Type: " << type << "\n"
-                << infoLog << "\n -- --------------------------------------------------- -- "
-                << std::endl;
+            std::string infoLogStr(infoLog);
+            removeNewlines(infoLogStr);
+            LoggerManager::LogError("-------------------------------------------------------");
+            LoggerManager::LogError("Link-time error: Type: {} ", type);
+            LoggerManager::LogError("{} ", infoLogStr);
+            LoggerManager::LogError("-------------------------------------------------------");
         }
     }
 }

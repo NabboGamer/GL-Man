@@ -40,9 +40,9 @@ public:
     glm::vec3 ambientColor;     // Ka, ambient color
     glm::vec3 diffuseColor;     // Kd, diffusive color
     glm::vec3 specularColor;    // Ks, specular color
-    bool hasAmbientTexture;     // Flag to check if there is a texture
-    bool hasDiffuseTexture;     // Flag to check if there is a texture
-    bool hasSpecularTexture;     // Flag to check if there is a texture
+    bool hasAmbientTexture;     // Flag to check if there is an ambient texture
+    bool hasDiffuseTexture;     // Flag to check if there is a diffuse texture
+    bool hasSpecularTexture;    // Flag to check if there is a specular texture
     
     // constructor
     Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<Texture> textures,

@@ -1,9 +1,9 @@
-#include <iostream>
 #include <sstream>
 #include <fstream>
 
 #include "ResourceManager.hpp"
 #include "Filesystem.hpp"
+#include "LoggerManager.hpp"
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
@@ -77,7 +77,7 @@ Shader ResourceManager::loadShaderFromFile(const char *vShaderFile, const char *
             geometryCode = gShaderStream.str();
         }
     } catch (std::exception e) {
-        std::cout << "ERROR::RESOURCEMANAGER: Failed to read shader files" << std::endl;
+        LoggerManager::LogError("RESOURCEMANAGER: Failed to read shader files");
     }
     const char *vShaderCode = vertexCode.c_str();
     const char *fShaderCode = fragmentCode.c_str();
@@ -112,7 +112,7 @@ Texture2D ResourceManager::loadTextureFromFile(const char* file) {
             }
             else {
                 // If all loading fail, report the error and exit
-                std::cerr << "ERROR::RESOURCEMANAGER: Failed to load image file: " << file << std::endl;
+                LoggerManager::LogError("RESOURCEMANAGER: Failed to load image file: {}", file);
                 return texture;
             }
         }
@@ -157,7 +157,7 @@ Texture2D ResourceManager::loadTextureFromFile(const char* file) {
         texture.imageFormat = GL_RGBA;
     }
     else {
-        std::cerr << "ERROR::RESOURCEMANAGER: Unsupported image format: " << nrChannels << " channels." << std::endl;
+        LoggerManager::LogError("RESOURCEMANAGER: Unsupported image format: {} channels", nrChannels);
         stbi_image_free(data);
         return texture;
     }

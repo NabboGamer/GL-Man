@@ -1,9 +1,11 @@
+#include <windows.h>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
 
 #include "Game.hpp"
 #include "ResourceManager.hpp"
+#include "LoggerManager.hpp"
 
 // GLFW function declarations
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -45,6 +47,7 @@ int main() {
 
     // initialize game
     // ---------------
+    LoggerManager::Init();
     GLMan.Init();
 
     // deltaTime variables
@@ -82,6 +85,7 @@ int main() {
     // delete all resources as loaded using the resource manager
     // ---------------------------------------------------------
     ResourceManager::Clear();
+    LoggerManager::Shutdown();
 
     glfwTerminate();
     return 0;

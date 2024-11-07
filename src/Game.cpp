@@ -1,6 +1,6 @@
+#include <windows.h>
 #include <algorithm>
 #include <sstream>
-#include <iostream>
 
 //#include <irrklang/irrKlang.h>
 //using namespace irrklang;
@@ -8,6 +8,7 @@
 #include "Game.hpp"
 #include "FileSystem.hpp"
 #include "ResourceManager.hpp"
+#include "LoggerManager.hpp"
 #include "GameObjectBase.hpp"
 #include "GameObjectCustom.hpp"
 #include "GameObjectFromModel.hpp"
@@ -106,7 +107,7 @@ void Game::Init() {
     /// Load Models
     ResourceManager::LoadModel("../res/objects/powerup/coin/coin.obj", "dotModel");
     ResourceManager::LoadModel("../res/objects/powerup/coin/coin.obj", "energizerModel");
-    ResourceManager::LoadModel("../res/objects/ghosts/blinky_new/blinky.obj", "pacmanModel");
+    ResourceManager::LoadModel("../res/objects/ghosts/blinky_new_new/blinky.obj", "pacmanModel");
 
     /// Load Levels
     GameLevel levelOne;
@@ -115,10 +116,10 @@ void Game::Init() {
     this->level = 0;
 
     /// Configure Game Objects
-    std::vector<glm::vec3> modelPositions  = { glm::vec3(5.0, 0.0, 5.0) };
+    std::vector<glm::vec3> modelPositions  = { glm::vec3(0.0, 0.0, 0.0)};
     std::vector<glm::vec3> modelDirections = { glm::vec3(0.0, 0.0, 1.0) };
     std::vector<float>     modelRotations  = { -90.0f };
-    std::vector<glm::vec3> modelScaling    = { glm::vec3(0.25f) };
+    std::vector<glm::vec3> modelScaling    = { glm::vec3(1.0f) };
 
    
     player = new GameObjectFromModel(modelPositions,

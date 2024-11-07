@@ -1,7 +1,7 @@
-#include <iostream>
 #include <cstdlib>
 
 #include "GameObjectBase.hpp"
+#include "LoggerManager.hpp"
 
 
 GameObjectBase::GameObjectBase(std::vector<glm::vec3> positions, std::vector<glm::vec3> directions, 
@@ -21,10 +21,7 @@ void GameObjectBase::validityCheck() {
         this->numInstances = this->positions.size();
     } else {
         // Set text color to red
-        std::cerr << "\033[31m";
-        std::cerr << "ERROR::GameObjectBase:: The sizes of the initialization vectors passed to the constructor are inconsistent!" << std::endl;
-        // Reset text color to default
-        std::cerr << "\033[0m";
+        LoggerManager::LogFatal("The sizes of the initialization vectors passed to the constructor are inconsistent!");
         exit(1);
     }
 }

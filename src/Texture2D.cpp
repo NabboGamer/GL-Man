@@ -1,6 +1,6 @@
-#include <iostream>
-
+#include "LoggerManager.hpp"
 #include "Texture2D.hpp"
+
 
 
 Texture2D::Texture2D() : width(0), height(0), internalFormat(GL_RGB), imageFormat(GL_RGB), wrapS(GL_REPEAT), wrapT(GL_REPEAT), filterMin(GL_LINEAR), filterMax(GL_LINEAR) {
@@ -28,7 +28,7 @@ void Texture2D::Generate(unsigned int width, unsigned int height, unsigned char*
     // Check for any OpenGL errors during texture creation
     GLenum error = glGetError();
     if (error != GL_NO_ERROR) {
-        std::cerr << "ERROR::TEXTURE2D: " << error << std::endl;
+        LoggerManager::LogError("TEXTURE2D: {}", error);
     }
 
     // Sets wrap and filter modes, with fallback values
@@ -40,7 +40,7 @@ void Texture2D::Generate(unsigned int width, unsigned int height, unsigned char*
     // Check for OpenGL errors when setting parameters
     error = glGetError();
     if (error != GL_NO_ERROR) {
-        std::cerr << "ERROR::TEXTURE2D: " << error << std::endl;
+        LoggerManager::LogError("TEXTURE2D: {}", error);
     }
 
     // Unbind the texture
