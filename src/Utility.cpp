@@ -6,7 +6,7 @@ Utility::Utility() {
 }
 
 float Utility::approximateFloatToSixDecimals(float value) {
-    float roundedValue = std::round(value * 1e6) / 1e6;
+    float roundedValue = static_cast<float>(std::round(value * 1e6) / 1e6);
     // If the value is close to zero (positive or negative), let's approximate it to zero
     return (std::abs(roundedValue) < 1e-6f) ? 0.0f : roundedValue;
 }
