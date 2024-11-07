@@ -10,8 +10,16 @@ GameObjectCustom::GameObjectCustom(std::vector<glm::vec3> positions, std::vector
 	            : GameObjectBase(positions, directions, rotations, scaling, shader), 
                   mesh(mesh), diffuseTexture(diffuseTexture), specularTexture(specularTexture), 
                   minBounds(FLT_MAX), maxBounds(-FLT_MAX) {
-	this->initRenderData();
+
     this->calculateBoundingBox();
+
+    // Calculate the original bounding box
+    auto [minBounds, maxBounds] = this->GetBoundingBox();
+
+    // Calculate the offset to center pmin at the origin
+    this->centerOffset = -minBounds;
+
+    this->initRenderData();
 }
 
 GameObjectCustom::~GameObjectCustom() {
@@ -53,12 +61,10 @@ void GameObjectCustom::initRenderData() {
 
 void GameObjectCustom::Draw() {
     this->shader->Use();
+
     std::vector<glm::mat4> modelMatrices(this->numInstances, glm::mat4(1.0f));
     for (size_t i = 0; i < this->numInstances; i++) {
         glm::mat4 model = glm::mat4(1.0f);
-
-        // Translation to exactly position the pmin vertex at the origin
-        model = glm::translate(model, -this->GetBoundingBox().first);
 
         model = glm::translate(model, this->positions[i]);
 
@@ -68,6 +74,9 @@ void GameObjectCustom::Draw() {
         model = glm::rotate(model, angle, glm::vec3(0.0f, 1.0f, 0.0f));
 
         model = glm::scale(model, this->scaling[i]);
+
+        // Apply offset to center pmin at origin
+        model = glm::translate(model, this->centerOffset);
 
         modelMatrices[i] = model;
     }
@@ -121,28 +130,40 @@ std::pair<glm::vec3, glm::vec3> GameObjectCustom::GetBoundingBox() const {
     return { this->minBounds, this->maxBounds };
 }
 
-std::pair<glm::vec3, glm::vec3> GameObjectCustom::GetTransformedBoundingBox(size_t instanceIndex) const {
-    // Get the vertices of the original bounding box
-    auto [minBounds, maxBounds] = this->GetBoundingBox();
-    //LoggerManager::LogDebug("Bounding Box GameObjectCustom {}: pmin({},{},{});pmax({},{},{})", instanceIndex, minBounds.x, minBounds.y, minBounds.z, maxBounds.x, maxBounds.y, maxBounds.z);
+float roundToSixDecimals(float value) {
+    float roundedValue = std::round(value * 1e6) / 1e6;
+    // If the value is close to zero (positive or negative), let's approximate it to zero
+    return (std::abs(roundedValue) < 1e-6f) ? 0.0f : roundedValue;
+}
 
-    // Calculates the model matrix for the specified instance
+// Apply rounding to six decimal places on each component of glm::vec3
+glm::vec3 approximateToSixDecimals(const glm::vec3& vec) {
+    return glm::vec3(
+        roundToSixDecimals(vec.x),
+        roundToSixDecimals(vec.y),
+        roundToSixDecimals(vec.z)
+    );
+}
+
+std::pair<glm::vec3, glm::vec3> GameObjectCustom::GetTransformedBoundingBox(size_t instanceIndex) const {
+    auto [minBounds, maxBounds] = this->GetBoundingBox();
+
     glm::mat4 modelMatrix = glm::mat4(1.0f);
+
+    // Applying Instance Transformation
     modelMatrix = glm::translate(modelMatrix, this->positions[instanceIndex]);
     modelMatrix = glm::rotate(modelMatrix, glm::radians(this->rotations[instanceIndex]), glm::vec3(0.0f, 1.0f, 0.0f));
     float angle = glm::atan(this->directions[instanceIndex].x, this->directions[instanceIndex].z);
     modelMatrix = glm::rotate(modelMatrix, angle, glm::vec3(0.0f, 1.0f, 0.0f));
     modelMatrix = glm::scale(modelMatrix, this->scaling[instanceIndex]);
+    // Apply centering offset
+    modelMatrix = glm::translate(modelMatrix, this->centerOffset);
 
-    // Transform the vertices of the bounding box
     glm::vec3 transformedMin = glm::vec3(modelMatrix * glm::vec4(minBounds, 1.0f));
     glm::vec3 transformedMax = glm::vec3(modelMatrix * glm::vec4(maxBounds, 1.0f));
 
-    // Determine the new minimums and maximums considering all the transformed coordinates
     glm::vec3 finalMin = glm::min(transformedMin, transformedMax);
     glm::vec3 finalMax = glm::max(transformedMin, transformedMax);
 
-    //LoggerManager::LogDebug("Bounding Box GameObjectCustom {} TRANSFORMED: pmin({},{},{});pmax({},{},{})", instanceIndex, finalMin.x, finalMin.y, finalMin.z, finalMax.x, finalMax.y, finalMax.z);
-
-    return { finalMin, finalMax };
+    return { approximateToSixDecimals(finalMin), approximateToSixDecimals(finalMax) };
 }

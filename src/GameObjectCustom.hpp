@@ -34,6 +34,7 @@ private:
     size_t        vertexCount;
     glm::vec3     minBounds; // Minimum coordinates of the bounding box
     glm::vec3     maxBounds; // Maximum coordinates of the bounding box
+    glm::vec3 centerOffset;
 
     void initRenderData();
     void calculateBoundingBox();

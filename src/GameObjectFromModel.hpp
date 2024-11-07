@@ -26,6 +26,7 @@ public:
 
 private:
     unsigned int  instanceVBO;
+    glm::vec3 centerOffset;
 
     void initRenderData();
 

@@ -9,6 +9,7 @@
 #include "FileSystem.hpp"
 #include "ResourceManager.hpp"
 #include "LoggerManager.hpp"
+#include "LoggerManager.hpp"
 #include "GameObjectBase.hpp"
 #include "GameObjectCustom.hpp"
 #include "GameObjectFromModel.hpp"
@@ -18,7 +19,8 @@
 
 
 // Game-related State data
-GameObjectBase*       player;
+GameObjectBase* player;
+GameObjectBase* mazeWall;
 //ParticleGenerator *Particles;
 //PostProcessor     *Effects;
 //ISoundEngine      *SoundEngine = createIrrKlangDevice();
@@ -116,10 +118,10 @@ void Game::Init() {
     this->level = 0;
 
     /// Configure Game Objects
-    std::vector<glm::vec3> modelPositions  = { glm::vec3(0.0, 0.0, 0.0)};
+    std::vector<glm::vec3> modelPositions  = { glm::vec3(1.0, 0.0, 1.0)};
     std::vector<glm::vec3> modelDirections = { glm::vec3(0.0, 0.0, 1.0) };
-    std::vector<float>     modelRotations  = { -90.0f };
-    std::vector<glm::vec3> modelScaling    = { glm::vec3(1.0f) };
+    std::vector<float>     modelRotations  = { 0.0f };
+    std::vector<glm::vec3> modelScaling    = { glm::vec3(0.25f) };
 
    
     player = new GameObjectFromModel(modelPositions,
@@ -128,6 +130,12 @@ void Game::Init() {
                                      modelScaling,
                                      &ResourceManager::GetShader("pacmanShader"),
                                      &ResourceManager::GetModel("pacmanModel"));
+
+
+    auto originalBoundingBox = player->GetBoundingBox();
+    LoggerManager::LogDebug("Bounding Box GameObjectFromModel: pmin({},{},{});pmax({},{},{})", originalBoundingBox.first.x, originalBoundingBox.first.y, originalBoundingBox.first.z, originalBoundingBox.second.x, originalBoundingBox.second.y, originalBoundingBox.second.z);
+    auto transformedBoundingBox = player->GetTransformedBoundingBox(0);
+    LoggerManager::LogDebug("Bounding Box GameObjectFromModel: pmin({},{},{});pmax({},{},{})", transformedBoundingBox.first.x, transformedBoundingBox.first.y, transformedBoundingBox.first.z, transformedBoundingBox.second.x, transformedBoundingBox.second.y, transformedBoundingBox.second.z);
 
     // audio
     //SoundEngine->play2D(FileSystem::getPath("resources/audio/breakout.mp3").c_str(), true);

@@ -32,12 +32,11 @@ public:
     virtual void Draw() = 0;
 
     // Pure virtual method that forces subclasses to implement their own GetBoundingBox method
+    virtual std::pair<glm::vec3, glm::vec3> GetBoundingBox() const = 0;
     virtual std::pair<glm::vec3, glm::vec3> GetTransformedBoundingBox(size_t instanceIndex) const = 0;
 
 protected:
     size_t numInstances;
-
-    virtual std::pair<glm::vec3, glm::vec3> GetBoundingBox() const = 0;
 
 private:
     void validityCheck();

@@ -180,7 +180,7 @@ void GameLevel::init(std::vector<std::vector<unsigned int>> wallData) {
                 // Dot
                 if (x + 1 < height && z + 1 < width) { // Checking the limits to avoid exceeding the array
                     if (wallData[x][z + 1] == 2 && wallData[x + 1][z] == 2 && wallData[x + 1][z + 1] == 2) {
-                        glm::vec3 position = glm::vec3(static_cast<float>(height - (x + 1)) - 0.5f, -0.75f, static_cast<float>(z));
+                        glm::vec3 position = glm::vec3(static_cast<float>(height - (x + 1)) - 0.5f, 0.25f, static_cast<float>(z) + 0.75f);
                         this->dotPositions.push_back(position);
                     }
                 }
@@ -191,7 +191,7 @@ void GameLevel::init(std::vector<std::vector<unsigned int>> wallData) {
                 // Energizer
                 if (x + 1 < height && z + 1 < width) { // Checking the limits to avoid exceeding the array
                     if (wallData[x][z + 1] == 3 && wallData[x + 1][z] == 3 && wallData[x + 1][z + 1] == 3) {
-                        glm::vec3 position = glm::vec3(static_cast<float>(height - (x + 1)) - 0.5f, -0.5f, static_cast<float>(z));
+                        glm::vec3 position = glm::vec3(static_cast<float>(height - (x + 1)) - 0.25f, 0.0f, static_cast<float>(z) + 0.5f);
                         this->energizerPositions.push_back(position);
                     }
                 }
@@ -203,7 +203,7 @@ void GameLevel::init(std::vector<std::vector<unsigned int>> wallData) {
         }
     }
     size_t numInstancesMazeWall = this->mazeWallPositions.size();
-    std::vector<glm::vec3> mazeWallDirections(numInstancesMazeWall, glm::vec3(1.0f, 0.0f, 0.0f));
+    std::vector<glm::vec3> mazeWallDirections(numInstancesMazeWall, glm::vec3(0.0f, 0.0f, 1.0f));
     std::vector<float>     mazeWallRotations(numInstancesMazeWall, 0.0f);
     std::vector<glm::vec3> mazeWallScaling(numInstancesMazeWall, glm::vec3(1.0f));
     this->mazeWall = new GameObjectCustom(this->mazeWallPositions,
