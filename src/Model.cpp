@@ -1,3 +1,5 @@
+#include <windows.h>
+
 #include "Model.hpp"
 #include "LoggerManager.hpp"
 
@@ -132,7 +134,7 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene) {
         LoggerManager::LogDebug("Ka=({},{},{})", vecColor.x ,vecColor.y ,vecColor.z);
     if (AI_SUCCESS == material->Get(AI_MATKEY_COLOR_DIFFUSE, color))
         vecColor = glm::vec3(color.r, color.g, color.b);
-    LoggerManager::LogDebug("Kd=({},{},{})", vecColor.x, vecColor.y, vecColor.z);
+        LoggerManager::LogDebug("Kd=({},{},{})", vecColor.x, vecColor.y, vecColor.z);
     if (AI_SUCCESS == material->Get(AI_MATKEY_COLOR_SPECULAR, color))
         vecColor = glm::vec3(color.r, color.g, color.b);
         LoggerManager::LogDebug("Ks=({},{},{})", vecColor.x, vecColor.y, vecColor.z);

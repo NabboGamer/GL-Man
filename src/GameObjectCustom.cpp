@@ -1,3 +1,5 @@
+#include <windows.h>
+
 #include "GameObjectCustom.hpp"
 
 GameObjectCustom::GameObjectCustom(std::vector<glm::vec3> positions, std::vector<glm::vec3> directions,
@@ -86,9 +88,12 @@ void GameObjectCustom::Draw() {
 
     glBindVertexArray(this->VAO);
     if (this->numInstances > 1) {
-        glDrawArraysInstanced(GL_TRIANGLES, 0, static_cast<GLsizei>(this->vertexCount), this->numInstances);
+        GLsizei vertexCount = static_cast<GLsizei>(this->vertexCount);
+        GLsizei numInstances = static_cast<GLsizei>(this->numInstances);
+        glDrawArraysInstanced(GL_TRIANGLES, 0, vertexCount, numInstances);
     } else {
-        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(this->vertexCount));
+        GLsizei vertexCount = static_cast<GLsizei>(this->vertexCount);
+        glDrawArrays(GL_TRIANGLES, 0, vertexCount);
     }
     glBindVertexArray(0);
 }

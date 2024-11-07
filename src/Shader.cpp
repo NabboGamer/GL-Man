@@ -1,3 +1,5 @@
+#include <windows.h>
+
 #include "Shader.hpp"
 #include "LoggerManager.hpp"
 

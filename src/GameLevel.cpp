@@ -160,8 +160,8 @@ void GameLevel::Draw() {
 
 void GameLevel::init(std::vector<std::vector<unsigned int>> wallData) {
     // calculate dimensions
-    unsigned int height = wallData.size();
-    unsigned int width = wallData[0].size(); // note we can index vector at [0] since this function is only called if height > 0
+    unsigned int height = static_cast<unsigned int>(wallData.size());
+    unsigned int width = static_cast<unsigned int>(wallData[0].size()); // note we can index vector at [0] since this function is only called if height > 0
     
     // initialize level wall based on wallData		
     for (unsigned int x = 0; x < height; x++) {

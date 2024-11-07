@@ -1,4 +1,5 @@
 #include <cstdlib>
+#include <windows.h>
 
 #include "GameObjectBase.hpp"
 #include "LoggerManager.hpp"
@@ -22,6 +23,6 @@ void GameObjectBase::validityCheck() {
     } else {
         // Set text color to red
         LoggerManager::LogFatal("The sizes of the initialization vectors passed to the constructor are inconsistent!");
-        exit(1);
+        exit(-1);
     }
 }

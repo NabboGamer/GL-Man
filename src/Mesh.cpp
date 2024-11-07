@@ -84,9 +84,12 @@ void Mesh::Draw(Shader& shader, size_t numInstances) {
     // draw mesh
     glBindVertexArray(VAO);
     if (numInstances > 1) {
-        glDrawElementsInstanced(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0, numInstances);
+        GLsizei indicesSize = static_cast<GLsizei>(this->indices.size());
+        GLsizei numInstancesCasted = static_cast<GLsizei>(numInstances);
+        glDrawElementsInstanced(GL_TRIANGLES, indicesSize, GL_UNSIGNED_INT, 0, numInstancesCasted);
     } else {
-        glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+        GLsizei indicesSize = static_cast<GLsizei>(this->indices.size());
+        glDrawElements(GL_TRIANGLES, indicesSize, GL_UNSIGNED_INT, 0);
     }
     glBindVertexArray(0);
 

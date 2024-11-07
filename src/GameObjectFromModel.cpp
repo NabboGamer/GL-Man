@@ -1,3 +1,5 @@
+#include <windows.h>
+
 #include "GameObjectFromModel.hpp"
 
 GameObjectFromModel::GameObjectFromModel(std::vector<glm::vec3> positions, std::vector<glm::vec3> directions,

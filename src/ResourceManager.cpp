@@ -1,5 +1,6 @@
 #include <sstream>
 #include <fstream>
+#include <windows.h>
 
 #include "ResourceManager.hpp"
 #include "Filesystem.hpp"
