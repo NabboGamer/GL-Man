@@ -25,6 +25,7 @@ public:
 
     // Override of the GetBoundingBox method
     std::pair<glm::vec3, glm::vec3> GetBoundingBox() const override;
+    std::pair<glm::vec3, glm::vec3> GetTransformedBoundingBox(size_t instanceIndex) const override;
 
 private:
     unsigned int  VAO;

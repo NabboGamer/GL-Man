@@ -1,6 +1,7 @@
 #include <windows.h>
 
 #include "GameObjectCustom.hpp"
+#include "LoggerManager.hpp"
 
 GameObjectCustom::GameObjectCustom(std::vector<glm::vec3> positions, std::vector<glm::vec3> directions,
                                    std::vector<float> rotations, std::vector<glm::vec3> scaling,
@@ -118,4 +119,30 @@ void GameObjectCustom::calculateBoundingBox() {
 
 std::pair<glm::vec3, glm::vec3> GameObjectCustom::GetBoundingBox() const {
     return { this->minBounds, this->maxBounds };
+}
+
+std::pair<glm::vec3, glm::vec3> GameObjectCustom::GetTransformedBoundingBox(size_t instanceIndex) const {
+    // Get the vertices of the original bounding box
+    auto [minBounds, maxBounds] = this->GetBoundingBox();
+    //LoggerManager::LogDebug("Bounding Box GameObjectCustom {}: pmin({},{},{});pmax({},{},{})", instanceIndex, minBounds.x, minBounds.y, minBounds.z, maxBounds.x, maxBounds.y, maxBounds.z);
+
+    // Calculates the model matrix for the specified instance
+    glm::mat4 modelMatrix = glm::mat4(1.0f);
+    modelMatrix = glm::translate(modelMatrix, this->positions[instanceIndex]);
+    modelMatrix = glm::rotate(modelMatrix, glm::radians(this->rotations[instanceIndex]), glm::vec3(0.0f, 1.0f, 0.0f));
+    float angle = glm::atan(this->directions[instanceIndex].x, this->directions[instanceIndex].z);
+    modelMatrix = glm::rotate(modelMatrix, angle, glm::vec3(0.0f, 1.0f, 0.0f));
+    modelMatrix = glm::scale(modelMatrix, this->scaling[instanceIndex]);
+
+    // Transform the vertices of the bounding box
+    glm::vec3 transformedMin = glm::vec3(modelMatrix * glm::vec4(minBounds, 1.0f));
+    glm::vec3 transformedMax = glm::vec3(modelMatrix * glm::vec4(maxBounds, 1.0f));
+
+    // Determine the new minimums and maximums considering all the transformed coordinates
+    glm::vec3 finalMin = glm::min(transformedMin, transformedMax);
+    glm::vec3 finalMax = glm::max(transformedMin, transformedMax);
+
+    //LoggerManager::LogDebug("Bounding Box GameObjectCustom {} TRANSFORMED: pmin({},{},{});pmax({},{},{})", instanceIndex, finalMin.x, finalMin.y, finalMin.z, finalMax.x, finalMax.y, finalMax.z);
+
+    return { finalMin, finalMax };
 }

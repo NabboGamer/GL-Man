@@ -70,4 +70,28 @@ std::pair<glm::vec3, glm::vec3> GameObjectFromModel::GetBoundingBox() const {
     return this->model->GetBoundingBox();
 }
 
+std::pair<glm::vec3, glm::vec3> GameObjectFromModel::GetTransformedBoundingBox(size_t instanceIndex) const {
+    // Get the vertices of the original bounding box
+    auto [minBounds, maxBounds] = this->GetBoundingBox();
+
+    // Calculates the model matrix for the specified instance
+    glm::mat4 modelMatrix = glm::mat4(1.0f);
+    modelMatrix = glm::translate(modelMatrix, this->positions[instanceIndex]);
+    modelMatrix = glm::rotate(modelMatrix, glm::radians(this->rotations[instanceIndex]), glm::vec3(0.0f, 1.0f, 0.0f));
+    float angle = glm::atan(this->directions[instanceIndex].x, this->directions[instanceIndex].z);
+    modelMatrix = glm::rotate(modelMatrix, angle, glm::vec3(0.0f, 1.0f, 0.0f));
+    modelMatrix = glm::scale(modelMatrix, this->scaling[instanceIndex]);
+
+    // Transform the vertices of the bounding box
+    glm::vec3 transformedMin = glm::vec3(modelMatrix * glm::vec4(minBounds, 1.0f));
+    glm::vec3 transformedMax = glm::vec3(modelMatrix * glm::vec4(maxBounds, 1.0f));
+
+    // Determine the new minimums and maximums considering all the transformed coordinates
+    glm::vec3 finalMin = glm::min(transformedMin, transformedMax);
+    glm::vec3 finalMax = glm::max(transformedMin, transformedMax);
+
+    return { finalMin, finalMax };
+}
+
+
 ///TODO: Scalare rispetto a matrice di modello altrimenti non si adatta
