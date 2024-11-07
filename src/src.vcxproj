@@ -152,6 +152,7 @@
     <ClCompile Include="ResourceManager.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="Texture2D.cpp" />
+    <ClCompile Include="Utility.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FileSystem.hpp" />
@@ -166,6 +167,7 @@
     <ClInclude Include="ResourceManager.hpp" />
     <ClInclude Include="Shader.hpp" />
     <ClInclude Include="Texture2D.hpp" />
+    <ClInclude Include="Utility.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\dot.fs" />

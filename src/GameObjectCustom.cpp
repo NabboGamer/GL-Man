@@ -1,7 +1,7 @@
 #include <windows.h>
 
 #include "GameObjectCustom.hpp"
-#include "LoggerManager.hpp"
+#include "Utility.hpp"
 
 GameObjectCustom::GameObjectCustom(std::vector<glm::vec3> positions, std::vector<glm::vec3> directions,
                                    std::vector<float> rotations, std::vector<glm::vec3> scaling,
@@ -130,21 +130,6 @@ std::pair<glm::vec3, glm::vec3> GameObjectCustom::GetBoundingBox() const {
     return { this->minBounds, this->maxBounds };
 }
 
-float roundToSixDecimals(float value) {
-    float roundedValue = std::round(value * 1e6) / 1e6;
-    // If the value is close to zero (positive or negative), let's approximate it to zero
-    return (std::abs(roundedValue) < 1e-6f) ? 0.0f : roundedValue;
-}
-
-// Apply rounding to six decimal places on each component of glm::vec3
-glm::vec3 approximateToSixDecimals(const glm::vec3& vec) {
-    return glm::vec3(
-        roundToSixDecimals(vec.x),
-        roundToSixDecimals(vec.y),
-        roundToSixDecimals(vec.z)
-    );
-}
-
 std::pair<glm::vec3, glm::vec3> GameObjectCustom::GetTransformedBoundingBox(size_t instanceIndex) const {
     auto [minBounds, maxBounds] = this->GetBoundingBox();
 
@@ -165,5 +150,5 @@ std::pair<glm::vec3, glm::vec3> GameObjectCustom::GetTransformedBoundingBox(size
     glm::vec3 finalMin = glm::min(transformedMin, transformedMax);
     glm::vec3 finalMax = glm::max(transformedMin, transformedMax);
 
-    return { approximateToSixDecimals(finalMin), approximateToSixDecimals(finalMax) };
+    return { Utility::approximateVec3ToSixDecimals(finalMin), Utility::approximateVec3ToSixDecimals(finalMax) };
 }

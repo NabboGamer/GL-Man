@@ -51,6 +51,8 @@ public:
     }
 
 private:
+    // private constructor, that is we do not want any actual logger manager objects. Its members and functions should be publicly available (static).
+    LoggerManager() { }
     static std::shared_ptr<spdlog::logger> s_Logger;
 };
 
