@@ -1,3 +1,10 @@
+// Statements to force the use of NVIDIA or AMD discrete GPU
+extern "C" {
+    __declspec(dllexport) unsigned long NvOptimusEnablement = 0x00000001;       // For NVIDIA
+    __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;         // For AMD
+}
+
+
 #include <windows.h>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>

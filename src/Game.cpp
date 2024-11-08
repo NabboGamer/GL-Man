@@ -101,10 +101,10 @@ void Game::Init() {
 
 
     /// Load Textures
-    ResourceManager::LoadTexture(FileSystem::getPath("../res/textures/wall_diffuse_1k.png").c_str(), "mazeWallDiffuseTexture");
-    ResourceManager::LoadTexture(FileSystem::getPath("../res/textures/wall_specular_1k.png").c_str(), "mazeWallSpecularTexture");
-    ResourceManager::LoadTexture(FileSystem::getPath("../res/textures/floor_diffuse_1k.png").c_str(), "mazeFloorDiffuseTexture");
-    ResourceManager::LoadTexture(FileSystem::getPath("../res/textures/floor_specular_1k.png").c_str(), "mazeFloorSpecularTexture");
+    ResourceManager::LoadTexture(FileSystem::getPath("../res/textures/wall_diffuse_360.png").c_str(), "mazeWallDiffuseTexture");
+    ResourceManager::LoadTexture(FileSystem::getPath("../res/textures/wall_specular_360.png").c_str(), "mazeWallSpecularTexture");
+    ResourceManager::LoadTexture(FileSystem::getPath("../res/textures/floor_diffuse_360.png").c_str(), "mazeFloorDiffuseTexture");
+    ResourceManager::LoadTexture(FileSystem::getPath("../res/textures/floor_specular_360.png").c_str(), "mazeFloorSpecularTexture");
 
     /// Load Models
     ResourceManager::LoadModel("../res/objects/powerup/coin/coin.obj", "dotModel");
@@ -140,8 +140,6 @@ void Game::Init() {
     // audio
     //SoundEngine->play2D(FileSystem::getPath("resources/audio/breakout.mp3").c_str(), true);
 }
-
-///TODO: Introdurre sistema di movimento per Pac-Man
 
 //void Game::Update(float dt) {
 //    // update objects

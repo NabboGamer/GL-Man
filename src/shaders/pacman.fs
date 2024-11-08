@@ -65,7 +65,7 @@ vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir) {
     if(hasSpecularTexture){
         roughness = texture(texture_specular1, TexCoords).r;
         // Specularity is the inverse of Roughness
-        specularStrength = 1.0 - roughness;
+        specularStrength = roughness;
     } else {
         specularStrength = specularColor.x;
     }
