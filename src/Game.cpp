@@ -109,7 +109,7 @@ void Game::Init() {
     /// Load Models
     ResourceManager::LoadModel("../res/objects/powerup/coin/coin.obj", "dotModel");
     ResourceManager::LoadModel("../res/objects/powerup/coin/coin.obj", "energizerModel");
-    ResourceManager::LoadModel("../res/objects/ghosts/blinky_new_new/blinky.obj", "pacmanModel");
+    ResourceManager::LoadModel("../res/objects/ghosts/clyde_new_new/clyde.obj", "pacmanModel");
 
     /// Load Levels
     GameLevel levelOne;
@@ -119,8 +119,8 @@ void Game::Init() {
 
     /// Configure Game Objects
     std::vector<glm::vec3> modelPositions  = { glm::vec3(4.0f, 0.0f, 1.0f) };
-    std::vector<glm::vec3> modelDirections = { glm::vec3(1.0f, 0.0f, 0.0f) };
-    std::vector<float>     modelRotations  = { -90.0f };
+    std::vector<glm::vec3> modelDirections = { glm::vec3(0.0f, 0.0f, 1.0f) };
+    std::vector<float>     modelRotations  = { 0.0f };
     std::vector<glm::vec3> modelScaling    = { glm::vec3(0.25f) };
 
    
@@ -132,10 +132,10 @@ void Game::Init() {
                                      &ResourceManager::GetModel("pacmanModel"));
 
 
-    auto originalBoundingBox = player->GetBoundingBox();
-    LoggerManager::LogDebug("Bounding Box GameObjectFromModel: pmin({},{},{});pmax({},{},{})", originalBoundingBox.first.x, originalBoundingBox.first.y, originalBoundingBox.first.z, originalBoundingBox.second.x, originalBoundingBox.second.y, originalBoundingBox.second.z);
-    auto transformedBoundingBox = player->GetTransformedBoundingBox(0);
-    LoggerManager::LogDebug("Bounding Box GameObjectFromModel: pmin({},{},{});pmax({},{},{})", transformedBoundingBox.first.x, transformedBoundingBox.first.y, transformedBoundingBox.first.z, transformedBoundingBox.second.x, transformedBoundingBox.second.y, transformedBoundingBox.second.z);
+    //auto originalBoundingBox = player->GetBoundingBox();
+    //LoggerManager::LogDebug("Bounding Box GameObjectFromModel: pmin({},{},{});pmax({},{},{})", originalBoundingBox.first.x, originalBoundingBox.first.y, originalBoundingBox.first.z, originalBoundingBox.second.x, originalBoundingBox.second.y, originalBoundingBox.second.z);
+    //auto transformedBoundingBox = player->GetTransformedBoundingBox(0);
+    //LoggerManager::LogDebug("Bounding Box GameObjectFromModel: pmin({},{},{});pmax({},{},{})", transformedBoundingBox.first.x, transformedBoundingBox.first.y, transformedBoundingBox.first.z, transformedBoundingBox.second.x, transformedBoundingBox.second.y, transformedBoundingBox.second.z);
 
     // audio
     //SoundEngine->play2D(FileSystem::getPath("resources/audio/breakout.mp3").c_str(), true);
@@ -182,8 +182,7 @@ void Game::Init() {
 //}
 
 
-//void Game::ProcessInput(float dt)
-//{
+void Game::ProcessInput(double dt) {
 //    if (this->State == GAME_MENU)
 //    {
 //        if (this->Keys[GLFW_KEY_ENTER] && !this->KeysProcessed[GLFW_KEY_ENTER])
@@ -215,32 +214,29 @@ void Game::Init() {
 //            this->State = GAME_MENU;
 //        }
 //    }
-//    if (this->State == GAME_ACTIVE)
-//    {
-//        float velocity = PLAYER_VELOCITY * dt;
-//        // move playerboard
-//        if (this->Keys[GLFW_KEY_A])
-//        {
-//            if (Player->Position.x >= 0.0f)
-//            {
-//                Player->Position.x -= velocity;
-//                if (Ball->Stuck)
-//                    Ball->Position.x -= velocity;
-//            }
-//        }
-//        if (this->Keys[GLFW_KEY_D])
-//        {
-//            if (Player->Position.x <= this->Width - Player->Size.x)
-//            {
-//                Player->Position.x += velocity;
-//                if (Ball->Stuck)
-//                    Ball->Position.x += velocity;
-//            }
-//        }
-//        if (this->Keys[GLFW_KEY_SPACE])
-//            Ball->Stuck = false;
-//    }
-//}
+    if (this->state == GAME_ACTIVE) {
+        float speed = PLAYER_SPEED * static_cast<float>(dt);
+        // Priority: UP > DOWN > RIGHT > LEFT
+        // move player model
+        if (this->keys[GLFW_KEY_UP]) {
+            player->directions[0] = glm::vec3(1.0f, 0.0f, 0.0f);
+            player->positions[0] += speed * player->directions[0];
+        }
+        else if (this->keys[GLFW_KEY_DOWN]) {
+            player->directions[0] = glm::vec3(-1.0f, 0.0f, 0.0f);
+            player->positions[0] += speed * player->directions[0];
+        }
+        else if (this->keys[GLFW_KEY_RIGHT]) {
+            player->directions[0] = glm::vec3(0.0f, 0.0f, 1.0f);
+            player->positions[0] += speed * player->directions[0];
+        }
+        else if (this->keys[GLFW_KEY_LEFT]) {
+            player->directions[0] = glm::vec3(0.0f, 0.0f, -1.0f);
+            player->positions[0] += speed * player->directions[0];
+        }
+        
+    }
+}
 
 void Game::Render() {
     if (this->state == GAME_ACTIVE || this->state == GAME_WIN) {

@@ -10,11 +10,17 @@
 // GLFW function declarations
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
+void calculateFPS();
 
 // The Width of the screen
 const unsigned int SCREEN_WIDTH = 3840;
 // The height of the screen
 const unsigned int SCREEN_HEIGHT = 2160;
+
+unsigned int fps = 0;
+unsigned int frameCount = 0;
+double previousTime = 0;
+double timeInterval = 0;
 
 Game GLMan(SCREEN_WIDTH, SCREEN_HEIGHT);
 
@@ -64,10 +70,12 @@ int main() {
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
         glfwPollEvents();
+        calculateFPS();
+        LoggerManager::LogInfo("FPS: {}", fps);
 
         // manage user input
         // -----------------
-        //GLMan.ProcessInput(deltaTime);
+        GLMan.ProcessInput(deltaTime);
 
         // update game state
         // -----------------
@@ -110,4 +118,25 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
     // make sure the viewport matches the new window dimensions; note that width and 
     // height will be significantly larger than specified on retina displays.
     glViewport(0, 0, width, height);
+}
+
+void calculateFPS() {
+    //  Incrementiamo il contatore
+    frameCount++;
+    //  Determiniamo il numero di millisecondi trascorsi dalla glutInit
+    double currentTime = glfwGetTime();
+    //  Calcoliamo il tempo trascorso
+    timeInterval = currentTime - previousTime;
+
+    // Se è passato un secondo aggiorna la variabile fps
+    if (timeInterval > 1.0f) {
+        //  frameCount mantiene il numero di frame generati in un secondo
+        fps = frameCount;
+
+        //  Salviamo il tempo trascorso per riutilizzarlo la prossima volta
+        previousTime = currentTime;
+
+        //  Azzeriamo il contatore dei tempi
+        frameCount = 0;
+    }
 }

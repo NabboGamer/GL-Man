@@ -147,5 +147,5 @@ std::pair<glm::vec3, glm::vec3> GameObjectCustom::GetTransformedBoundingBox(size
     glm::vec3 finalMin = glm::min(transformedMin, transformedMax);
     glm::vec3 finalMax = glm::max(transformedMin, transformedMax);
 
-    return { Utility::approximateVec3ToSixDecimals(finalMin), Utility::approximateVec3ToSixDecimals(finalMax) };
+    return { Utility::ApproximateVec3ToSixDecimals(finalMin), Utility::ApproximateVec3ToSixDecimals(finalMax) };
 }
