@@ -68,15 +68,15 @@ void GameObjectCustom::Draw() {
 
         model = glm::translate(model, this->positions[i]);
 
-        model = glm::rotate(model, glm::radians(this->rotations[i]), glm::vec3(0.0f, 1.0f, 0.0f));
-
-        float angle = glm::atan(this->directions[i].x, this->directions[i].z);
-        model = glm::rotate(model, angle, glm::vec3(0.0f, 1.0f, 0.0f));
-
         model = glm::scale(model, this->scaling[i]);
 
         // Apply offset to center pmin at origin
         model = glm::translate(model, this->centerOffset);
+
+        model = glm::rotate(model, glm::radians(this->rotations[i]), glm::vec3(0.0f, 1.0f, 0.0f));
+
+        float angle = glm::atan(this->directions[i].x, this->directions[i].z);
+        model = glm::rotate(model, angle, glm::vec3(0.0f, 1.0f, 0.0f));
 
         modelMatrices[i] = model;
     }
@@ -133,19 +133,16 @@ std::pair<glm::vec3, glm::vec3> GameObjectCustom::GetBoundingBox() const {
 std::pair<glm::vec3, glm::vec3> GameObjectCustom::GetTransformedBoundingBox(size_t instanceIndex) const {
     auto [minBounds, maxBounds] = this->GetBoundingBox();
 
-    glm::mat4 modelMatrix = glm::mat4(1.0f);
-
-    // Applying Instance Transformation
-    modelMatrix = glm::translate(modelMatrix, this->positions[instanceIndex]);
-    modelMatrix = glm::rotate(modelMatrix, glm::radians(this->rotations[instanceIndex]), glm::vec3(0.0f, 1.0f, 0.0f));
+    glm::mat4 model = glm::mat4(1.0f);
+    model = glm::translate(model, this->positions[instanceIndex]);
+    model = glm::scale(model, this->scaling[instanceIndex]);
+    model = glm::translate(model, this->centerOffset);
+    model = glm::rotate(model, glm::radians(this->rotations[instanceIndex]), glm::vec3(0.0f, 1.0f, 0.0f));
     float angle = glm::atan(this->directions[instanceIndex].x, this->directions[instanceIndex].z);
-    modelMatrix = glm::rotate(modelMatrix, angle, glm::vec3(0.0f, 1.0f, 0.0f));
-    modelMatrix = glm::scale(modelMatrix, this->scaling[instanceIndex]);
-    // Apply centering offset
-    modelMatrix = glm::translate(modelMatrix, this->centerOffset);
+    model = glm::rotate(model, angle, glm::vec3(0.0f, 1.0f, 0.0f));
 
-    glm::vec3 transformedMin = glm::vec3(modelMatrix * glm::vec4(minBounds, 1.0f));
-    glm::vec3 transformedMax = glm::vec3(modelMatrix * glm::vec4(maxBounds, 1.0f));
+    glm::vec3 transformedMin = glm::vec3(model * glm::vec4(minBounds, 1.0f));
+    glm::vec3 transformedMax = glm::vec3(model * glm::vec4(maxBounds, 1.0f));
 
     glm::vec3 finalMin = glm::min(transformedMin, transformedMax);
     glm::vec3 finalMax = glm::max(transformedMin, transformedMax);

@@ -118,9 +118,9 @@ void Game::Init() {
     this->level = 0;
 
     /// Configure Game Objects
-    std::vector<glm::vec3> modelPositions  = { glm::vec3(1.0, 0.0, 1.0)};
-    std::vector<glm::vec3> modelDirections = { glm::vec3(0.0, 0.0, 1.0) };
-    std::vector<float>     modelRotations  = { 0.0f };
+    std::vector<glm::vec3> modelPositions  = { glm::vec3(4.0f, 0.0f, 1.0f) };
+    std::vector<glm::vec3> modelDirections = { glm::vec3(1.0f, 0.0f, 0.0f) };
+    std::vector<float>     modelRotations  = { -90.0f };
     std::vector<glm::vec3> modelScaling    = { glm::vec3(0.25f) };
 
    
@@ -140,6 +140,8 @@ void Game::Init() {
     // audio
     //SoundEngine->play2D(FileSystem::getPath("resources/audio/breakout.mp3").c_str(), true);
 }
+
+///TODO: Introdurre sistema di movimento per Pac-Man
 
 //void Game::Update(float dt) {
 //    // update objects
