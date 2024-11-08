@@ -20,9 +20,9 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 void calculateFPS();
 
 // The Width of the screen
-const unsigned int SCREEN_WIDTH = 3840;
+const unsigned int SCREEN_WIDTH = 2048;
 // The height of the screen
-const unsigned int SCREEN_HEIGHT = 2160;
+const unsigned int SCREEN_HEIGHT = 1152;
 
 unsigned int fps = 0;
 unsigned int frameCount = 0;

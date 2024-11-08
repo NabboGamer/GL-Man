@@ -118,11 +118,10 @@ void Game::Init() {
     this->level = 0;
 
     /// Configure Game Objects
-    std::vector<glm::vec3> modelPositions  = { glm::vec3(4.0f, 0.0f, 1.0f) };
-    std::vector<glm::vec3> modelDirections = { glm::vec3(0.0f, 0.0f, 1.0f) };
+    std::vector<glm::vec3> modelPositions  = { glm::vec3(7.0f, 0.0f, 14.0f) };
+    std::vector<glm::vec3> modelDirections = { glm::vec3(0.0f, 0.0f, -1.0f) };
     std::vector<float>     modelRotations  = { 0.0f };
     std::vector<glm::vec3> modelScaling    = { glm::vec3(0.25f) };
-
    
     player = new GameObjectFromModel(modelPositions,
                                      modelDirections,
