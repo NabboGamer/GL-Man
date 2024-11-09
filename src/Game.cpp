@@ -239,9 +239,9 @@ void Game::DoCollisions() {
         bool collision = checkCollision(playerObb, mazeWallObb);
         if (collision) {
             LoggerManager::LogDebug("There was a collision between PLAYER and WALL number {}", i);
-            // Resolve Collision
+            // RESOLVE COLLISION PLAYER-WALL
             glm::vec3 correction = resolveCollision(playerObb, mazeWallObb, this->permittedDirections);
-            player->positions[0] += correction; // Applica la correzione
+            player->positions[0] += correction; // Apply the correction vector
         }
     }
 
@@ -249,12 +249,14 @@ void Game::DoCollisions() {
     GameObjectBase* dot = this->Levels[this->level].dot;
     size_t numInstancesDot = dot->GetNumInstances();
     std::vector<glm::vec3> dotPositions = this->Levels[this->level].dotPositions;
-    for (int i = static_cast<int>(numInstancesDot) - 1; i >= 0; i--) {  // Scorri al contrario
+    // When removing elements from an array during iteration, a reverse for loop 
+    // helps avoid problems related to changing the length of the array as you walk through it
+    for (int i = static_cast<int>(numInstancesDot) - 1; i >= 0; i--) {
         auto dotObb = dot->GetTransformedBoundingBox(i);
         bool collision = checkCollision(playerObb, dotObb);
         if (collision) {
             LoggerManager::LogDebug("There was a collision between PLAYER and DOT number {}", i);
-            // Resolve Collision
+            // RESOLVE COLLISION PLAYER-DOT
             dotPositions.erase(dotPositions.begin() + i);
             dot->positions.erase(dot->positions.begin() + i);
             dot->directions.erase(dot->directions.begin() + i);
@@ -268,12 +270,12 @@ void Game::DoCollisions() {
     GameObjectBase* energizer = this->Levels[this->level].energizer;
     size_t numInstancesEnergizer = energizer->GetNumInstances();
     std::vector<glm::vec3> energizerPositions = this->Levels[this->level].energizerPositions;
-    for (int i = static_cast<int>(numInstancesEnergizer) - 1; i >= 0; i--) {  // Scorri al contrario
+    for (int i = static_cast<int>(numInstancesEnergizer) - 1; i >= 0; i--) {
         auto energizerObb = energizer->GetTransformedBoundingBox(i);
         bool collision = checkCollision(playerObb, energizerObb);
         if (collision) {
             LoggerManager::LogDebug("There was a collision between PLAYER and ENERGIZER number {}", i);
-            // Resolve Collision
+            // RESOLVE COLLISION PLAYER-ENERGIZER
             energizerPositions.erase(energizerPositions.begin() + i);
             energizer->positions.erase(energizer->positions.begin() + i);
             energizer->directions.erase(energizer->directions.begin() + i);
