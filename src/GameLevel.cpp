@@ -145,10 +145,18 @@ void GameLevel::Load(const char *file) {
 }
 
 void GameLevel::Draw() {
-    this->mazeFloor->Draw();
-    this->mazeWall->Draw();
-    this->dot->Draw();
-    this->energizer->Draw();
+    if (this->mazeFloor->GetNumInstances() > 0) {
+        this->mazeFloor->Draw();
+    }
+    if (this->mazeWall->GetNumInstances() > 0) {
+        this->mazeWall->Draw();
+    }
+    if (this->dot->GetNumInstances() > 0) {
+        this->dot->Draw();
+    }
+    if (this->energizer->GetNumInstances() > 0) {
+        this->energizer->Draw();
+    }
 }
 
 //bool GameLevel::IsCompleted() {

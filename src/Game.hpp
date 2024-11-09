@@ -20,11 +20,15 @@ enum GameState {
     GAME_WIN
 };
 
-// Defines a Collision typedef that represents collision data
-//typedef std::tuple<bool, Direction, glm::vec2> Collision; // <collision?, what direction?, difference vector center - closest point>
+struct PermittedDirections {
+    bool DIRECTION_UP    = true;
+    bool DIRECTION_DOWN  = true;
+    bool DIRECTION_RIGHT = true;
+    bool DIRECTION_LEFT  = true;
+};
 
-// Initial velocity of the player paddle
-const float PLAYER_SPEED(5.0f);
+// Defines an Oriented Bounding Box (OBB)
+typedef std::pair<glm::vec3, glm::vec3> obb;
 
 // Game holds all game-related state and functionality.
 // Combines all game-related data into a single class for
@@ -37,6 +41,7 @@ public:
     bool                    keys[1024];
     bool                    keysProcessed[1024];
     unsigned int            width, height;
+    PermittedDirections     permittedDirections;
 
     std::vector<GameLevel>  Levels;
     //std::vector<PowerUp>    PowerUps;
@@ -52,9 +57,9 @@ public:
 
     // game loop
     void ProcessInput(double dt);
-    /*void Update(float dt); */
+    void Update(double dt);
     void Render();
-    //void DoCollisions();
+    void DoCollisions();
     
     // reset
     //void ResetLevel();

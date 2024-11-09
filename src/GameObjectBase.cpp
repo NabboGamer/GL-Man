@@ -15,6 +15,14 @@ GameObjectBase::~GameObjectBase() {
     //delete shader;
 }
 
+size_t GameObjectBase::GetNumInstances() const {
+    return this->numInstances;
+}
+
+void GameObjectBase::SetNumInstances(size_t newNumInstances) {
+    this->numInstances = newNumInstances;
+}
+
 void GameObjectBase::validityCheck() {
     if (this->positions.size() == this->directions.size() &&
         this->directions.size() == this->rotations.size() &&
@@ -26,3 +34,5 @@ void GameObjectBase::validityCheck() {
         exit(-1);
     }
 }
+
+

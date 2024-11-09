@@ -36,7 +36,9 @@ int main() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    
+#ifdef __APPLE__
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+#endif
     glfwWindowHint(GLFW_RESIZABLE, false);
 
     GLFWwindow* window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "GL-Man", nullptr, nullptr);
@@ -78,7 +80,7 @@ int main() {
         lastFrame = currentFrame;
         glfwPollEvents();
         calculateFPS();
-        LoggerManager::LogInfo("FPS: {}", fps);
+        //LoggerManager::LogInfo("FPS: {}", fps);
 
         // manage user input
         // -----------------
@@ -86,7 +88,7 @@ int main() {
 
         // update game state
         // -----------------
-        //GLMan.Update(deltaTime);
+        GLMan.Update(deltaTime);
 
         // render
         // ------
@@ -128,22 +130,14 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 }
 
 void calculateFPS() {
-    //  Incrementiamo il contatore
     frameCount++;
-    //  Determiniamo il numero di millisecondi trascorsi dalla glutInit
     double currentTime = glfwGetTime();
-    //  Calcoliamo il tempo trascorso
     timeInterval = currentTime - previousTime;
 
-    // Se è passato un secondo aggiorna la variabile fps
+    // If a second has passed, update the fps variable
     if (timeInterval > 1.0f) {
-        //  frameCount mantiene il numero di frame generati in un secondo
         fps = frameCount;
-
-        //  Salviamo il tempo trascorso per riutilizzarlo la prossima volta
         previousTime = currentTime;
-
-        //  Azzeriamo il contatore dei tempi
         frameCount = 0;
     }
 }

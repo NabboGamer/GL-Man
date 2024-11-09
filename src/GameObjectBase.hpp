@@ -28,6 +28,12 @@ public:
                    Shader* shader);
     virtual ~GameObjectBase();
 
+    // Getter
+    size_t GetNumInstances() const;
+
+    //Setter
+    void SetNumInstances(size_t newNumInstances);
+
     // Pure virtual method that forces subclasses to implement their own Draw method
     virtual void Draw() = 0;
 
