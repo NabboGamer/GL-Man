@@ -120,7 +120,7 @@ void Game::Init() {
     this->level = 0;
 
     /// Configure Game Objects
-    std::vector<glm::vec3> modelPositions  = { glm::vec3(7.5f, 0.0f, 13.0f) };
+    std::vector<glm::vec3> modelPositions  = { glm::vec3(7.5f, 0.0f, 13.5f) };
     std::vector<glm::vec3> modelDirections = { glm::vec3(0.0f, 0.0f, -1.0f) };
     std::vector<float>     modelRotations  = { 0.0f };
     std::vector<glm::vec3> modelScaling    = { glm::vec3(0.20f) };
@@ -136,7 +136,7 @@ void Game::Init() {
     //SoundEngine->play2D(FileSystem::getPath("resources/audio/breakout.mp3").c_str(), true);
 }
 
-///TODO: Migliorare Collider
+///TODO: Introdurre meccanismo di cambio modello per PacMan(tramite classe apposita PacMan che deve avere una vector di GamObjectFromModel)
 
 void Game::Update(double dt) {
 //    // update objects
@@ -314,18 +314,22 @@ glm::vec3 resolveCollision(const obb& playerObb, const obb& wallObb, PermittedDi
     if (overlapX < overlapZ) {
         if (playerMax.x < wallMax.x) {
             permittedDirections.DIRECTION_UP = false;
+            permittedDirections.DIRECTION_DOWN = true;
             return glm::vec3(-overlapX, 0.0f, 0.0f);
         } else {
             permittedDirections.DIRECTION_DOWN = false;
+            permittedDirections.DIRECTION_UP = true;
             return glm::vec3( overlapX, 0.0f, 0.0f);
         }
     }
     else {
         if (playerMax.z < wallMax.z) {
             permittedDirections.DIRECTION_RIGHT = false;
+            permittedDirections.DIRECTION_LEFT = true;
             return glm::vec3(0.0f, 0.0f, -overlapZ);
         } else {
             permittedDirections.DIRECTION_LEFT = false;
+            permittedDirections.DIRECTION_RIGHT = true;
             return glm::vec3(0.0f, 0.0f, overlapZ);
         }
     }
