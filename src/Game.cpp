@@ -111,7 +111,7 @@ void Game::Init() {
     /// Load Models
     ResourceManager::LoadModel("../res/objects/powerup/coin/coin.obj", "dotModel");
     ResourceManager::LoadModel("../res/objects/powerup/coin/coin.obj", "energizerModel");
-    ResourceManager::LoadModel("../res/objects/pacman/pacman.obj", "pacmanModel");
+    ResourceManager::LoadModel("../res/objects/pacman_7/pacman.obj", "pacmanModel");
 
     /// Load Levels
     GameLevel levelOne;
@@ -160,6 +160,7 @@ void Game::Update(double dt) {
 
 
 void Game::ProcessInput(double dt) {
+
     if (this->state == GAME_ACTIVE) {
         float speed = PLAYER_SPEED * static_cast<float>(dt);
         // Priority: UP > DOWN > RIGHT > LEFT
@@ -175,14 +176,34 @@ void Game::ProcessInput(double dt) {
             player->positions[0] += speed * player->directions[0];
         }
         else if (this->keys[GLFW_KEY_RIGHT] && permittedDirections.DIRECTION_RIGHT) {
+            auto playerObb = player->GetTransformedBoundingBox(0);
+            glm::vec3 pMax = playerObb.second;
+            auto levelMatrixDim = this->Levels[this->level].levelMatrixDim;
+            size_t columnDim = levelMatrixDim.second;
+
             permittedDirections = PermittedDirections();
             player->directions[0] = glm::vec3(0.0f, 0.0f, 1.0f);
-            player->positions[0] += speed * player->directions[0];
+            if (pMax.z >= static_cast<float>(columnDim)) {
+                player->positions[0] = glm::vec3(player->positions[0].x, player->positions[0].y, 0.0f);
+            }
+            else {
+                player->positions[0] += speed * player->directions[0];
+            }
         }
         else if (this->keys[GLFW_KEY_LEFT] && permittedDirections.DIRECTION_LEFT) {
+            auto playerObb = player->GetTransformedBoundingBox(0);
+            glm::vec3 pMin = playerObb.first;
+            auto levelMatrixDim = this->Levels[this->level].levelMatrixDim;
+            size_t columnDim = levelMatrixDim.second;
+
             permittedDirections = PermittedDirections();
             player->directions[0] = glm::vec3(0.0f, 0.0f, -1.0f);
-            player->positions[0] += speed * player->directions[0];
+            if (pMin.z <= 0.0f) {
+                player->positions[0] = glm::vec3(player->positions[0].x, player->positions[0].y, static_cast<float>(columnDim)-1.0f);
+            }
+            else {
+                player->positions[0] += speed * player->directions[0];
+            }
         }
         
     }
@@ -194,7 +215,7 @@ void Game::Render() {
         //Effects->BeginRender();
         // draw level
         this->Levels[this->level].Draw();
-            // draw player
+        // draw player
         player->Draw();
         //    // draw PowerUps
         //    for (PowerUp &powerUp : this->PowerUps)
@@ -315,23 +336,23 @@ glm::vec3 resolveCollision(const obb& playerObb, const obb& wallObb, PermittedDi
     // Find the axis with the least penetration and use that value to resolve the collision
     if (overlapX < overlapZ) {
         if (playerMax.x < wallMax.x) {
+            permittedDirections = PermittedDirections();
             permittedDirections.DIRECTION_UP = false;
-            permittedDirections.DIRECTION_DOWN = true;
             return glm::vec3(-overlapX, 0.0f, 0.0f);
         } else {
+            permittedDirections = PermittedDirections();
             permittedDirections.DIRECTION_DOWN = false;
-            permittedDirections.DIRECTION_UP = true;
             return glm::vec3( overlapX, 0.0f, 0.0f);
         }
     }
     else {
         if (playerMax.z < wallMax.z) {
+            permittedDirections = PermittedDirections();
             permittedDirections.DIRECTION_RIGHT = false;
-            permittedDirections.DIRECTION_LEFT = true;
             return glm::vec3(0.0f, 0.0f, -overlapZ);
         } else {
+            permittedDirections = PermittedDirections();
             permittedDirections.DIRECTION_LEFT = false;
-            permittedDirections.DIRECTION_RIGHT = true;
             return glm::vec3(0.0f, 0.0f, overlapZ);
         }
     }

@@ -139,6 +139,8 @@ void GameLevel::Load(const char *file) {
             wallData.push_back(row);
         }
         if (wallData.size() > 0) {
+            this->levelMatrixDim.first = wallData.size();
+            this->levelMatrixDim.second = wallData[0].size();
             this->init(wallData);
         }
     }
