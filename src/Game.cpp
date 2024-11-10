@@ -13,13 +13,14 @@
 #include "GameObjectBase.hpp"
 #include "GameObjectCustom.hpp"
 #include "GameObjectFromModel.hpp"
+#include "PacMan.hpp"
 //#include "particle_generator.h"
 //#include "post_processor.h"
 //#include "text_renderer.h"
 
 
 // Game-related State data
-GameObjectBase* player;
+PacMan* pacman;
 GameObjectBase* mazeWall;
 //ParticleGenerator *Particles;
 //PostProcessor     *Effects;
@@ -27,12 +28,12 @@ GameObjectBase* mazeWall;
 //TextRenderer      *Text;
 
 // Initial speed of the player
-float PLAYER_SPEED = 5.0f;
+float PLAYER_SPEED = 7.5f;
 
 Game::Game(unsigned int width, unsigned int height) : state(GAME_ACTIVE), keys(), keysProcessed(), width(width), height(height) { }
 
 Game::~Game() {
-    delete player;
+    delete pacman;
     /*delete Ball;
     delete Particles;
     delete Effects;
@@ -46,7 +47,6 @@ void Game::Init() {
     ResourceManager::LoadShader("shaders/mazeFloor.vs", "shaders/mazeFloor.fs", nullptr, "mazeFloorShader");
     ResourceManager::LoadShader("shaders/dot.vs", "shaders/dot.fs", nullptr, "dotShader");
     ResourceManager::LoadShader("shaders/dot.vs", "shaders/dot.fs", nullptr, "energizerShader");
-    ResourceManager::LoadShader("shaders/pacman.vs", "shaders/pacman.fs", nullptr, "pacmanShader");
     /*ResourceManager::LoadShader("particle.vs", "particle.fs", nullptr, "particle");
     ResourceManager::LoadShader("post_processing.vs", "post_processing.fs", nullptr, "postprocessing");*/
 
@@ -68,8 +68,6 @@ void Game::Init() {
     ResourceManager::GetShader("dotShader").Use().SetMatrix4("projection", projection);
     ResourceManager::GetShader("energizerShader").Use().SetMatrix4("view", view);
     ResourceManager::GetShader("energizerShader").Use().SetMatrix4("projection", projection);
-    ResourceManager::GetShader("pacmanShader").Use().SetMatrix4("view", view);
-    ResourceManager::GetShader("pacmanShader").Use().SetMatrix4("projection", projection);
     // Insert uniform variable in fragment shader(only global variables, i.e. the same for all shaders)
     ResourceManager::GetShader("mazeWallShader").Use().SetVector3f("viewPos", cameraPos);
     ResourceManager::GetShader("mazeWallShader").Use().SetVector3f("dirLight.direction", glm::normalize(cameraAt - cameraPos));
@@ -95,12 +93,7 @@ void Game::Init() {
     ResourceManager::GetShader("energizerShader").Use().SetVector3f("dirLight.diffuse", glm::vec3(0.7f, 0.7f, 0.7f));
     ResourceManager::GetShader("energizerShader").Use().SetVector3f("dirLight.specular", glm::vec3(0.2f, 0.2f, 0.2f));
     ResourceManager::GetShader("energizerShader").Use().SetFloat("material.shininess", 32.0f);
-    ResourceManager::GetShader("pacmanShader").Use().SetVector3f("viewPos", cameraPos);
-    ResourceManager::GetShader("pacmanShader").Use().SetVector3f("dirLight.direction", glm::normalize(cameraAt - cameraPos));
-    ResourceManager::GetShader("pacmanShader").Use().SetVector3f("dirLight.ambient", glm::vec3(0.7f, 0.7f, 0.7f));
-    ResourceManager::GetShader("pacmanShader").Use().SetVector3f("dirLight.diffuse", glm::vec3(0.9f, 0.9f, 0.9f));
-    ResourceManager::GetShader("pacmanShader").Use().SetVector3f("dirLight.specular", glm::vec3(0.2f, 0.2f, 0.2f));
-    ResourceManager::GetShader("pacmanShader").Use().SetFloat("material.shininess", 32.0f);
+    
 
     /// Load Textures
     ResourceManager::LoadTexture(FileSystem::getPath("../res/textures/wall_diffuse_360.png").c_str(), "mazeWallDiffuseTexture");
@@ -111,7 +104,6 @@ void Game::Init() {
     /// Load Models
     ResourceManager::LoadModel("../res/objects/powerup/coin/coin.obj", "dotModel");
     ResourceManager::LoadModel("../res/objects/powerup/coin/coin.obj", "energizerModel");
-    ResourceManager::LoadModel("../res/objects/pacman_7/pacman.obj", "pacmanModel");
 
     /// Load Levels
     GameLevel levelOne;
@@ -120,17 +112,7 @@ void Game::Init() {
     this->level = 0;
 
     /// Configure Game Objects
-    std::vector<glm::vec3> modelPositions  = { glm::vec3(7.5f, 0.0f, 13.5f) };
-    std::vector<glm::vec3> modelDirections = { glm::vec3(0.0f, 0.0f, -1.0f) };
-    std::vector<float>     modelRotations  = { 0.0f };
-    std::vector<glm::vec3> modelScaling    = { glm::vec3(0.20f) };
-   
-    player = new GameObjectFromModel(modelPositions,
-                                     modelDirections,
-                                     modelRotations,
-                                     modelScaling,
-                                     &ResourceManager::GetShader("pacmanShader"),
-                                     &ResourceManager::GetModel("pacmanModel"));
+    pacman = new PacMan(this->cameraPos, this->cameraAt, view, projection);
 
     // audio
     //SoundEngine->play2D(FileSystem::getPath("resources/audio/breakout.mp3").c_str(), true);
@@ -160,7 +142,7 @@ void Game::Update(double dt) {
 
 
 void Game::ProcessInput(double dt) {
-
+    auto player = pacman->gameObjects[pacman->GetCurrentModelIndex()];
     if (this->state == GAME_ACTIVE) {
         float speed = PLAYER_SPEED * static_cast<float>(dt);
         // Priority: UP > DOWN > RIGHT > LEFT
@@ -209,14 +191,14 @@ void Game::ProcessInput(double dt) {
     }
 }
 
-void Game::Render() {
+void Game::Render(double dt) {
     if (this->state == GAME_ACTIVE || this->state == GAME_WIN) {
         // begin rendering to postprocessing framebuffer
         //Effects->BeginRender();
         // draw level
         this->Levels[this->level].Draw();
         // draw player
-        player->Draw();
+        pacman->Draw(dt);
         //    // draw PowerUps
         //    for (PowerUp &powerUp : this->PowerUps)
         //        if (!powerUp.Destroyed)
@@ -250,6 +232,7 @@ bool checkCollision(const obb& obb1, const obb& obb2);
 glm::vec3 resolveCollision(const obb& playerObb, const obb& wallObb, PermittedDirections& permittedDirections);
 
 void Game::DoCollisions() {
+    auto player = pacman->gameObjects[pacman->GetCurrentModelIndex()];
     auto playerObb = player->GetTransformedBoundingBox(0);
 
     // CHECK COLLISION PLAYER-WALL

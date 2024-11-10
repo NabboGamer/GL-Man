@@ -9,7 +9,7 @@
 
 // Container object for holding all state relevant for a single
 // game object entity. Each object in the game likely needs the
-// minimal of state as described within GameObject.
+// minimal of state as described within GameObjectBase.
 class GameObjectBase {
 
 public:

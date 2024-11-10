@@ -58,7 +58,7 @@ public:
     // game loop
     void ProcessInput(double dt);
     void Update(double dt);
-    void Render();
+    void Render(double dt);
     void DoCollisions();
     
     // reset
