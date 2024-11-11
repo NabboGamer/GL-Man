@@ -24,12 +24,11 @@ void GameObjectBase::SetNumInstances(size_t newNumInstances) {
 }
 
 void GameObjectBase::validityCheck() {
-    if (this->positions.size() == this->directions.size() &&
+    if (this->positions.size()  == this->directions.size() &&
         this->directions.size() == this->rotations.size() &&
-        this->rotations.size() == this->scaling.size()) {
+        this->rotations.size()  == this->scaling.size()) {
         this->numInstances = this->positions.size();
     } else {
-        // Set text color to red
         LoggerManager::LogFatal("The sizes of the initialization vectors passed to the constructor are inconsistent!");
         exit(-1);
     }

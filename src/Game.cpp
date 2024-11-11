@@ -6,6 +6,7 @@
 //using namespace irrklang;
 
 #include "Game.hpp"
+#include "custom_types.hpp"
 #include "FileSystem.hpp"
 #include "ResourceManager.hpp"
 #include "LoggerManager.hpp"
@@ -13,6 +14,8 @@
 #include "GameObjectCustom.hpp"
 #include "GameObjectFromModel.hpp"
 #include "PacMan.hpp"
+#include "Ghost.hpp"
+#include "Blinky.hpp"
 //#include "particle_generator.h"
 //#include "post_processor.h"
 //#include "text_renderer.h"
@@ -20,7 +23,7 @@
 
 // Game-related State data
 PacMan* pacman;
-GameObjectBase* ghost;
+Ghost*  blinky;
 
 //ParticleGenerator *Particles;
 //PostProcessor     *Effects;
@@ -121,7 +124,6 @@ void Game::Init() {
     /// Load Models
     ResourceManager::LoadModel("../res/objects/powerup/coin/coin.obj", "dotModel");
     ResourceManager::LoadModel("../res/objects/powerup/coin/coin.obj", "energizerModel");
-    ResourceManager::LoadModel("../res/objects/ghosts/vulnerable_ghost_blue/vulnerable_ghost_blue1/vulnerable_ghost_blue1.obj", "ghostModel");
 
     /// Load Levels
     GameLevel levelOne;
@@ -132,17 +134,7 @@ void Game::Init() {
     /// Configure Game Objects
     pacman = new PacMan();
 
-    std::vector<glm::vec3> modelPositions = { glm::vec3(7.5f, 0.0f, 10.0f) };
-    std::vector<glm::vec3> modelDirections = { glm::vec3(0.0f, 0.0f, -1.0f) };
-    std::vector<float>     modelRotations = { 90.0f };
-    std::vector<glm::vec3> modelScaling = { glm::vec3(1.0f) };
-
-     ghost = new GameObjectFromModel(modelPositions,
-                                     modelDirections,
-                                     modelRotations,
-                                     modelScaling,
-                                     &ResourceManager::GetShader("ghostShader"),
-                                     &ResourceManager::GetModel("ghostModel"));
+    blinky = new Blinky();
     // audio
     //SoundEngine->play2D(FileSystem::getPath("resources/audio/breakout.mp3").c_str(), true);
 }
@@ -151,8 +143,8 @@ void Game::Init() {
 ///      sia quelli dinamici in cui oltre che la strategia c'è il meccanismo di animazione come per pacman.
 
 void Game::Update(double dt) {
-//    // update objects
-//    Ball->Move(dt, this->Width);
+    // update objects
+    blinky->Move(dt, this->Levels[this->level].mazeWall);
     // check for collisions
     this->DoCollisions();
 //    // update particles
@@ -229,7 +221,7 @@ void Game::Render(double dt) {
         this->Levels[this->level].Draw();
         // draw player
         pacman->Draw(dt);
-        ghost->Draw();
+        blinky->Draw(dt);
         //    // draw PowerUps
         //    for (PowerUp &powerUp : this->PowerUps)
         //        if (!powerUp.Destroyed)
@@ -259,8 +251,8 @@ void Game::Render(double dt) {
 }
 
 // collision detection
-bool checkCollision(const obb& obb1, const obb& obb2);
-glm::vec3 resolveCollision(const obb& playerObb, const obb& wallObb, PermittedDirections& permittedDirections);
+bool checkCollision(const CustomTypes::obb& obb1, const CustomTypes::obb& obb2);
+glm::vec3 resolveCollision(const CustomTypes::obb& playerObb, const CustomTypes::obb& wallObb, PermittedDirections& permittedDirections);
 
 void Game::DoCollisions() {
     auto player = pacman->gameObjects[pacman->GetCurrentModelIndex()];
@@ -323,7 +315,7 @@ void Game::DoCollisions() {
 }
 
 // OBB - OBB collision detection in XZ plane
-bool checkCollision(const obb& obb1, const obb& obb2) {
+bool checkCollision(const CustomTypes::obb& obb1, const CustomTypes::obb& obb2) {
     glm::vec3 box1_min = obb1.first;
     glm::vec3 box1_max = obb1.second;
     glm::vec3 box2_min = obb2.first;
@@ -337,7 +329,7 @@ bool checkCollision(const obb& obb1, const obb& obb2) {
 }
 
 // Function to resolve collision in XZ plane
-glm::vec3 resolveCollision(const obb& playerObb, const obb& wallObb, PermittedDirections& permittedDirections) {
+glm::vec3 resolveCollision(const CustomTypes::obb& playerObb, const CustomTypes::obb& wallObb, PermittedDirections& permittedDirections) {
     glm::vec3 playerMin = playerObb.first;
     glm::vec3 playerMax = playerObb.second;
     glm::vec3 wallMin = wallObb.first;

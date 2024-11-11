@@ -139,11 +139,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Blinky.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GameLevel.cpp" />
     <ClCompile Include="GameObjectBase.cpp" />
     <ClCompile Include="GameObjectCustom.cpp" />
     <ClCompile Include="GameObjectFromModel.cpp" />
+    <ClCompile Include="Ghost.cpp" />
     <ClCompile Include="glad.c" />
     <ClCompile Include="LoggerManager.cpp" />
     <ClCompile Include="Mesh.cpp" />
@@ -156,12 +158,15 @@
     <ClCompile Include="Utility.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Blinky.hpp" />
+    <ClInclude Include="custom_types.hpp" />
     <ClInclude Include="FileSystem.hpp" />
     <ClInclude Include="Game.hpp" />
     <ClInclude Include="GameLevel.hpp" />
     <ClInclude Include="GameObjectBase.hpp" />
     <ClInclude Include="GameObjectCustom.hpp" />
     <ClInclude Include="GameObjectFromModel.hpp" />
+    <ClInclude Include="Ghost.hpp" />
     <ClInclude Include="LoggerManager.hpp" />
     <ClInclude Include="Mesh.hpp" />
     <ClInclude Include="Model.hpp" />

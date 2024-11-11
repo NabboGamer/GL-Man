@@ -11,6 +11,8 @@ public:
     // Function to round a 3D vector to six decimal places
     static glm::vec3 ApproximateVec3ToSixDecimals(glm::vec3 vec);
 
+    static glm::vec3 GetRandomDirection();
+
 private:
     // Private constructor to prevent a new instance from being created from outside
     Utility();
