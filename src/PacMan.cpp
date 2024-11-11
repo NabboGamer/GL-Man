@@ -5,8 +5,8 @@
 #include "GameObjectFromModel.hpp"
 #include "LoggerManager.hpp"
 
-PacMan::PacMan(glm::vec3 cameraPos, glm::vec3 cameraAt, glm::mat4 view, glm::mat4 projection) {
-	this->init(cameraPos, cameraAt, view, projection);
+PacMan::PacMan() {
+	this->init();
 }
 
 PacMan::~PacMan() {
@@ -40,21 +40,7 @@ void PacMan::Draw(double deltaTime) {
 	this->updateOtherGameObjects();
 }
 
-void PacMan::init(glm::vec3 cameraPos, glm::vec3 cameraAt, glm::mat4 view, glm::mat4 projection) {
-	/// Load Shader
-	ResourceManager::LoadShader("shaders/pacman.vs", "shaders/pacman.fs", nullptr, "pacmanShader");
-	/// Configure Shader
-	// Insert uniform variable in vertex shader(only global variables, i.e. the same for all shaders)
-	ResourceManager::GetShader("pacmanShader").Use().SetMatrix4("view", view);
-	ResourceManager::GetShader("pacmanShader").Use().SetMatrix4("projection", projection);
-	// Insert uniform variable in fragment shader(only global variables, i.e. the same for all shaders)
-	ResourceManager::GetShader("pacmanShader").Use().SetVector3f("viewPos", cameraPos);
-	ResourceManager::GetShader("pacmanShader").Use().SetVector3f("dirLight.direction", glm::normalize(cameraAt - cameraPos));
-	ResourceManager::GetShader("pacmanShader").Use().SetVector3f("dirLight.ambient", glm::vec3(0.7f, 0.7f, 0.7f));
-	ResourceManager::GetShader("pacmanShader").Use().SetVector3f("dirLight.diffuse", glm::vec3(0.9f, 0.9f, 0.9f));
-	ResourceManager::GetShader("pacmanShader").Use().SetVector3f("dirLight.specular", glm::vec3(0.2f, 0.2f, 0.2f));
-	ResourceManager::GetShader("pacmanShader").Use().SetFloat("material.shininess", 32.0f);
-	/// Configure Game Objects
+void PacMan::init() {
 	std::vector<glm::vec3> pacmanPositions  = { glm::vec3(7.5f, 0.0f, 13.5f) };
 	std::vector<glm::vec3> pacmanDirections = { glm::vec3(0.0f, 0.0f, -1.0f) };
 	std::vector<float>     pacmanRotations  = { 0.0f };
@@ -63,7 +49,7 @@ void PacMan::init(glm::vec3 cameraPos, glm::vec3 cameraAt, glm::mat4 view, glm::
 	for (int i = 0; i < 10; i++){
 		std::string string = "pacman";
 		std::string completeString = string + std::to_string(i + 1);
-		ResourceManager::LoadModel("../res/objects/pacman/" + completeString +"/"+ completeString +".obj", completeString);
+		ResourceManager::LoadModel("../res/objects/pacman/" + completeString + "/" + completeString + ".obj", completeString);
 		this->gameObjects.push_back(new GameObjectFromModel(pacmanPositions,
 															pacmanDirections,
 															pacmanRotations,

@@ -21,6 +21,7 @@
 
 // Game-related State data
 PacMan* pacman;
+GameObjectBase* ghost;
 GameObjectBase* mazeWall;
 //ParticleGenerator *Particles;
 //PostProcessor     *Effects;
@@ -47,6 +48,8 @@ void Game::Init() {
     ResourceManager::LoadShader("shaders/mazeFloor.vs", "shaders/mazeFloor.fs", nullptr, "mazeFloorShader");
     ResourceManager::LoadShader("shaders/dot.vs", "shaders/dot.fs", nullptr, "dotShader");
     ResourceManager::LoadShader("shaders/dot.vs", "shaders/dot.fs", nullptr, "energizerShader");
+    ResourceManager::LoadShader("shaders/pacman.vs", "shaders/pacman.fs", nullptr, "pacmanShader");
+    ResourceManager::LoadShader("shaders/pacman.vs", "shaders/pacman.fs", nullptr, "ghostShader");
     /*ResourceManager::LoadShader("particle.vs", "particle.fs", nullptr, "particle");
     ResourceManager::LoadShader("post_processing.vs", "post_processing.fs", nullptr, "postprocessing");*/
 
@@ -68,6 +71,10 @@ void Game::Init() {
     ResourceManager::GetShader("dotShader").Use().SetMatrix4("projection", projection);
     ResourceManager::GetShader("energizerShader").Use().SetMatrix4("view", view);
     ResourceManager::GetShader("energizerShader").Use().SetMatrix4("projection", projection);
+    ResourceManager::GetShader("pacmanShader").Use().SetMatrix4("view", view);
+    ResourceManager::GetShader("pacmanShader").Use().SetMatrix4("projection", projection);
+    ResourceManager::GetShader("ghostShader").Use().SetMatrix4("view", view);
+    ResourceManager::GetShader("ghostShader").Use().SetMatrix4("projection", projection);
     // Insert uniform variable in fragment shader(only global variables, i.e. the same for all shaders)
     ResourceManager::GetShader("mazeWallShader").Use().SetVector3f("viewPos", cameraPos);
     ResourceManager::GetShader("mazeWallShader").Use().SetVector3f("dirLight.direction", glm::normalize(cameraAt - cameraPos));
@@ -93,7 +100,18 @@ void Game::Init() {
     ResourceManager::GetShader("energizerShader").Use().SetVector3f("dirLight.diffuse", glm::vec3(0.7f, 0.7f, 0.7f));
     ResourceManager::GetShader("energizerShader").Use().SetVector3f("dirLight.specular", glm::vec3(0.2f, 0.2f, 0.2f));
     ResourceManager::GetShader("energizerShader").Use().SetFloat("material.shininess", 32.0f);
-    
+    ResourceManager::GetShader("pacmanShader").Use().SetVector3f("viewPos", cameraPos);
+    ResourceManager::GetShader("pacmanShader").Use().SetVector3f("dirLight.direction", glm::normalize(cameraAt - cameraPos));
+    ResourceManager::GetShader("pacmanShader").Use().SetVector3f("dirLight.ambient", glm::vec3(0.7f, 0.7f, 0.7f));
+    ResourceManager::GetShader("pacmanShader").Use().SetVector3f("dirLight.diffuse", glm::vec3(0.9f, 0.9f, 0.9f));
+    ResourceManager::GetShader("pacmanShader").Use().SetVector3f("dirLight.specular", glm::vec3(0.2f, 0.2f, 0.2f));
+    ResourceManager::GetShader("pacmanShader").Use().SetFloat("material.shininess", 32.0f);
+    ResourceManager::GetShader("ghostShader").Use().SetVector3f("viewPos", cameraPos);
+    ResourceManager::GetShader("ghostShader").Use().SetVector3f("dirLight.direction", glm::normalize(cameraAt - cameraPos));
+    ResourceManager::GetShader("ghostShader").Use().SetVector3f("dirLight.ambient", glm::vec3(0.7f, 0.7f, 0.7f));
+    ResourceManager::GetShader("ghostShader").Use().SetVector3f("dirLight.diffuse", glm::vec3(0.9f, 0.9f, 0.9f));
+    ResourceManager::GetShader("ghostShader").Use().SetVector3f("dirLight.specular", glm::vec3(0.2f, 0.2f, 0.2f));
+    ResourceManager::GetShader("ghostShader").Use().SetFloat("material.shininess", 32.0f);
 
     /// Load Textures
     ResourceManager::LoadTexture(FileSystem::getPath("../res/textures/wall_diffuse_360.png").c_str(), "mazeWallDiffuseTexture");
@@ -104,6 +122,7 @@ void Game::Init() {
     /// Load Models
     ResourceManager::LoadModel("../res/objects/powerup/coin/coin.obj", "dotModel");
     ResourceManager::LoadModel("../res/objects/powerup/coin/coin.obj", "energizerModel");
+    ResourceManager::LoadModel("../res/objects/ghosts/vulnerable_ghost_blue/vulnerable_ghost_blue1/vulnerable_ghost_blue1.obj", "ghostModel");
 
     /// Load Levels
     GameLevel levelOne;
@@ -112,13 +131,25 @@ void Game::Init() {
     this->level = 0;
 
     /// Configure Game Objects
-    pacman = new PacMan(this->cameraPos, this->cameraAt, view, projection);
+    pacman = new PacMan();
 
+    std::vector<glm::vec3> modelPositions = { glm::vec3(7.5f, 0.0f, 10.0f) };
+    std::vector<glm::vec3> modelDirections = { glm::vec3(0.0f, 0.0f, -1.0f) };
+    std::vector<float>     modelRotations = { 90.0f };
+    std::vector<glm::vec3> modelScaling = { glm::vec3(1.0f) };
+
+     ghost = new GameObjectFromModel(modelPositions,
+        modelDirections,
+        modelRotations,
+        modelScaling,
+        &ResourceManager::GetShader("ghostShader"),
+        &ResourceManager::GetModel("ghostModel"));
     // audio
     //SoundEngine->play2D(FileSystem::getPath("resources/audio/breakout.mp3").c_str(), true);
 }
 
-///TODO: Introdurre meccanismo di cambio modello per PacMan(tramite classe apposita PacMan che deve avere una vector di GamObjectFromModel)
+///TODO: Introdurre classe per i fantasmi in modo da gestire sia quelli statici per differenziarli sulla strategia di movimento 
+///      sia quelli dinamici in cui oltre che la strategia c'è il meccanismo di animazione come per pacman.
 
 void Game::Update(double dt) {
 //    // update objects
@@ -199,6 +230,7 @@ void Game::Render(double dt) {
         this->Levels[this->level].Draw();
         // draw player
         pacman->Draw(dt);
+        ghost->Draw();
         //    // draw PowerUps
         //    for (PowerUp &powerUp : this->PowerUps)
         //        if (!powerUp.Destroyed)

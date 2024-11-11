@@ -10,7 +10,7 @@ class PacMan {
 public:
 	std::vector<GameObjectBase*> gameObjects;
 
-	PacMan(glm::vec3 cameraPos, glm::vec3 cameraAt, glm::mat4 view, glm::mat4 projection);
+	PacMan();
 	~PacMan();
 
 	int  GetCurrentModelIndex() const;
@@ -23,6 +23,6 @@ private:
 	double frameDuration   = 0.04;
 	int currentModelIndex = 0;
 
-	void init(glm::vec3 cameraPos, glm::vec3 cameraAt, glm::mat4 view, glm::mat4 projection);
+	void init();
 	void updateOtherGameObjects();
 };
