@@ -9,7 +9,6 @@
 #include "FileSystem.hpp"
 #include "ResourceManager.hpp"
 #include "LoggerManager.hpp"
-#include "LoggerManager.hpp"
 #include "GameObjectBase.hpp"
 #include "GameObjectCustom.hpp"
 #include "GameObjectFromModel.hpp"
@@ -22,7 +21,7 @@
 // Game-related State data
 PacMan* pacman;
 GameObjectBase* ghost;
-GameObjectBase* mazeWall;
+
 //ParticleGenerator *Particles;
 //PostProcessor     *Effects;
 //ISoundEngine      *SoundEngine = createIrrKlangDevice();
@@ -44,12 +43,12 @@ Game::~Game() {
 
 void Game::Init() {
     /// Load Shaders
-    ResourceManager::LoadShader("shaders/mazeWall.vs", "shaders/mazeWall.fs", nullptr, "mazeWallShader");
-    ResourceManager::LoadShader("shaders/mazeFloor.vs", "shaders/mazeFloor.fs", nullptr, "mazeFloorShader");
-    ResourceManager::LoadShader("shaders/dot.vs", "shaders/dot.fs", nullptr, "dotShader");
-    ResourceManager::LoadShader("shaders/dot.vs", "shaders/dot.fs", nullptr, "energizerShader");
-    ResourceManager::LoadShader("shaders/pacman.vs", "shaders/pacman.fs", nullptr, "pacmanShader");
-    ResourceManager::LoadShader("shaders/pacman.vs", "shaders/pacman.fs", nullptr, "ghostShader");
+    ResourceManager::LoadShader("./shaders/mazeWall.vs",  "./shaders/mazeWall.fs",  nullptr, "mazeWallShader");
+    ResourceManager::LoadShader("./shaders/mazeFloor.vs", "./shaders/mazeFloor.fs", nullptr, "mazeFloorShader");
+    ResourceManager::LoadShader("./shaders/dot.vs",       "./shaders/dot.fs",       nullptr, "dotShader");
+    ResourceManager::LoadShader("./shaders/dot.vs",       "./shaders/dot.fs",       nullptr, "energizerShader");
+    ResourceManager::LoadShader("./shaders/pacman.vs",    "./shaders/pacman.fs",    nullptr, "pacmanShader");
+    ResourceManager::LoadShader("./shaders/ghost.vs",     "./shaders/ghost.fs",     nullptr, "ghostShader");
     /*ResourceManager::LoadShader("particle.vs", "particle.fs", nullptr, "particle");
     ResourceManager::LoadShader("post_processing.vs", "post_processing.fs", nullptr, "postprocessing");*/
 
@@ -139,11 +138,11 @@ void Game::Init() {
     std::vector<glm::vec3> modelScaling = { glm::vec3(1.0f) };
 
      ghost = new GameObjectFromModel(modelPositions,
-        modelDirections,
-        modelRotations,
-        modelScaling,
-        &ResourceManager::GetShader("ghostShader"),
-        &ResourceManager::GetModel("ghostModel"));
+                                     modelDirections,
+                                     modelRotations,
+                                     modelScaling,
+                                     &ResourceManager::GetShader("ghostShader"),
+                                     &ResourceManager::GetModel("ghostModel"));
     // audio
     //SoundEngine->play2D(FileSystem::getPath("resources/audio/breakout.mp3").c_str(), true);
 }

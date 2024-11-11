@@ -133,5 +133,11 @@
     <None Include="shaders\pacman.vs">
       <Filter>Resource Files\Shaders</Filter>
     </None>
+    <None Include="shaders\ghost.fs">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="shaders\ghost.vs">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>
