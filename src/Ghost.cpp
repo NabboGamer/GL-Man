@@ -19,3 +19,32 @@ bool Ghost::checkCollision(const CustomTypes::obb& obb1, const CustomTypes::obb&
 
 	return overlapX && overlapZ;
 }
+
+glm::vec3 Ghost::resolveCollision(const CustomTypes::obb& playerObb, const CustomTypes::obb& wallObb) {
+    glm::vec3 playerMin = playerObb.first;
+    glm::vec3 playerMax = playerObb.second;
+    glm::vec3 wallMin = wallObb.first;
+    glm::vec3 wallMax = wallObb.second;
+
+    // Calculate the penetration depth on the X and Z axes
+    float overlapX = std::min(playerMax.x - wallMin.x, wallMax.x - playerMin.x);
+    float overlapZ = std::min(playerMax.z - wallMin.z, wallMax.z - playerMin.z);
+
+    // Find the axis with the least penetration and use that value to resolve the collision
+    if (overlapX < overlapZ) {
+        if (playerMax.x < wallMax.x) {
+            return glm::vec3(-overlapX, 0.0f, 0.0f);
+        }
+        else {
+            return glm::vec3(overlapX, 0.0f, 0.0f);
+        }
+    }
+    else {
+        if (playerMax.z < wallMax.z) {
+            return glm::vec3(0.0f, 0.0f, -overlapZ);
+        }
+        else {
+            return glm::vec3(0.0f, 0.0f, overlapZ);
+        }
+    }
+}

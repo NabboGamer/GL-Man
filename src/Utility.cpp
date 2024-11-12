@@ -36,3 +36,20 @@ glm::vec3 Utility::GetRandomDirection() {
     int randomIndex = dist(gen);                     // Get a random index
     return directions[randomIndex];                  // Returns the chosen direction
 }
+
+glm::vec3 Utility::NormalizeZeros(const glm::vec3& vec) {
+    glm::vec3 result = vec;
+    if (result.x == -0.0f) result.x = 0.0f;
+    if (result.y == -0.0f) result.y = 0.0f;
+    if (result.z == -0.0f) result.z = 0.0f;
+    return result;
+}
+
+std::size_t Utility::Vec3Hash::operator()(const glm::vec3& v) const {
+    std::size_t h1 = std::hash<float>()(v.x);
+    std::size_t h2 = std::hash<float>()(v.y);
+    std::size_t h3 = std::hash<float>()(v.z);
+    h1 ^= h2 << 1;
+    h1 ^= h3 << 2;
+    return h1;
+}
