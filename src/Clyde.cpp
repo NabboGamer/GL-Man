@@ -2,25 +2,65 @@
 #include <random>
 #include <unordered_map>
 
-#include "Blinky.hpp"
+#include "Clyde.hpp"
 #include "custom_types.hpp"
 #include "Utility.hpp"
 #include "ResourceManager.hpp"
 #include "LoggerManager.hpp"
 #include "GameObjectFromModel.hpp"
 
-Blinky::Blinky() : Ghost() {
+Clyde::Clyde() : Ghost() {
 	this->init();
 }
 
-Blinky::~Blinky() {
+Clyde::~Clyde() {
 	delete gameObject;
 }
 
-void Blinky::Move(double deltaTime, GameObjectBase* mazeWall) {
+void Clyde::Move(double deltaTime, GameObjectBase* mazeWall) {
     // Avoid excessive movements due to possible framerate drops, as the movement depends on it
     float effectiveDt = std::min(static_cast<float>(deltaTime), MAX_DT);
-    float speed = BLINKY_SPEED * effectiveDt;
+    float speed = CLYDE_SPEED * effectiveDt;
+
+    // Check if Clyde is in the starting position
+    glm::vec3 currentPos = this->gameObject->positions[0];
+    if (currentPos.x >= 15.0f && currentPos.x <= 17.0f &&
+        currentPos.z >= 12.0f && currentPos.z <= 16.0f) {
+        if (!this->skipFirstMovement) {
+            glm::vec3 targetPos = glm::vec3(16.0f, 0.0f, 13.75f);
+
+            glm::vec3 direction = glm::vec3(0.0f, 0.0f, -1.0f);
+            this->gameObject->directions[0] = direction;
+
+            glm::vec3 newPosition = currentPos + speed * direction;
+            this->gameObject->positions[0] = newPosition;
+
+            if (glm::distance(currentPos, targetPos) <= speed) {
+                this->gameObject->positions[0] = targetPos;
+                this->gameObject->directions[0] = glm::vec3(1.0f, 0.0f, 0.0f);
+                this->timeSinceLastChange = 0.0f;
+                this->skipFirstMovement = true;
+            }
+            return;
+        }
+        else {
+            glm::vec3 targetPos = glm::vec3(19.0f, 0.0f, 13.75f);
+
+            glm::vec3 direction = glm::vec3(1.0f, 0.0f, 0.0f);
+            this->gameObject->directions[0] = direction;
+
+            glm::vec3 newPosition = currentPos + speed * direction;
+            this->gameObject->positions[0] = newPosition;
+
+            if (glm::distance(currentPos, targetPos) <= speed) {
+                this->gameObject->positions[0] = targetPos;
+                this->gameObject->directions[0] = glm::vec3(0.0f, 0.0f, 1.0f);
+                this->timeSinceLastChange = 0.0f;
+            }
+            return;
+        }
+
+    }
 
     glm::vec3 currentDirection = this->gameObject->directions[0];
     // Sanitize the direction vector (Avoid that there are components with negative zeros)
@@ -137,41 +177,41 @@ void Blinky::Move(double deltaTime, GameObjectBase* mazeWall) {
         updateRecentDirections(chosenDirection);
     }
     else {
-        LoggerManager::LogDebug("Blinky has no clear direction, and remains stationary...");
+        LoggerManager::LogDebug("Clyde has no clear direction, and remains stationary...");
     }
 
 }
 
-void Blinky::Draw(double deltaTime) {
+void Clyde::Draw(double deltaTime) {
 	this->gameObject->Draw();
 }
 
-void Blinky::init() {
-	std::vector<glm::vec3> blinkyPositions  = { glm::vec3(19.0f, 0.0f, 13.75f) };
-	std::vector<glm::vec3> blinkyDirections = { glm::vec3(0.0f, 0.0f, -1.0f) };
-	std::vector<float>     blinkyRotations  = { 0.0f };
-	std::vector<glm::vec3> blinkyScaling    = { glm::vec3(0.25f) };
+void Clyde::init() {
+	std::vector<glm::vec3> clydePositions  = { glm::vec3(16.0f, 0.0f, 15.5f) };
+	std::vector<glm::vec3> clydeDirections = { glm::vec3(1.0f, 0.0f, 0.0f) };
+	std::vector<float>     clydeRotations  = { 0.0f };
+	std::vector<glm::vec3> clydeScaling    = { glm::vec3(0.25f) };
 
-	ResourceManager::LoadModel("../res/objects/ghosts/blinky/blinky.obj", "blinkyModel");
-	this->gameObject = new GameObjectFromModel(blinkyPositions,
-											   blinkyDirections,
-											   blinkyRotations,
-											   blinkyScaling,
+	ResourceManager::LoadModel("../res/objects/ghosts/clyde/clyde.obj", "clydeModel");
+	this->gameObject = new GameObjectFromModel(clydePositions,
+											   clydeDirections,
+											   clydeRotations,
+											   clydeScaling,
 											   &ResourceManager::GetShader("ghostShader"),
-											   &ResourceManager::GetModel("blinkyModel"));
+											   &ResourceManager::GetModel("clydeModel"));
 }
 
-bool Blinky::doCollisions(GameObjectBase* mazeWall) {
+bool Clyde::doCollisions(GameObjectBase* mazeWall) {
 	auto blinkyObb = this->gameObject->GetTransformedBoundingBox(0);
 
-	// CHECK COLLISION BLINKY-WALL
+	// CHECK COLLISION CLYDE-WALL
 	size_t numInstancesMazeWall = mazeWall->GetNumInstances();
 	for (size_t i = 0; i < numInstancesMazeWall; i++) {
 		auto mazeWallObb = mazeWall->GetTransformedBoundingBox(i);
 		bool collision = this->checkCollision(blinkyObb, mazeWallObb);
         if (collision) {
-            LoggerManager::LogDebug("There was a collision between BLINKY and WALL number {}", i);
-            // RESOLVE COLLISION BLINKY-WALL
+            LoggerManager::LogDebug("There was a collision between CLYDE and WALL number {}", i);
+            // RESOLVE COLLISION CLYDE-WALL
             glm::vec3 correction = this->resolveCollision(blinkyObb, mazeWallObb);
             this->gameObject->positions[0] += correction; // Apply the correction vector
             return true;
@@ -181,11 +221,11 @@ bool Blinky::doCollisions(GameObjectBase* mazeWall) {
 }
 
 // Counts the frequency of each direction in the recent queue
-int Blinky::countDirectionFrequency(const glm::vec3& direction) const {
+int Clyde::countDirectionFrequency(const glm::vec3& direction) const {
     return static_cast<int>(std::count(recentDirections.begin(), recentDirections.end(), direction));
 }
 
-void Blinky::updateRecentDirections(const glm::vec3& chosenDirection) {
+void Clyde::updateRecentDirections(const glm::vec3& chosenDirection) {
     if (recentDirections.size() >= MAX_RECENT_DIRECTIONS) {
         recentDirections.pop_front();
     }

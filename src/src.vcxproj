@@ -140,6 +140,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Blinky.cpp" />
+    <ClCompile Include="Clyde.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GameLevel.cpp" />
     <ClCompile Include="GameObjectBase.cpp" />
@@ -147,10 +148,12 @@
     <ClCompile Include="GameObjectFromModel.cpp" />
     <ClCompile Include="Ghost.cpp" />
     <ClCompile Include="glad.c" />
+    <ClCompile Include="Inky.cpp" />
     <ClCompile Include="LoggerManager.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="PacMan.cpp" />
+    <ClCompile Include="Pinky.cpp" />
     <ClCompile Include="program.cpp" />
     <ClCompile Include="ResourceManager.cpp" />
     <ClCompile Include="Shader.cpp" />
@@ -159,6 +162,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Blinky.hpp" />
+    <ClInclude Include="Clyde.hpp" />
     <ClInclude Include="custom_types.hpp" />
     <ClInclude Include="FileSystem.hpp" />
     <ClInclude Include="Game.hpp" />
@@ -167,10 +171,12 @@
     <ClInclude Include="GameObjectCustom.hpp" />
     <ClInclude Include="GameObjectFromModel.hpp" />
     <ClInclude Include="Ghost.hpp" />
+    <ClInclude Include="Inky.hpp" />
     <ClInclude Include="LoggerManager.hpp" />
     <ClInclude Include="Mesh.hpp" />
     <ClInclude Include="Model.hpp" />
     <ClInclude Include="PacMan.hpp" />
+    <ClInclude Include="Pinky.hpp" />
     <ClInclude Include="ResourceManager.hpp" />
     <ClInclude Include="Shader.hpp" />
     <ClInclude Include="Texture2D.hpp" />

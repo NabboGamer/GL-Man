@@ -16,6 +16,9 @@
 #include "PacMan.hpp"
 #include "Ghost.hpp"
 #include "Blinky.hpp"
+#include "Clyde.hpp"
+#include "Inky.hpp"
+#include "Pinky.hpp"
 //#include "particle_generator.h"
 //#include "post_processor.h"
 //#include "text_renderer.h"
@@ -24,7 +27,9 @@
 // Game-related State data
 PacMan* pacman;
 Ghost*  blinky;
-
+Ghost*  clyde;
+Ghost*  inky;
+Ghost*  pinky;
 //ParticleGenerator *Particles;
 //PostProcessor     *Effects;
 //ISoundEngine      *SoundEngine = createIrrKlangDevice();
@@ -37,6 +42,10 @@ Game::Game(unsigned int width, unsigned int height) : state(GAME_ACTIVE), keys()
 
 Game::~Game() {
     delete pacman;
+    delete blinky;
+    delete clyde;
+    delete inky;
+    delete pinky;
     /*delete Ball;
     delete Particles;
     delete Effects;
@@ -135,6 +144,9 @@ void Game::Init() {
     pacman = new PacMan();
 
     blinky = new Blinky();
+    clyde = new Clyde();
+    inky = new Inky();
+    pinky = new Pinky();
     // audio
     //SoundEngine->play2D(FileSystem::getPath("resources/audio/breakout.mp3").c_str(), true);
 }
@@ -145,6 +157,9 @@ void Game::Init() {
 void Game::Update(double dt) {
     // update objects
     blinky->Move(dt, this->Levels[this->level].mazeWall);
+    clyde ->Move(dt, this->Levels[this->level].mazeWall);
+    inky ->Move(dt, this->Levels[this->level].mazeWall);
+    pinky ->Move(dt, this->Levels[this->level].mazeWall);
     // check for collisions
     this->DoCollisions();
 //    // update particles
@@ -222,6 +237,9 @@ void Game::Render(double dt) {
         // draw player
         pacman->Draw(dt);
         blinky->Draw(dt);
+        clyde->Draw(dt);
+        inky->Draw(dt);
+        pinky->Draw(dt);
         //    // draw PowerUps
         //    for (PowerUp &powerUp : this->PowerUps)
         //        if (!powerUp.Destroyed)
