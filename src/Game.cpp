@@ -38,7 +38,8 @@ Ghost*  pinky;
 // Initial speed of the player
 float PLAYER_SPEED = 7.5f;
 
-Game::Game(unsigned int width, unsigned int height) : state(GAME_ACTIVE), keys(), keysProcessed(), width(width), height(height) { }
+Game::Game(unsigned int width, unsigned int height) : state(GAME_ACTIVE), keys(), keysProcessed(), width(width), height(height), lives(3){
+}
 
 Game::~Game() {
     delete pacman;
@@ -151,8 +152,10 @@ void Game::Init() {
     //SoundEngine->play2D(FileSystem::getPath("resources/audio/breakout.mp3").c_str(), true);
 }
 
-///TODO: Introdurre classe per i fantasmi in modo da gestire sia quelli statici per differenziarli sulla strategia di movimento 
-///      sia quelli dinamici in cui oltre che la strategia c'è il meccanismo di animazione come per pacman.
+/// TODO: Introdurre classe per i fantasmi in modo da gestire sia quelli statici per differenziarli sulla strategia di movimento 
+///       sia quelli dinamici in cui oltre che la strategia c'è il meccanismo di animazione come per pacman.
+/// 
+/// TODO: Implementare teletrasporto per fantasmi e colissioni fantasma pacman
 
 void Game::Update(double dt) {
     // update objects
@@ -330,6 +333,74 @@ void Game::DoCollisions() {
         }
     }
 
+    // CHECK COLLISION PLAYER-GHOSTS
+    // CHECK COLLISION PLAYER-BLINKY
+    auto blinkyPtr = dynamic_cast<Blinky*>(blinky);
+    auto blinkyObb = blinkyPtr->gameObject->GetTransformedBoundingBox(0);
+    bool collision = checkCollision(playerObb, blinkyObb);
+    if (collision) {
+        LoggerManager::LogDebug("There was a collision between PLAYER and BLINKY");
+        // RESOLVE COLLISION PLAYER-BLINKY
+        if (this->lives > 1) {
+            this->lives--;
+            pacman->gameObjects[pacman->GetCurrentModelIndex()]->positions[0] = glm::vec3(7.5f, 0.0f, 13.5f);
+            pacman->updateOtherGameObjects();
+        } else {
+            this->state = GAME_DEFEAT;
+        }
+        
+    }
+    // CHECK COLLISION PLAYER-CLYDE
+    auto clydePtr = dynamic_cast<Clyde*>(clyde);
+    auto clydeObb = clydePtr->gameObject->GetTransformedBoundingBox(0);
+    collision = checkCollision(playerObb, clydeObb);
+    if (collision) {
+        LoggerManager::LogDebug("There was a collision between PLAYER and CLYDE");
+        // RESOLVE COLLISION PLAYER-CLYDE
+        if (this->lives > 1) {
+            this->lives--;
+            pacman->gameObjects[pacman->GetCurrentModelIndex()]->positions[0] = glm::vec3(7.5f, 0.0f, 13.5f);
+            pacman->updateOtherGameObjects();
+        }
+        else {
+            this->state = GAME_DEFEAT;
+        }
+
+    }
+    // CHECK COLLISION PLAYER-INKY
+    auto inkyPtr = dynamic_cast<Inky*>(inky);
+    auto inkyObb = inkyPtr->gameObject->GetTransformedBoundingBox(0);
+    collision = checkCollision(playerObb, inkyObb);
+    if (collision) {
+        LoggerManager::LogDebug("There was a collision between PLAYER and INKY");
+        // RESOLVE COLLISION PLAYER-INKY
+        if (this->lives > 1) {
+            this->lives--;
+            pacman->gameObjects[pacman->GetCurrentModelIndex()]->positions[0] = glm::vec3(7.5f, 0.0f, 13.5f);
+            pacman->updateOtherGameObjects();
+        }
+        else {
+            this->state = GAME_DEFEAT;
+        }
+
+    }
+    // CHECK COLLISION PLAYER-PINKY
+    auto pinkyPtr = dynamic_cast<Pinky*>(pinky);
+    auto pinkyObb = pinkyPtr->gameObject->GetTransformedBoundingBox(0);
+    collision = checkCollision(playerObb, pinkyObb);
+    if (collision) {
+        LoggerManager::LogDebug("There was a collision between PLAYER and PINKY");
+        // RESOLVE COLLISION PLAYER-INKY
+        if (this->lives > 1) {
+            this->lives--;
+            pacman->gameObjects[pacman->GetCurrentModelIndex()]->positions[0] = glm::vec3(7.5f, 0.0f, 13.5f);
+            pacman->updateOtherGameObjects();
+        }
+        else {
+            this->state = GAME_DEFEAT;
+        }
+
+    }
 }
 
 // OBB - OBB collision detection in XZ plane
