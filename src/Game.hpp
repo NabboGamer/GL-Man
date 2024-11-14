@@ -17,7 +17,8 @@
 enum GameState {
     GAME_ACTIVE,
     GAME_MENU,
-    GAME_WIN
+    GAME_WIN,
+    GAME_DEFEAT
 };
 
 struct PermittedDirections {
@@ -43,7 +44,7 @@ public:
     std::vector<GameLevel>  Levels;
     //std::vector<PowerUp>    PowerUps;
     unsigned int            level;
-    //unsigned int            lives;
+    unsigned int            lives;
 
     // constructor/destructor
     Game(unsigned int width, unsigned int height);

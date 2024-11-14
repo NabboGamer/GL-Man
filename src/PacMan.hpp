@@ -1,7 +1,6 @@
 #pragma once
 
 #include <vector>
-#include <glm/glm.hpp>
 
 #include "GameObjectBase.hpp"
 
@@ -14,6 +13,7 @@ public:
 	~PacMan();
 
 	int  GetCurrentModelIndex() const;
+	void updateOtherGameObjects();
 	void Draw(double deltaTime);
 
 private:
@@ -24,5 +24,4 @@ private:
 	int currentModelIndex = 0;
 
 	void init();
-	void updateOtherGameObjects();
 };

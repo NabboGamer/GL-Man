@@ -13,7 +13,7 @@ class Inky : public Ghost {
 public:
 	GameObjectBase* gameObject;
 
-    Inky();
+    Inky(std::pair<size_t, size_t> levelMatrixDim);
 	~Inky();
 
 	void Move(double deltaTime, GameObjectBase* mazeWall) override;
@@ -35,11 +35,13 @@ private:
     float timeSinceLastChange = 0.0f;                  // Time elapsed since last change
     std::deque<glm::vec3> recentDirections;            // Queue of the last chosen directions
     bool skipFirstMovement = false;
+    std::pair<size_t, size_t> levelMatrixDim;
     
 
 	void init() override;
 	bool doCollisions(GameObjectBase* mazeWall);
     int  countDirectionFrequency(const glm::vec3& direction) const;
     void updateRecentDirections(const glm::vec3& chosenDirection);
+    void checkIfTeleportIsNeeded(float speed);
 
 };
