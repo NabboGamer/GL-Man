@@ -10,7 +10,7 @@ PacMan::PacMan() {
 }
 
 PacMan::~PacMan() {
-	for (auto gameObjectBasePtr : this->gameObjects) {
+	for (const auto gameObjectBasePtr : this->gameObjects) {
 		delete gameObjectBasePtr;
 	}
 }
@@ -19,8 +19,7 @@ int PacMan::GetCurrentModelIndex() const {
 	return this->currentModelIndex;
 }
 
-void PacMan::Draw(double deltaTime) {
-	GameObjectBase* currentGameObject;
+void PacMan::Draw(const double deltaTime) {
 	this->timeAccumulator += deltaTime;
 	// When timeAccumulator is greater than or equal to frameDuration, 
 	// it means that enough time (0.04 seconds) has passed for the model to change.
@@ -35,16 +34,16 @@ void PacMan::Draw(double deltaTime) {
 		// This causes the animation to loop.
 		this->currentModelIndex = (this->currentModelIndex + 1) % 10;
 	}
-	currentGameObject = this->gameObjects[this->currentModelIndex];
+	GameObjectBase* currentGameObject = this->gameObjects[this->currentModelIndex];
 	currentGameObject->Draw();
 	this->updateOtherGameObjects();
 }
 
 void PacMan::init() {
-	std::vector<glm::vec3> pacmanPositions  = { glm::vec3(7.5f, 0.0f, 13.5f) };
-	std::vector<glm::vec3> pacmanDirections = { glm::vec3(0.0f, 0.0f, -1.0f) };
-	std::vector<float>     pacmanRotations  = { 0.0f };
-	std::vector<glm::vec3> pacmanScaling    = { glm::vec3(0.20f) };
+	const std::vector<glm::vec3> pacmanPositions  = { glm::vec3(7.5f, 0.0f, 13.5f) };
+	const std::vector<glm::vec3> pacmanDirections = { glm::vec3(0.0f, 0.0f, -1.0f) };
+	const std::vector<float>     pacmanRotations  = { 0.0f };
+	const std::vector<glm::vec3> pacmanScaling    = { glm::vec3(0.20f) };
 	
 	for (int i = 0; i < 10; i++){
 		std::string string = "pacman";
@@ -60,7 +59,7 @@ void PacMan::init() {
 
 }
 
-void PacMan::updateOtherGameObjects() {
+void PacMan::updateOtherGameObjects() const {
 	for (int i = 0; i < 10; i++) {
 		if (i != this->currentModelIndex) {
 			this->gameObjects[i]->positions[0]  = this->gameObjects[this->currentModelIndex]->positions[0];

@@ -13,7 +13,7 @@ public:
 	~PacMan();
 
 	int  GetCurrentModelIndex() const;
-	void updateOtherGameObjects();
+	void updateOtherGameObjects() const;
 	void Draw(double deltaTime);
 
 private:

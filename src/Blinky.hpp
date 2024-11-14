@@ -3,18 +3,17 @@
 #include <vector>
 #include <glm/glm.hpp>
 #include <deque>
-#include <algorithm>
 
 #include "Ghost.hpp"
 #include "GameObjectBase.hpp"
 
-class Blinky : public Ghost {
+class Blinky final : public Ghost {
 
 public:
 	GameObjectBase* gameObject;
 
-	Blinky(std::pair<size_t, size_t> levelMatrixDim);
-	~Blinky();
+	explicit Blinky(std::pair<size_t, size_t> levelMatrixDim);
+	~Blinky() override;
 
 	void Move(double deltaTime, GameObjectBase* mazeWall) override;
 	void Draw(double deltaTime) override;
@@ -38,9 +37,9 @@ private:
     
 
 	void init() override;
-	bool doCollisions(GameObjectBase* mazeWall);
-    int  countDirectionFrequency(const glm::vec3& direction) const;
+	bool doCollisions(const GameObjectBase* mazeWall) const;
+    int countDirectionFrequency(const glm::vec3& direction) const;
     void updateRecentDirections(const glm::vec3& chosenDirection);
-	void checkIfTeleportIsNeeded(float speed);
+	void checkIfTeleportIsNeeded(float speed) const;
 
 };

@@ -1,5 +1,6 @@
 #include <windows.h>
 #include <random>
+#include <algorithm>
 #include <unordered_map>
 
 #include "Blinky.hpp"
@@ -9,7 +10,7 @@
 #include "LoggerManager.hpp"
 #include "GameObjectFromModel.hpp"
 
-Blinky::Blinky(std::pair<size_t, size_t> levelMatrixDim) : Ghost(), levelMatrixDim(levelMatrixDim) {
+Blinky::Blinky(const std::pair<size_t, size_t> levelMatrixDim) : Ghost(), levelMatrixDim(levelMatrixDim) {
 	this->Blinky::init();
 }
 
@@ -50,7 +51,7 @@ void Blinky::Move(double deltaTime, GameObjectBase* mazeWall) {
     bool doesItCollide = this->doCollisions(mazeWall);
     this->gameObject->positions[0] -= speed * currentDirection;
 
-    // If there is no collision and we do not force a change of direction, it continues in the current direction.
+    // If there is no collision, and we do not force a change of direction, it continues in the current direction.
     if (!doesItCollide && !forceDirectionChange) {
         this->gameObject->positions[0] += speed * currentDirection;
         // Check for teleport
@@ -100,10 +101,10 @@ void Blinky::Move(double deltaTime, GameObjectBase* mazeWall) {
                     directionFrequency[direction] = countDirectionFrequency(direction);
                 }
 
-                auto minFreqIt = std::min_element(safeDirections.begin(), safeDirections.end(),
-                    [&directionFrequency](const glm::vec3& a, const glm::vec3& b) {
-                        return directionFrequency[a] < directionFrequency[b];
-                    });
+                auto minFreqIt = ranges::min_element(safeDirections,
+                                                     [&directionFrequency](const glm::vec3& a, const glm::vec3& b) {
+	                                                     return directionFrequency[a] < directionFrequency[b];
+                                                     });
 
                 chosenDirection = *minFreqIt;
             }
@@ -122,10 +123,10 @@ void Blinky::Move(double deltaTime, GameObjectBase* mazeWall) {
                 directionFrequency[direction] = countDirectionFrequency(direction);
             }
 
-            auto minFreqIt = std::min_element(safeDirections.begin(), safeDirections.end(),
-                [&directionFrequency](const glm::vec3& a, const glm::vec3& b) {
-                    return directionFrequency[a] < directionFrequency[b];
-                });
+            auto minFreqIt = ranges::min_element(safeDirections,
+                                                 [&directionFrequency](const glm::vec3& a, const glm::vec3& b) {
+	                                                 return directionFrequency[a] < directionFrequency[b];
+                                                 });
 
             chosenDirection = *minFreqIt;
 
@@ -151,10 +152,10 @@ void Blinky::Draw(double deltaTime) {
 }
 
 void Blinky::init() {
-	std::vector<glm::vec3> blinkyPositions  = { glm::vec3(19.0f, 0.0f, 13.75f) };
-	std::vector<glm::vec3> blinkyDirections = { glm::vec3(0.0f, 0.0f, -1.0f) };
-	std::vector<float>     blinkyRotations  = { 0.0f };
-	std::vector<glm::vec3> blinkyScaling    = { glm::vec3(0.25f) };
+	const std::vector<glm::vec3> blinkyPositions  = { glm::vec3(19.0f, 0.0f, 13.75f) };
+	const std::vector<glm::vec3> blinkyDirections = { glm::vec3(0.0f, 0.0f, -1.0f) };
+	const std::vector<float>     blinkyRotations  = { 0.0f };
+	const std::vector<glm::vec3> blinkyScaling    = { glm::vec3(0.25f) };
 
 	ResourceManager::LoadModel("../res/objects/ghosts/blinky/blinky.obj", "blinkyModel");
 	this->gameObject = new GameObjectFromModel(blinkyPositions,
@@ -165,18 +166,17 @@ void Blinky::init() {
 											   &ResourceManager::GetModel("blinkyModel"));
 }
 
-bool Blinky::doCollisions(GameObjectBase* mazeWall) {
-	auto blinkyObb = this->gameObject->GetTransformedBoundingBox(0);
+bool Blinky::doCollisions(const GameObjectBase* mazeWall) const {
+	const auto blinkyObb = this->gameObject->GetTransformedBoundingBox(0);
 
 	// CHECK COLLISION BLINKY-WALL
-	size_t numInstancesMazeWall = mazeWall->GetNumInstances();
+	const size_t numInstancesMazeWall = mazeWall->GetNumInstances();
 	for (size_t i = 0; i < numInstancesMazeWall; i++) {
 		auto mazeWallObb = mazeWall->GetTransformedBoundingBox(i);
-		bool collision = this->checkCollision(blinkyObb, mazeWallObb);
-        if (collision) {
+		if (const bool collision = this->checkCollision(blinkyObb, mazeWallObb)) {
             LoggerManager::LogDebug("There was a collision between BLINKY and WALL number {}", i);
             // RESOLVE COLLISION BLINKY-WALL
-            glm::vec3 correction = this->resolveCollision(blinkyObb, mazeWallObb);
+            const glm::vec3 correction = this->resolveCollision(blinkyObb, mazeWallObb);
             this->gameObject->positions[0] += correction; // Apply the correction vector
             return true;
         }
@@ -186,7 +186,7 @@ bool Blinky::doCollisions(GameObjectBase* mazeWall) {
 
 // Counts the frequency of each direction in the recent queue
 int Blinky::countDirectionFrequency(const glm::vec3& direction) const {
-    return static_cast<int>(std::count(recentDirections.begin(), recentDirections.end(), direction));
+    return static_cast<int>(ranges::count(recentDirections, direction));
 }
 
 void Blinky::updateRecentDirections(const glm::vec3& chosenDirection) {
@@ -196,10 +196,10 @@ void Blinky::updateRecentDirections(const glm::vec3& chosenDirection) {
     recentDirections.push_back(chosenDirection);
 }
 
-void Blinky::checkIfTeleportIsNeeded(float speed) {
-    auto blinkyObb = this->gameObject->GetTransformedBoundingBox(0);
-    glm::vec3 pMin = blinkyObb.first;
-    glm::vec3 pMax = blinkyObb.second;
+void Blinky::checkIfTeleportIsNeeded(float speed) const {
+    const auto blinkyObb = this->gameObject->GetTransformedBoundingBox(0);
+    const glm::vec3 pMin = blinkyObb.first;
+    const glm::vec3 pMax = blinkyObb.second;
     size_t columnDim = this->levelMatrixDim.second;
 
     if (pMax.z >= static_cast<float>(columnDim) && this->gameObject->directions[0] == glm::vec3(0.0f, 0.0f, 1.0f)) {

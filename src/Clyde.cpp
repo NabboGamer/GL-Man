@@ -1,5 +1,6 @@
 #include <windows.h>
 #include <random>
+#include <algorithm>
 #include <unordered_map>
 
 #include "Clyde.hpp"
@@ -9,7 +10,7 @@
 #include "LoggerManager.hpp"
 #include "GameObjectFromModel.hpp"
 
-Clyde::Clyde(std::pair<size_t, size_t> levelMatrixDim) : Ghost(), levelMatrixDim(levelMatrixDim) {
+Clyde::Clyde(const std::pair<size_t, size_t> levelMatrixDim) : Ghost(), levelMatrixDim(levelMatrixDim) {
 	this->Clyde::init();
 }
 
@@ -27,9 +28,9 @@ void Clyde::Move(double deltaTime, GameObjectBase* mazeWall) {
     if (currentPos.x >= 15.0f && currentPos.x <= 17.0f &&
         currentPos.z >= 12.0f && currentPos.z <= 16.0f) {
         if (!this->skipFirstMovement) {
-            glm::vec3 targetPos = glm::vec3(16.0f, 0.0f, 13.75f);
+            auto targetPos = glm::vec3(16.0f, 0.0f, 13.75f);
 
-            glm::vec3 direction = glm::vec3(0.0f, 0.0f, -1.0f);
+            auto direction = glm::vec3(0.0f, 0.0f, -1.0f);
             this->gameObject->directions[0] = direction;
 
             glm::vec3 newPosition = currentPos + speed * direction;
@@ -44,9 +45,9 @@ void Clyde::Move(double deltaTime, GameObjectBase* mazeWall) {
             return;
         }
         else {
-            glm::vec3 targetPos = glm::vec3(19.0f, 0.0f, 13.75f);
+            auto targetPos = glm::vec3(19.0f, 0.0f, 13.75f);
 
-            glm::vec3 direction = glm::vec3(1.0f, 0.0f, 0.0f);
+            auto direction = glm::vec3(1.0f, 0.0f, 0.0f);
             this->gameObject->directions[0] = direction;
 
             glm::vec3 newPosition = currentPos + speed * direction;
@@ -140,10 +141,10 @@ void Clyde::Move(double deltaTime, GameObjectBase* mazeWall) {
                     directionFrequency[direction] = countDirectionFrequency(direction);
                 }
 
-                auto minFreqIt = std::min_element(safeDirections.begin(), safeDirections.end(),
-                    [&directionFrequency](const glm::vec3& a, const glm::vec3& b) {
-                        return directionFrequency[a] < directionFrequency[b];
-                    });
+                auto minFreqIt = ranges::min_element(safeDirections,
+                                                     [&directionFrequency](const glm::vec3& a, const glm::vec3& b) {
+	                                                     return directionFrequency[a] < directionFrequency[b];
+                                                     });
 
                 chosenDirection = *minFreqIt;
             }
@@ -162,10 +163,10 @@ void Clyde::Move(double deltaTime, GameObjectBase* mazeWall) {
                 directionFrequency[direction] = countDirectionFrequency(direction);
             }
 
-            auto minFreqIt = std::min_element(safeDirections.begin(), safeDirections.end(),
-                [&directionFrequency](const glm::vec3& a, const glm::vec3& b) {
-                    return directionFrequency[a] < directionFrequency[b];
-                });
+            auto minFreqIt = ranges::min_element(safeDirections,
+                                                 [&directionFrequency](const glm::vec3& a, const glm::vec3& b) {
+	                                                 return directionFrequency[a] < directionFrequency[b];
+                                                 });
 
             chosenDirection = *minFreqIt;
 
@@ -191,10 +192,10 @@ void Clyde::Draw(double deltaTime) {
 }
 
 void Clyde::init() {
-	std::vector<glm::vec3> clydePositions  = { glm::vec3(16.0f, 0.0f, 15.5f) };
-	std::vector<glm::vec3> clydeDirections = { glm::vec3(1.0f, 0.0f, 0.0f) };
-	std::vector<float>     clydeRotations  = { 0.0f };
-	std::vector<glm::vec3> clydeScaling    = { glm::vec3(0.25f) };
+	const std::vector<glm::vec3> clydePositions  = { glm::vec3(16.0f, 0.0f, 15.5f) };
+	const std::vector<glm::vec3> clydeDirections = { glm::vec3(1.0f, 0.0f, 0.0f) };
+	const std::vector<float>     clydeRotations  = { 0.0f };
+	const std::vector<glm::vec3> clydeScaling    = { glm::vec3(0.25f) };
 
 	ResourceManager::LoadModel("../res/objects/ghosts/clyde/clyde.obj", "clydeModel");
 	this->gameObject = new GameObjectFromModel(clydePositions,
@@ -205,18 +206,17 @@ void Clyde::init() {
 											   &ResourceManager::GetModel("clydeModel"));
 }
 
-bool Clyde::doCollisions(GameObjectBase* mazeWall) {
-	auto blinkyObb = this->gameObject->GetTransformedBoundingBox(0);
+bool Clyde::doCollisions(const GameObjectBase* mazeWall) const {
+	const auto blinkyObb = this->gameObject->GetTransformedBoundingBox(0);
 
 	// CHECK COLLISION CLYDE-WALL
-	size_t numInstancesMazeWall = mazeWall->GetNumInstances();
+	const size_t numInstancesMazeWall = mazeWall->GetNumInstances();
 	for (size_t i = 0; i < numInstancesMazeWall; i++) {
 		auto mazeWallObb = mazeWall->GetTransformedBoundingBox(i);
-		bool collision = this->checkCollision(blinkyObb, mazeWallObb);
-        if (collision) {
+		if (const bool collision = Clyde::checkCollision(blinkyObb, mazeWallObb)) {
             LoggerManager::LogDebug("There was a collision between CLYDE and WALL number {}", i);
             // RESOLVE COLLISION CLYDE-WALL
-            glm::vec3 correction = this->resolveCollision(blinkyObb, mazeWallObb);
+            const glm::vec3 correction = Clyde::resolveCollision(blinkyObb, mazeWallObb);
             this->gameObject->positions[0] += correction; // Apply the correction vector
             return true;
         }
@@ -226,7 +226,7 @@ bool Clyde::doCollisions(GameObjectBase* mazeWall) {
 
 // Counts the frequency of each direction in the recent queue
 int Clyde::countDirectionFrequency(const glm::vec3& direction) const {
-    return static_cast<int>(std::count(recentDirections.begin(), recentDirections.end(), direction));
+    return static_cast<int>(ranges::count(recentDirections, direction));
 }
 
 void Clyde::updateRecentDirections(const glm::vec3& chosenDirection) {
@@ -236,11 +236,11 @@ void Clyde::updateRecentDirections(const glm::vec3& chosenDirection) {
     recentDirections.push_back(chosenDirection);
 }
 
-void Clyde::checkIfTeleportIsNeeded(float speed) {
-    auto clydeObb = this->gameObject->GetTransformedBoundingBox(0);
-    glm::vec3 pMin = clydeObb.first;
-    glm::vec3 pMax = clydeObb.second;
-    size_t columnDim = this->levelMatrixDim.second;
+void Clyde::checkIfTeleportIsNeeded(float speed) const {
+    const auto clydeObb = this->gameObject->GetTransformedBoundingBox(0);
+    const glm::vec3 pMin = clydeObb.first;
+    const glm::vec3 pMax = clydeObb.second;
+    const size_t columnDim = this->levelMatrixDim.second;
 
     if (pMax.z >= static_cast<float>(columnDim) && this->gameObject->directions[0] == glm::vec3(0.0f, 0.0f, 1.0f)) {
         this->gameObject->positions[0] = glm::vec3(this->gameObject->positions[0].x, this->gameObject->positions[0].y, 0.0f);

@@ -36,7 +36,7 @@ Ghost*  pinky;
 //TextRenderer      *Text;
 
 // Initial speed of the player
-float PLAYER_SPEED = 7.5f;
+static float PLAYER_SPEED = 7.5f;
 
 Game::Game(unsigned int width, unsigned int height) : state(GAME_ACTIVE), keys(), keysProcessed(), width(width), height(height), lives(3){
 }
@@ -73,8 +73,8 @@ void Game::Init() {
     cameraDir = glm::normalize(cameraPos - cameraAt);
     cameraSide = glm::normalize(glm::cross(up, cameraDir));
     cameraUp = glm::normalize(glm::cross(cameraDir, cameraSide));
-    glm::mat4 view = glm::lookAt(cameraPos, cameraAt, cameraUp);
-    glm::mat4 projection = glm::perspective(glm::radians(35.0f), static_cast<float>(this->width) / static_cast<float>(this->height), 0.1f, 55.0f);
+    const glm::mat4 view = glm::lookAt(cameraPos, cameraAt, cameraUp);
+    const glm::mat4 projection = glm::perspective(glm::radians(35.0f), static_cast<float>(this->width) / static_cast<float>(this->height), 0.1f, 55.0f);
     ResourceManager::GetShader("mazeWallShader").Use().SetMatrix4("view", view);
     ResourceManager::GetShader("mazeWallShader").Use().SetMatrix4("projection", projection);
     ResourceManager::GetShader("mazeFloorShader").Use().SetMatrix4("view", view);
@@ -143,7 +143,7 @@ void Game::Init() {
 
     /// Configure Game Objects
     pacman = new PacMan();
-    auto levelMatrixDim = this->Levels[this->level].levelMatrixDim;
+    const auto levelMatrixDim = this->Levels[this->level].levelMatrixDim;
     blinky = new Blinky(levelMatrixDim);
     clyde  = new Clyde(levelMatrixDim);
     inky   = new Inky(levelMatrixDim);
@@ -152,15 +152,15 @@ void Game::Init() {
     //SoundEngine->play2D(FileSystem::getPath("resources/audio/breakout.mp3").c_str(), true);
 }
 
-/// TODO: Introdurre classe per i fantasmi in modo da gestire sia quelli statici per differenziarli sulla strategia di movimento 
-///       sia quelli dinamici in cui oltre che la strategia c'è il meccanismo di animazione come per pacman.
+/// TODO:Gestire fantasmi con variazione dinamica del modello(vulnerable_ghost_blue e vulnerable_ghost_white)
 
-void Game::Update(double dt) {
+void Game::Update(const double dt) {
     // update objects
-    blinky->Move(dt, this->Levels[this->level].mazeWall);
-    clyde ->Move(dt, this->Levels[this->level].mazeWall);
-    inky  ->Move(dt, this->Levels[this->level].mazeWall);
-    pinky ->Move(dt, this->Levels[this->level].mazeWall);
+    const auto mazeWall = this->Levels[this->level].mazeWall;
+    blinky->Move(dt, mazeWall);
+    clyde ->Move(dt, mazeWall);
+    inky  ->Move(dt, mazeWall);
+    pinky ->Move(dt, mazeWall);
     // check for collisions
     this->DoCollisions();
 //    // update particles
@@ -179,10 +179,10 @@ void Game::Update(double dt) {
 }
 
 
-void Game::ProcessInput(double dt) {
-    auto player = pacman->gameObjects[pacman->GetCurrentModelIndex()];
+void Game::ProcessInput(const double dt) {
+    const auto player = pacman->gameObjects[pacman->GetCurrentModelIndex()];
     if (this->state == GAME_ACTIVE) {
-        float speed = PLAYER_SPEED * static_cast<float>(dt);
+        const float speed = PLAYER_SPEED * static_cast<float>(dt);
         // Priority: UP > DOWN > RIGHT > LEFT
         // move player model
         if (this->keys[GLFW_KEY_UP] && permittedDirections.DIRECTION_UP) {
@@ -196,10 +196,10 @@ void Game::ProcessInput(double dt) {
             player->positions[0] += speed * player->directions[0];
         }
         else if (this->keys[GLFW_KEY_RIGHT] && permittedDirections.DIRECTION_RIGHT) {
-            auto playerObb = player->GetTransformedBoundingBox(0);
-            glm::vec3 pMax = playerObb.second;
-            auto levelMatrixDim = this->Levels[this->level].levelMatrixDim;
-            size_t columnDim = levelMatrixDim.second;
+            const auto playerObb = player->GetTransformedBoundingBox(0);
+            const glm::vec3 pMax = playerObb.second;
+            const auto levelMatrixDim = this->Levels[this->level].levelMatrixDim;
+            const size_t columnDim = levelMatrixDim.second;
 
             permittedDirections = PermittedDirections();
             player->directions[0] = glm::vec3(0.0f, 0.0f, 1.0f);
@@ -211,10 +211,10 @@ void Game::ProcessInput(double dt) {
             }
         }
         else if (this->keys[GLFW_KEY_LEFT] && permittedDirections.DIRECTION_LEFT) {
-            auto playerObb = player->GetTransformedBoundingBox(0);
-            glm::vec3 pMin = playerObb.first;
-            auto levelMatrixDim = this->Levels[this->level].levelMatrixDim;
-            size_t columnDim = levelMatrixDim.second;
+            const auto playerObb = player->GetTransformedBoundingBox(0);
+            const glm::vec3 pMin = playerObb.first;
+            const auto levelMatrixDim = this->Levels[this->level].levelMatrixDim;
+            const size_t columnDim = levelMatrixDim.second;
 
             permittedDirections = PermittedDirections();
             player->directions[0] = glm::vec3(0.0f, 0.0f, -1.0f);
@@ -229,7 +229,7 @@ void Game::ProcessInput(double dt) {
     }
 }
 
-void Game::Render(double dt) {
+void Game::Render(const double dt) {
     if (this->state == GAME_ACTIVE || this->state == GAME_WIN) {
         // begin rendering to postprocessing framebuffer
         //Effects->BeginRender();
@@ -282,8 +282,7 @@ void Game::DoCollisions() {
     size_t numInstancesMazeWall = mazeWall->GetNumInstances();
     for (size_t i = 0; i < numInstancesMazeWall; i++) {
         auto mazeWallObb = mazeWall->GetTransformedBoundingBox(i);
-        bool collision = checkCollision(playerObb, mazeWallObb);
-        if (collision) {
+        if (bool collision = checkCollision(playerObb, mazeWallObb)) {
             LoggerManager::LogDebug("There was a collision between PLAYER and WALL number {}", i);
             // RESOLVE COLLISION PLAYER-WALL
             glm::vec3 correction = resolveCollision(playerObb, mazeWallObb, this->permittedDirections);
@@ -299,8 +298,7 @@ void Game::DoCollisions() {
     // helps avoid problems related to changing the length of the array as you walk through it
     for (int i = static_cast<int>(numInstancesDot) - 1; i >= 0; i--) {
         auto dotObb = dot->GetTransformedBoundingBox(i);
-        bool collision = checkCollision(playerObb, dotObb);
-        if (collision) {
+        if (bool collision = checkCollision(playerObb, dotObb)) {
             LoggerManager::LogDebug("There was a collision between PLAYER and DOT number {}", i);
             // RESOLVE COLLISION PLAYER-DOT
             dotPositions.erase(dotPositions.begin() + i);
@@ -318,8 +316,7 @@ void Game::DoCollisions() {
     std::vector<glm::vec3> energizerPositions = this->Levels[this->level].energizerPositions;
     for (int i = static_cast<int>(numInstancesEnergizer) - 1; i >= 0; i--) {
         auto energizerObb = energizer->GetTransformedBoundingBox(i);
-        bool collision = checkCollision(playerObb, energizerObb);
-        if (collision) {
+        if (bool collision = checkCollision(playerObb, energizerObb)) {
             LoggerManager::LogDebug("There was a collision between PLAYER and ENERGIZER number {}", i);
             // RESOLVE COLLISION PLAYER-ENERGIZER
             energizerPositions.erase(energizerPositions.begin() + i);
@@ -403,50 +400,50 @@ void Game::DoCollisions() {
 
 // OBB - OBB collision detection in XZ plane
 bool checkCollision(const CustomTypes::obb& obb1, const CustomTypes::obb& obb2) {
-    glm::vec3 box1_min = obb1.first;
-    glm::vec3 box1_max = obb1.second;
-    glm::vec3 box2_min = obb2.first;
-    glm::vec3 box2_max = obb2.second;
+    const glm::vec3 box1_min = obb1.first;
+    const glm::vec3 box1_max = obb1.second;
+    const glm::vec3 box2_min = obb2.first;
+    const glm::vec3 box2_max = obb2.second;
 
     // Check only on X and Z axes
-    bool overlapX = box1_max.x >= box2_min.x && box1_min.x <= box2_max.x;
-    bool overlapZ = box1_max.z >= box2_min.z && box1_min.z <= box2_max.z;
+    const bool overlapX = box1_max.x >= box2_min.x && box1_min.x <= box2_max.x;
+    const bool overlapZ = box1_max.z >= box2_min.z && box1_min.z <= box2_max.z;
 
     return overlapX && overlapZ;
 }
 
 // Function to resolve collision in XZ plane
 glm::vec3 resolveCollision(const CustomTypes::obb& playerObb, const CustomTypes::obb& wallObb, PermittedDirections& permittedDirections) {
-    glm::vec3 playerMin = playerObb.first;
-    glm::vec3 playerMax = playerObb.second;
-    glm::vec3 wallMin = wallObb.first;
-    glm::vec3 wallMax = wallObb.second;
+    const glm::vec3 playerMin = playerObb.first;
+    const glm::vec3 playerMax = playerObb.second;
+    const glm::vec3 wallMin = wallObb.first;
+    const glm::vec3 wallMax = wallObb.second;
 
     // Calculate the penetration depth on the X and Z axes
-    float overlapX = std::min(playerMax.x - wallMin.x, wallMax.x - playerMin.x);
-    float overlapZ = std::min(playerMax.z - wallMin.z, wallMax.z - playerMin.z);
+    const float overlapX = std::min(playerMax.x - wallMin.x, wallMax.x - playerMin.x);
+    const float overlapZ = std::min(playerMax.z - wallMin.z, wallMax.z - playerMin.z);
 
     // Find the axis with the least penetration and use that value to resolve the collision
     if (overlapX < overlapZ) {
         if (playerMax.x < wallMax.x) {
             permittedDirections = PermittedDirections();
             permittedDirections.DIRECTION_UP = false;
-            return glm::vec3(-overlapX, 0.0f, 0.0f);
+            return {-overlapX, 0.0f, 0.0f};
         } else {
             permittedDirections = PermittedDirections();
             permittedDirections.DIRECTION_DOWN = false;
-            return glm::vec3( overlapX, 0.0f, 0.0f);
+            return {overlapX, 0.0f, 0.0f};
         }
     }
     else {
         if (playerMax.z < wallMax.z) {
             permittedDirections = PermittedDirections();
             permittedDirections.DIRECTION_RIGHT = false;
-            return glm::vec3(0.0f, 0.0f, -overlapZ);
+            return {0.0f, 0.0f, -overlapZ};
         } else {
             permittedDirections = PermittedDirections();
             permittedDirections.DIRECTION_LEFT = false;
-            return glm::vec3(0.0f, 0.0f, overlapZ);
+            return {0.0f, 0.0f, overlapZ};
         }
     }
 }

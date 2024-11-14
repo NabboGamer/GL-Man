@@ -3,18 +3,17 @@
 #include <vector>
 #include <glm/glm.hpp>
 #include <deque>
-#include <algorithm>
 
 #include "Ghost.hpp"
 #include "GameObjectBase.hpp"
 
-class Clyde : public Ghost {
+class Clyde final : public Ghost {
 
 public:
 	GameObjectBase* gameObject;
 
-    Clyde(std::pair<size_t, size_t> levelMatrixDim);
-	~Clyde();
+	explicit Clyde(std::pair<size_t, size_t> levelMatrixDim);
+	~Clyde() override;
 
 	void Move(double deltaTime, GameObjectBase* mazeWall) override;
 	void Draw(double deltaTime) override;
@@ -38,9 +37,9 @@ private:
     std::pair<size_t, size_t> levelMatrixDim;
 
 	void init() override;
-	bool doCollisions(GameObjectBase* mazeWall);
+	bool doCollisions(const GameObjectBase* mazeWall) const;
     int  countDirectionFrequency(const glm::vec3& direction) const;
     void updateRecentDirections(const glm::vec3& chosenDirection);
-    void checkIfTeleportIsNeeded(float speed);
+    void checkIfTeleportIsNeeded(float speed) const;
 
 };

@@ -1,5 +1,6 @@
 #include <windows.h>
 #include <random>
+#include <algorithm>
 #include <unordered_map>
 
 #include "Pinky.hpp"
@@ -9,7 +10,7 @@
 #include "LoggerManager.hpp"
 #include "GameObjectFromModel.hpp"
 
-Pinky::Pinky(std::pair<size_t, size_t> levelMatrixDim) : Ghost(), levelMatrixDim(levelMatrixDim) {
+Pinky::Pinky(const std::pair<size_t, size_t> levelMatrixDim) : Ghost(), levelMatrixDim(levelMatrixDim) {
 	this->Pinky::init();
 }
 
@@ -27,7 +28,7 @@ void Pinky::Move(double deltaTime, GameObjectBase* mazeWall) {
     if (currentPos.x >= 15.0f && currentPos.x <= 17.0f &&
         currentPos.z >= 12.0f && currentPos.z <= 16.0f) {
         // Posizione target
-        glm::vec3 targetPos = glm::vec3(19.0f, 0.0f, 13.75f);
+        auto targetPos = glm::vec3(19.0f, 0.0f, 13.75f);
 
         glm::vec3 direction = glm::normalize(targetPos - currentPos);
         this->gameObject->directions[0] = direction;
@@ -121,10 +122,10 @@ void Pinky::Move(double deltaTime, GameObjectBase* mazeWall) {
                     directionFrequency[direction] = countDirectionFrequency(direction);
                 }
 
-                auto minFreqIt = std::min_element(safeDirections.begin(), safeDirections.end(),
-                    [&directionFrequency](const glm::vec3& a, const glm::vec3& b) {
-                        return directionFrequency[a] < directionFrequency[b];
-                    });
+                auto minFreqIt = ranges::min_element(safeDirections,
+                                                     [&directionFrequency](const glm::vec3& a, const glm::vec3& b) {
+	                                                     return directionFrequency[a] < directionFrequency[b];
+                                                     });
 
                 chosenDirection = *minFreqIt;
             }
@@ -143,10 +144,10 @@ void Pinky::Move(double deltaTime, GameObjectBase* mazeWall) {
                 directionFrequency[direction] = countDirectionFrequency(direction);
             }
 
-            auto minFreqIt = std::min_element(safeDirections.begin(), safeDirections.end(),
-                [&directionFrequency](const glm::vec3& a, const glm::vec3& b) {
-                    return directionFrequency[a] < directionFrequency[b];
-                });
+            auto minFreqIt = ranges::min_element(safeDirections,
+                                                 [&directionFrequency](const glm::vec3& a, const glm::vec3& b) {
+	                                                 return directionFrequency[a] < directionFrequency[b];
+                                                 });
 
             chosenDirection = *minFreqIt;
 
@@ -172,10 +173,10 @@ void Pinky::Draw(double deltaTime) {
 }
 
 void Pinky::init() {
-	std::vector<glm::vec3> pinkyPositions  = { glm::vec3(16.0f, 0.0f, 13.85f) };
-	std::vector<glm::vec3> pinkyDirections = { glm::vec3(-1.0f, 0.0f, 0.0f) };
-	std::vector<float>     pinkyRotations  = { 0.0f };
-	std::vector<glm::vec3> pinkyScaling    = { glm::vec3(0.25f) };
+	const std::vector<glm::vec3> pinkyPositions  = { glm::vec3(16.0f, 0.0f, 13.85f) };
+	const std::vector<glm::vec3> pinkyDirections = { glm::vec3(-1.0f, 0.0f, 0.0f) };
+	const std::vector<float>     pinkyRotations  = { 0.0f };
+	const std::vector<glm::vec3> pinkyScaling    = { glm::vec3(0.25f) };
 
 	ResourceManager::LoadModel("../res/objects/ghosts/pinky/pinky.obj", "pinkyModel");
 	this->gameObject = new GameObjectFromModel(pinkyPositions,
@@ -186,18 +187,17 @@ void Pinky::init() {
 											   &ResourceManager::GetModel("pinkyModel"));
 }
 
-bool Pinky::doCollisions(GameObjectBase* mazeWall) {
-	auto blinkyObb = this->gameObject->GetTransformedBoundingBox(0);
+bool Pinky::doCollisions(const GameObjectBase* mazeWall) const {
+	const auto blinkyObb = this->gameObject->GetTransformedBoundingBox(0);
 
 	// CHECK COLLISION PINKY-WALL
-	size_t numInstancesMazeWall = mazeWall->GetNumInstances();
+	const size_t numInstancesMazeWall = mazeWall->GetNumInstances();
 	for (size_t i = 0; i < numInstancesMazeWall; i++) {
 		auto mazeWallObb = mazeWall->GetTransformedBoundingBox(i);
-		bool collision = this->checkCollision(blinkyObb, mazeWallObb);
-        if (collision) {
+		if (const bool collision = Pinky::checkCollision(blinkyObb, mazeWallObb)) {
             LoggerManager::LogDebug("There was a collision between PINKY and WALL number {}", i);
             // RESOLVE COLLISION PINKY-WALL
-            glm::vec3 correction = this->resolveCollision(blinkyObb, mazeWallObb);
+            const glm::vec3 correction = Pinky::resolveCollision(blinkyObb, mazeWallObb);
             this->gameObject->positions[0] += correction; // Apply the correction vector
             return true;
         }
@@ -207,7 +207,7 @@ bool Pinky::doCollisions(GameObjectBase* mazeWall) {
 
 // Counts the frequency of each direction in the recent queue
 int Pinky::countDirectionFrequency(const glm::vec3& direction) const {
-    return static_cast<int>(std::count(recentDirections.begin(), recentDirections.end(), direction));
+    return static_cast<int>(ranges::count(recentDirections, direction));
 }
 
 void Pinky::updateRecentDirections(const glm::vec3& chosenDirection) {
@@ -217,11 +217,11 @@ void Pinky::updateRecentDirections(const glm::vec3& chosenDirection) {
     recentDirections.push_back(chosenDirection);
 }
 
-void Pinky::checkIfTeleportIsNeeded(float speed) {
-    auto pinkyObb = this->gameObject->GetTransformedBoundingBox(0);
-    glm::vec3 pMin = pinkyObb.first;
-    glm::vec3 pMax = pinkyObb.second;
-    size_t columnDim = this->levelMatrixDim.second;
+void Pinky::checkIfTeleportIsNeeded(float speed) const {
+    const auto pinkyObb = this->gameObject->GetTransformedBoundingBox(0);
+    const glm::vec3 pMin = pinkyObb.first;
+    const glm::vec3 pMax = pinkyObb.second;
+    const size_t columnDim = this->levelMatrixDim.second;
 
     if (pMax.z >= static_cast<float>(columnDim) && this->gameObject->directions[0] == glm::vec3(0.0f, 0.0f, 1.0f)) {
         this->gameObject->positions[0] = glm::vec3(this->gameObject->positions[0].x, this->gameObject->positions[0].y, 0.0f);

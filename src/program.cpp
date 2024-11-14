@@ -15,21 +15,21 @@ extern "C" {
 #include "LoggerManager.hpp"
 
 // GLFW function declarations
-void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
-void calculateFPS();
+static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
+static void calculateFPS();
 
 // The Width of the screen
 const unsigned int SCREEN_WIDTH = 2048;
-// The height of the screen
+// The Height of the screen
 const unsigned int SCREEN_HEIGHT = 1152;
 
-unsigned int fps = 0;
-unsigned int frameCount = 0;
-double previousTime = 0;
-double timeInterval = 0;
+static unsigned int fps = 0;
+static unsigned int frameCount = 0;
+static double previousTime = 0;
+static double timeInterval = 0;
 
-Game GLMan(SCREEN_WIDTH, SCREEN_HEIGHT);
+static Game GLMan(SCREEN_WIDTH, SCREEN_HEIGHT);
 
 int main() {
     glfwInit();
@@ -47,7 +47,7 @@ int main() {
     // glad: load all OpenGL function pointers
     // ---------------------------------------
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-        std::cout << "Failed to initialize GLAD" << std::endl;
+        std::cout << "Failed to initialize GLAD" << '\n';
         return -1;
     }
 
@@ -75,7 +75,7 @@ int main() {
     while (!glfwWindowShouldClose(window)) {
         // calculate delta time
         // --------------------
-        double currentFrame = glfwGetTime();
+        const double currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
         glfwPollEvents();
@@ -108,7 +108,7 @@ int main() {
     return 0;
 }
 
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode) {
+void key_callback(GLFWwindow* window, const int key, int scancode, const int action, int mode) {
     // when a user presses the escape key, we set the WindowShouldClose property to true, closing the application
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, true);
@@ -123,7 +123,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
     }
 }
 
-void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
+void framebuffer_size_callback(GLFWwindow* window, const int width, const int height) {
     // make sure the viewport matches the new window dimensions; note that width and 
     // height will be significantly larger than specified on retina displays.
     glViewport(0, 0, width, height);
@@ -131,7 +131,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 
 void calculateFPS() {
     frameCount++;
-    double currentTime = glfwGetTime();
+    const double currentTime = glfwGetTime();
     timeInterval = currentTime - previousTime;
 
     // If a second has passed, update the fps variable

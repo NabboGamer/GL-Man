@@ -1,5 +1,6 @@
 #include <windows.h>
 #include <random>
+#include <algorithm>
 #include <unordered_map>
 
 #include "Inky.hpp"
@@ -9,7 +10,7 @@
 #include "LoggerManager.hpp"
 #include "GameObjectFromModel.hpp"
 
-Inky::Inky(std::pair<size_t, size_t> levelMatrixDim) : Ghost(), levelMatrixDim(levelMatrixDim) {
+Inky::Inky(const std::pair<size_t, size_t> levelMatrixDim) : Ghost(), levelMatrixDim(levelMatrixDim) {
 	this->Inky::init();
 }
 
@@ -27,9 +28,9 @@ void Inky::Move(double deltaTime, GameObjectBase* mazeWall) {
     if (currentPos.x >= 15.0f && currentPos.x <= 17.0f &&
         currentPos.z >= 12.0f && currentPos.z <= 16.0f) {
         if (!this->skipFirstMovement) {
-            glm::vec3 targetPos = glm::vec3(16.0f, 0.0f, 13.75f);
+            auto targetPos = glm::vec3(16.0f, 0.0f, 13.75f);
 
-            glm::vec3 direction = glm::vec3(0.0f, 0.0f, 1.0f);
+            auto direction = glm::vec3(0.0f, 0.0f, 1.0f);
             this->gameObject->directions[0] = direction;
 
             glm::vec3 newPosition = currentPos + speed * direction;
@@ -44,9 +45,9 @@ void Inky::Move(double deltaTime, GameObjectBase* mazeWall) {
             return;
         }
         else {
-            glm::vec3 targetPos = glm::vec3(19.0f, 0.0f, 13.75f);
+            auto targetPos = glm::vec3(19.0f, 0.0f, 13.75f);
 
-            glm::vec3 direction = glm::vec3(1.0f, 0.0f, 0.0f);
+            auto direction = glm::vec3(1.0f, 0.0f, 0.0f);
             this->gameObject->directions[0] = direction;
 
             glm::vec3 newPosition = currentPos + speed * direction;
@@ -140,10 +141,10 @@ void Inky::Move(double deltaTime, GameObjectBase* mazeWall) {
                     directionFrequency[direction] = countDirectionFrequency(direction);
                 }
 
-                auto minFreqIt = std::min_element(safeDirections.begin(), safeDirections.end(),
-                    [&directionFrequency](const glm::vec3& a, const glm::vec3& b) {
-                        return directionFrequency[a] < directionFrequency[b];
-                    });
+                auto minFreqIt = ranges::min_element(safeDirections,
+                                                     [&directionFrequency](const glm::vec3& a, const glm::vec3& b) {
+	                                                     return directionFrequency[a] < directionFrequency[b];
+                                                     });
 
                 chosenDirection = *minFreqIt;
             }
@@ -162,10 +163,10 @@ void Inky::Move(double deltaTime, GameObjectBase* mazeWall) {
                 directionFrequency[direction] = countDirectionFrequency(direction);
             }
 
-            auto minFreqIt = std::min_element(safeDirections.begin(), safeDirections.end(),
-                [&directionFrequency](const glm::vec3& a, const glm::vec3& b) {
-                    return directionFrequency[a] < directionFrequency[b];
-                });
+            auto minFreqIt = ranges::min_element(safeDirections,
+                                                 [&directionFrequency](const glm::vec3& a, const glm::vec3& b) {
+	                                                 return directionFrequency[a] < directionFrequency[b];
+                                                 });
 
             chosenDirection = *minFreqIt;
 
@@ -191,10 +192,10 @@ void Inky::Draw(double deltaTime) {
 }
 
 void Inky::init() {
-	std::vector<glm::vec3> inkyPositions  = { glm::vec3(16.0f, 0.0f, 12.25f) };
-	std::vector<glm::vec3> inkyDirections = { glm::vec3(1.0f, 0.0f, 0.0f) };
-	std::vector<float>     inkyRotations  = { 0.0f };
-	std::vector<glm::vec3> inkyScaling    = { glm::vec3(0.25f) };
+	const std::vector<glm::vec3> inkyPositions  = { glm::vec3(16.0f, 0.0f, 12.25f) };
+	const std::vector<glm::vec3> inkyDirections = { glm::vec3(1.0f, 0.0f, 0.0f) };
+	const std::vector<float>     inkyRotations  = { 0.0f };
+	const std::vector<glm::vec3> inkyScaling    = { glm::vec3(0.25f) };
 
 	ResourceManager::LoadModel("../res/objects/ghosts/inky/inky.obj", "inkyModel");
 	this->gameObject = new GameObjectFromModel(inkyPositions,
@@ -205,18 +206,17 @@ void Inky::init() {
 											   &ResourceManager::GetModel("inkyModel"));
 }
 
-bool Inky::doCollisions(GameObjectBase* mazeWall) {
-	auto blinkyObb = this->gameObject->GetTransformedBoundingBox(0);
+bool Inky::doCollisions(const GameObjectBase* mazeWall) const {
+	const auto blinkyObb = this->gameObject->GetTransformedBoundingBox(0);
 
 	// CHECK COLLISION INKY-WALL
-	size_t numInstancesMazeWall = mazeWall->GetNumInstances();
+	const size_t numInstancesMazeWall = mazeWall->GetNumInstances();
 	for (size_t i = 0; i < numInstancesMazeWall; i++) {
 		auto mazeWallObb = mazeWall->GetTransformedBoundingBox(i);
-		bool collision = this->checkCollision(blinkyObb, mazeWallObb);
-        if (collision) {
+		if (const bool collision = Inky::checkCollision(blinkyObb, mazeWallObb)) {
             LoggerManager::LogDebug("There was a collision between INKY and WALL number {}", i);
             // RESOLVE COLLISION INKY-WALL
-            glm::vec3 correction = this->resolveCollision(blinkyObb, mazeWallObb);
+            const glm::vec3 correction = Inky::resolveCollision(blinkyObb, mazeWallObb);
             this->gameObject->positions[0] += correction; // Apply the correction vector
             return true;
         }
@@ -226,7 +226,7 @@ bool Inky::doCollisions(GameObjectBase* mazeWall) {
 
 // Counts the frequency of each direction in the recent queue
 int Inky::countDirectionFrequency(const glm::vec3& direction) const {
-    return static_cast<int>(std::count(recentDirections.begin(), recentDirections.end(), direction));
+    return static_cast<int>(ranges::count(recentDirections, direction));
 }
 
 void Inky::updateRecentDirections(const glm::vec3& chosenDirection) {
@@ -236,11 +236,11 @@ void Inky::updateRecentDirections(const glm::vec3& chosenDirection) {
     recentDirections.push_back(chosenDirection);
 }
 
-void Inky::checkIfTeleportIsNeeded(float speed) {
-    auto inkyObb = this->gameObject->GetTransformedBoundingBox(0);
-    glm::vec3 pMin = inkyObb.first;
-    glm::vec3 pMax = inkyObb.second;
-    size_t columnDim = this->levelMatrixDim.second;
+void Inky::checkIfTeleportIsNeeded(float speed) const {
+    const auto inkyObb = this->gameObject->GetTransformedBoundingBox(0);
+    const glm::vec3 pMin = inkyObb.first;
+    const glm::vec3 pMax = inkyObb.second;
+    const size_t columnDim = this->levelMatrixDim.second;
 
     if (pMax.z >= static_cast<float>(columnDim) && this->gameObject->directions[0] == glm::vec3(0.0f, 0.0f, 1.0f)) {
         this->gameObject->positions[0] = glm::vec3(this->gameObject->positions[0].x, this->gameObject->positions[0].y, 0.0f);
