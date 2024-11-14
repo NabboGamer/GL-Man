@@ -9,8 +9,8 @@
 #include "LoggerManager.hpp"
 #include "GameObjectFromModel.hpp"
 
-Pinky::Pinky() : Ghost() {
-	this->init();
+Pinky::Pinky(std::pair<size_t, size_t> levelMatrixDim) : Ghost(), levelMatrixDim(levelMatrixDim) {
+	this->Pinky::init();
 }
 
 Pinky::~Pinky() {
@@ -37,7 +37,7 @@ void Pinky::Move(double deltaTime, GameObjectBase* mazeWall) {
 
         if (glm::distance(currentPos, targetPos) <= speed) {
             this->gameObject->positions[0] = targetPos;
-            this->gameObject->directions[0] = glm::vec3(0.0f, 0.0f, -1.0f);;
+            this->gameObject->directions[0] = glm::vec3(0.0f, 0.0f, -1.0f);
             this->timeSinceLastChange = 0.0f;
         }
         return;
@@ -71,9 +71,11 @@ void Pinky::Move(double deltaTime, GameObjectBase* mazeWall) {
     bool doesItCollide = this->doCollisions(mazeWall);
     this->gameObject->positions[0] -= speed * currentDirection;
 
-    // If there is no collision and we do not force a change of direction, it continues in the current direction.
+    // If there is no collision, and we do not force a change of direction, it continues in the current direction.
     if (!doesItCollide && !forceDirectionChange) {
         this->gameObject->positions[0] += speed * currentDirection;
+        // Check for teleport
+        this->checkIfTeleportIsNeeded(speed);
         return;
     }
 
@@ -155,6 +157,8 @@ void Pinky::Move(double deltaTime, GameObjectBase* mazeWall) {
         // Finally set the new direction and update the position
         this->gameObject->directions[0] = chosenDirection;
         this->gameObject->positions[0] += speed * chosenDirection;
+        // Check for teleport
+        this->checkIfTeleportIsNeeded(speed);
         updateRecentDirections(chosenDirection);
     }
     else {
@@ -211,4 +215,18 @@ void Pinky::updateRecentDirections(const glm::vec3& chosenDirection) {
         recentDirections.pop_front();
     }
     recentDirections.push_back(chosenDirection);
+}
+
+void Pinky::checkIfTeleportIsNeeded(float speed) {
+    auto pinkyObb = this->gameObject->GetTransformedBoundingBox(0);
+    glm::vec3 pMin = pinkyObb.first;
+    glm::vec3 pMax = pinkyObb.second;
+    size_t columnDim = this->levelMatrixDim.second;
+
+    if (pMax.z >= static_cast<float>(columnDim) && this->gameObject->directions[0] == glm::vec3(0.0f, 0.0f, 1.0f)) {
+        this->gameObject->positions[0] = glm::vec3(this->gameObject->positions[0].x, this->gameObject->positions[0].y, 0.0f);
+    }
+    else if (pMin.z <= 0.0f && this->gameObject->directions[0] == glm::vec3(0.0f, 0.0f, -1.0f)) {
+        this->gameObject->positions[0] = glm::vec3(this->gameObject->positions[0].x, this->gameObject->positions[0].y, static_cast<float>(columnDim) - 1.0f);
+    }
 }

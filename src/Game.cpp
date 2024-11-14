@@ -143,25 +143,23 @@ void Game::Init() {
 
     /// Configure Game Objects
     pacman = new PacMan();
-
-    blinky = new Blinky();
-    clyde = new Clyde();
-    inky = new Inky();
-    pinky = new Pinky();
+    auto levelMatrixDim = this->Levels[this->level].levelMatrixDim;
+    blinky = new Blinky(levelMatrixDim);
+    clyde  = new Clyde(levelMatrixDim);
+    inky   = new Inky(levelMatrixDim);
+    pinky  = new Pinky(levelMatrixDim);
     // audio
     //SoundEngine->play2D(FileSystem::getPath("resources/audio/breakout.mp3").c_str(), true);
 }
 
 /// TODO: Introdurre classe per i fantasmi in modo da gestire sia quelli statici per differenziarli sulla strategia di movimento 
 ///       sia quelli dinamici in cui oltre che la strategia c'è il meccanismo di animazione come per pacman.
-/// 
-/// TODO: Implementare teletrasporto per fantasmi e colissioni fantasma pacman
 
 void Game::Update(double dt) {
     // update objects
     blinky->Move(dt, this->Levels[this->level].mazeWall);
     clyde ->Move(dt, this->Levels[this->level].mazeWall);
-    inky ->Move(dt, this->Levels[this->level].mazeWall);
+    inky  ->Move(dt, this->Levels[this->level].mazeWall);
     pinky ->Move(dt, this->Levels[this->level].mazeWall);
     // check for collisions
     this->DoCollisions();
@@ -240,9 +238,9 @@ void Game::Render(double dt) {
         // draw player
         pacman->Draw(dt);
         blinky->Draw(dt);
-        clyde->Draw(dt);
-        inky->Draw(dt);
-        pinky->Draw(dt);
+        clyde ->Draw(dt);
+        inky  ->Draw(dt);
+        pinky ->Draw(dt);
         //    // draw PowerUps
         //    for (PowerUp &powerUp : this->PowerUps)
         //        if (!powerUp.Destroyed)
