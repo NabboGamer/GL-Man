@@ -1,0 +1,15 @@
+# Blender 4.2.2 LTS MTL File: 'grape.blend'
+# www.blender.org
+
+newmtl fruit
+Ns 200.000000
+Ka 1.000000 1.000000 1.000000
+Kd 1.000000 1.000000 1.000000
+Ks 0.300000 0.300000 0.300000
+Ni 1.700000
+d 1.000000
+illum 2
+map_Kd diffuse_texture.png
+map_Ks specular_texture.png
+map_Ka ambient_texture.png
+map_Bump -bm 1.500000 normal_texture.png
