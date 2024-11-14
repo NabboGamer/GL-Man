@@ -25,11 +25,11 @@
 
 
 // Game-related State data
-PacMan* pacman;
-Ghost*  blinky;
-Ghost*  clyde;
-Ghost*  inky;
-Ghost*  pinky;
+static PacMan* pacman;
+static Ghost*  blinky;
+static Ghost*  clyde;
+static Ghost*  inky;
+static Ghost*  pinky;
 //ParticleGenerator *Particles;
 //PostProcessor     *Effects;
 //ISoundEngine      *SoundEngine = createIrrKlangDevice();
@@ -38,7 +38,9 @@ Ghost*  pinky;
 // Initial speed of the player
 static float PLAYER_SPEED = 7.5f;
 
-Game::Game(unsigned int width, unsigned int height) : state(GAME_ACTIVE), keys(), keysProcessed(), width(width), height(height), lives(3){
+Game::Game(unsigned int width, unsigned int height) : state(GAME_ACTIVE), keys(), keysProcessed(), width(width),
+                                                      height(height), level(0), lives(3), cameraPos(), cameraAt(),
+													  up(),cameraDir(),cameraSide(),cameraUp() {
 }
 
 Game::~Game() {
@@ -282,7 +284,7 @@ void Game::DoCollisions() {
     size_t numInstancesMazeWall = mazeWall->GetNumInstances();
     for (size_t i = 0; i < numInstancesMazeWall; i++) {
         auto mazeWallObb = mazeWall->GetTransformedBoundingBox(i);
-        if (bool collision = checkCollision(playerObb, mazeWallObb)) {
+        if (checkCollision(playerObb, mazeWallObb)) {
             LoggerManager::LogDebug("There was a collision between PLAYER and WALL number {}", i);
             // RESOLVE COLLISION PLAYER-WALL
             glm::vec3 correction = resolveCollision(playerObb, mazeWallObb, this->permittedDirections);
@@ -298,7 +300,7 @@ void Game::DoCollisions() {
     // helps avoid problems related to changing the length of the array as you walk through it
     for (int i = static_cast<int>(numInstancesDot) - 1; i >= 0; i--) {
         auto dotObb = dot->GetTransformedBoundingBox(i);
-        if (bool collision = checkCollision(playerObb, dotObb)) {
+        if (checkCollision(playerObb, dotObb)) {
             LoggerManager::LogDebug("There was a collision between PLAYER and DOT number {}", i);
             // RESOLVE COLLISION PLAYER-DOT
             dotPositions.erase(dotPositions.begin() + i);
@@ -316,7 +318,7 @@ void Game::DoCollisions() {
     std::vector<glm::vec3> energizerPositions = this->Levels[this->level].energizerPositions;
     for (int i = static_cast<int>(numInstancesEnergizer) - 1; i >= 0; i--) {
         auto energizerObb = energizer->GetTransformedBoundingBox(i);
-        if (bool collision = checkCollision(playerObb, energizerObb)) {
+        if (checkCollision(playerObb, energizerObb)) {
             LoggerManager::LogDebug("There was a collision between PLAYER and ENERGIZER number {}", i);
             // RESOLVE COLLISION PLAYER-ENERGIZER
             energizerPositions.erase(energizerPositions.begin() + i);
