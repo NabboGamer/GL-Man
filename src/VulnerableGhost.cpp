@@ -9,7 +9,6 @@
 #include "ResourceManager.hpp"
 #include "LoggerManager.hpp"
 #include "GameObjectFromModel.hpp"
-#include "Utility.hpp"
 
 
 VulnerableGhost::VulnerableGhost(Blinky* blinky, Clyde* clyde, Inky* inky, Pinky* pinky, const std::pair<size_t, size_t> levelMatrixDim)
@@ -25,6 +24,10 @@ VulnerableGhost::~VulnerableGhost() {
 
 int VulnerableGhost::GetCurrentModelIndex() const {
     return this->currentModelIndex;
+}
+
+GameObjectBase* VulnerableGhost::GetCurrentGameObject() const {
+	return (this->drawBlue ? this->gameObjectsBlue[this->currentModelIndex] : this->gameObjectsWhite[this->currentModelIndex]);
 }
 
 bool VulnerableGhost::IsActive() const {

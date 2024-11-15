@@ -21,6 +21,7 @@ public:
 	~VulnerableGhost() override;
 
     [[nodiscard]] int GetCurrentModelIndex() const;
+    [[nodiscard]] GameObjectBase* GetCurrentGameObject() const;
     [[nodiscard]] bool IsActive() const;
     void SetActive(bool active);
     void UpdateOtherGameObjects() const;

@@ -351,7 +351,20 @@ void Game::DoCollisions() {
     // CHECK COLLISION PLAYER-GHOSTS
     // CHECK COLLISION PLAYER-BLINKY
     if (vulnerableGhost->IsActive()) {
-
+        auto currenGameObjectVulnerableGhost = vulnerableGhost->GetCurrentGameObject();
+        auto currenGameObjectVulnerableGhostObb = currenGameObjectVulnerableGhost->GetTransformedBoundingBox(0);
+        if (checkCollision(playerObb, currenGameObjectVulnerableGhostObb)) {
+            LoggerManager::LogDebug("There was a collision between PLAYER and VULNERABLE_GHOST");
+            // RESOLVE COLLISION PLAYER-VULNERABLE_GHOST
+            if (this->lives > 1) {
+                this->lives--;
+                pacman->gameObjects[pacman->GetCurrentModelIndex()]->positions[0] = glm::vec3(7.5f, 0.0f, 13.5f);
+                pacman->UpdateOtherGameObjects();
+            }
+            else {
+                this->state = GAME_DEFEAT;
+            }
+        }
     } else {
         auto blinkyPtr = dynamic_cast<Blinky*>(blinky);
         auto blinkyObb = blinkyPtr->gameObject->GetTransformedBoundingBox(0);
