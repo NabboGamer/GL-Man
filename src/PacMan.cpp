@@ -19,8 +19,21 @@ int PacMan::GetCurrentModelIndex() const {
 	return this->currentModelIndex;
 }
 
+void PacMan::UpdateOtherGameObjects() const {
+	for (int i = 0; i < 10; i++) {
+		if (i != this->currentModelIndex) {
+			this->gameObjects[i]->positions[0] = this->gameObjects[this->currentModelIndex]->positions[0];
+			this->gameObjects[i]->directions[0] = this->gameObjects[this->currentModelIndex]->directions[0];
+			/*this->gameObjects[i]->rotations[0]  = this->gameObjects[currentModelIndex]->rotations[0];
+			this->gameObjects[i]->scaling[0]    = this->gameObjects[currentModelIndex]->scaling[0];*/
+		}
+	}
+}
+
 void PacMan::Draw(const double deltaTime) {
-	this->timeAccumulator += deltaTime;
+	// Avoid excessive movements due to possible framerate drops, as the movement depends on it
+	const float effectiveDt = std::min(static_cast<float>(deltaTime), MAX_DT);
+	this->timeAccumulator += effectiveDt;
 	// When timeAccumulator is greater than or equal to frameDuration, 
 	// it means that enough time (0.04 seconds) has passed for the model to change.
 	if (this->timeAccumulator >= this->frameDuration) {
@@ -36,7 +49,7 @@ void PacMan::Draw(const double deltaTime) {
 	}
 	GameObjectBase* currentGameObject = this->gameObjects[this->currentModelIndex];
 	currentGameObject->Draw();
-	this->updateOtherGameObjects();
+	this->UpdateOtherGameObjects();
 }
 
 void PacMan::init() {
@@ -57,16 +70,5 @@ void PacMan::init() {
 															&ResourceManager::GetModel(completeString)));
 	}
 
-}
-
-void PacMan::updateOtherGameObjects() const {
-	for (int i = 0; i < 10; i++) {
-		if (i != this->currentModelIndex) {
-			this->gameObjects[i]->positions[0]  = this->gameObjects[this->currentModelIndex]->positions[0];
-			this->gameObjects[i]->directions[0] = this->gameObjects[this->currentModelIndex]->directions[0];
-			/*this->gameObjects[i]->rotations[0]  = this->gameObjects[currentModelIndex]->rotations[0];
-			this->gameObjects[i]->scaling[0]    = this->gameObjects[currentModelIndex]->scaling[0];*/
-		}
-	}
 }
 
