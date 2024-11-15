@@ -7,6 +7,8 @@ class Utility {
 
 public:
 
+    static std::vector<glm::vec3> possibleDirections;
+
     // Function to round a float to six decimal places
     static float     ApproximateFloatToSixDecimals(float value);
 

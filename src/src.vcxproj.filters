@@ -78,6 +78,9 @@
     <ClCompile Include="Pinky.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="VulnerableGhost.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FileSystem.hpp">
@@ -138,6 +141,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Pinky.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="VulnerableGhost.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

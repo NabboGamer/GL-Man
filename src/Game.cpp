@@ -19,6 +19,8 @@
 #include "Clyde.hpp"
 #include "Inky.hpp"
 #include "Pinky.hpp"
+#include "Utility.hpp"
+#include "VulnerableGhost.hpp"
 //#include "particle_generator.h"
 //#include "post_processor.h"
 //#include "text_renderer.h"
@@ -30,6 +32,7 @@ static Ghost*  blinky;
 static Ghost*  clyde;
 static Ghost*  inky;
 static Ghost*  pinky;
+static VulnerableGhost*  vulnerableGhost;
 //ParticleGenerator *Particles;
 //PostProcessor     *Effects;
 //ISoundEngine      *SoundEngine = createIrrKlangDevice();
@@ -69,12 +72,12 @@ void Game::Init() {
 
     /// Configure Shaders
     // Insert uniform variable in vertex shader(only global variables, i.e. the same for all shaders)
-    cameraPos = glm::vec3( -17.0, 22.5, 15.0);
-    cameraAt  = glm::vec3(  10.0,  1.0, 15.0);
-    up        = glm::vec3(   0.0,  1.0,  0.0);
-    cameraDir = glm::normalize(cameraPos - cameraAt);
-    cameraSide = glm::normalize(glm::cross(up, cameraDir));
-    cameraUp = glm::normalize(glm::cross(cameraDir, cameraSide));
+    this->cameraPos = glm::vec3( -17.0, 22.5, 15.0);
+    this->cameraAt  = glm::vec3(  10.0,  1.0, 15.0);
+    this->up        = glm::vec3(   0.0,  1.0,  0.0);
+    this->cameraDir = glm::normalize(cameraPos - cameraAt);
+    this->cameraSide = glm::normalize(glm::cross(up, cameraDir));
+    this->cameraUp = glm::normalize(glm::cross(cameraDir, cameraSide));
     const glm::mat4 view = glm::lookAt(cameraPos, cameraAt, cameraUp);
     const glm::mat4 projection = glm::perspective(glm::radians(35.0f), static_cast<float>(this->width) / static_cast<float>(this->height), 0.1f, 55.0f);
     ResourceManager::GetShader("mazeWallShader").Use().SetMatrix4("view", view);
@@ -150,6 +153,11 @@ void Game::Init() {
     clyde  = new Clyde(levelMatrixDim);
     inky   = new Inky(levelMatrixDim);
     pinky  = new Pinky(levelMatrixDim);
+    vulnerableGhost = new VulnerableGhost(dynamic_cast<Blinky*>(blinky), 
+                                          dynamic_cast<Clyde*>(clyde), 
+                                          dynamic_cast<Inky*>(inky), 
+                                          dynamic_cast<Pinky*>(pinky), 
+                                          levelMatrixDim);
     // audio
     //SoundEngine->play2D(FileSystem::getPath("resources/audio/breakout.mp3").c_str(), true);
 }
@@ -159,10 +167,15 @@ void Game::Init() {
 void Game::Update(const double dt) {
     // update objects
     const auto mazeWall = this->Levels[this->level].mazeWall;
-    blinky->Move(dt, mazeWall);
+   
     clyde ->Move(dt, mazeWall);
     inky  ->Move(dt, mazeWall);
     pinky ->Move(dt, mazeWall);
+    if (vulnerableGhost->IsActive()) {
+        vulnerableGhost->Move(dt, mazeWall);
+    } else {
+        blinky->Move(dt, mazeWall);
+    }
     // check for collisions
     this->DoCollisions();
 //    // update particles
@@ -239,10 +252,14 @@ void Game::Render(const double dt) {
         this->Levels[this->level].Draw();
         // draw player
         pacman->Draw(dt);
-        blinky->Draw(dt);
         clyde ->Draw(dt);
         inky  ->Draw(dt);
         pinky ->Draw(dt);
+        if (vulnerableGhost->IsActive()) {
+            vulnerableGhost->Draw(dt);
+        } else {
+            blinky->Draw(dt);
+        }
         //    // draw PowerUps
         //    for (PowerUp &powerUp : this->PowerUps)
         //        if (!powerUp.Destroyed)
@@ -327,37 +344,42 @@ void Game::DoCollisions() {
             energizer->rotations.erase(energizer->rotations.begin() + i);
             energizer->scaling.erase(energizer->scaling.begin() + i);
             energizer->SetNumInstances(energizer->GetNumInstances() - 1);
+            vulnerableGhost->SetActive(true);
         }
     }
 
     // CHECK COLLISION PLAYER-GHOSTS
     // CHECK COLLISION PLAYER-BLINKY
-    auto blinkyPtr = dynamic_cast<Blinky*>(blinky);
-    auto blinkyObb = blinkyPtr->gameObject->GetTransformedBoundingBox(0);
-    bool collision = checkCollision(playerObb, blinkyObb);
-    if (collision) {
-        LoggerManager::LogDebug("There was a collision between PLAYER and BLINKY");
-        // RESOLVE COLLISION PLAYER-BLINKY
-        if (this->lives > 1) {
-            this->lives--;
-            pacman->gameObjects[pacman->GetCurrentModelIndex()]->positions[0] = glm::vec3(7.5f, 0.0f, 13.5f);
-            pacman->updateOtherGameObjects();
-        } else {
-            this->state = GAME_DEFEAT;
+    if (vulnerableGhost->IsActive()) {
+
+    } else {
+        auto blinkyPtr = dynamic_cast<Blinky*>(blinky);
+        auto blinkyObb = blinkyPtr->gameObject->GetTransformedBoundingBox(0);
+        if (checkCollision(playerObb, blinkyObb)) {
+            LoggerManager::LogDebug("There was a collision between PLAYER and BLINKY");
+            // RESOLVE COLLISION PLAYER-BLINKY
+            if (this->lives > 1) {
+                this->lives--;
+                pacman->gameObjects[pacman->GetCurrentModelIndex()]->positions[0] = glm::vec3(7.5f, 0.0f, 13.5f);
+                pacman->UpdateOtherGameObjects();
+            }
+            else {
+                this->state = GAME_DEFEAT;
+            }
+
         }
-        
     }
+    
     // CHECK COLLISION PLAYER-CLYDE
     auto clydePtr = dynamic_cast<Clyde*>(clyde);
     auto clydeObb = clydePtr->gameObject->GetTransformedBoundingBox(0);
-    collision = checkCollision(playerObb, clydeObb);
-    if (collision) {
+    if (checkCollision(playerObb, clydeObb)) {
         LoggerManager::LogDebug("There was a collision between PLAYER and CLYDE");
         // RESOLVE COLLISION PLAYER-CLYDE
         if (this->lives > 1) {
             this->lives--;
             pacman->gameObjects[pacman->GetCurrentModelIndex()]->positions[0] = glm::vec3(7.5f, 0.0f, 13.5f);
-            pacman->updateOtherGameObjects();
+            pacman->UpdateOtherGameObjects();
         }
         else {
             this->state = GAME_DEFEAT;
@@ -367,14 +389,13 @@ void Game::DoCollisions() {
     // CHECK COLLISION PLAYER-INKY
     auto inkyPtr = dynamic_cast<Inky*>(inky);
     auto inkyObb = inkyPtr->gameObject->GetTransformedBoundingBox(0);
-    collision = checkCollision(playerObb, inkyObb);
-    if (collision) {
+    if (checkCollision(playerObb, inkyObb)) {
         LoggerManager::LogDebug("There was a collision between PLAYER and INKY");
         // RESOLVE COLLISION PLAYER-INKY
         if (this->lives > 1) {
             this->lives--;
             pacman->gameObjects[pacman->GetCurrentModelIndex()]->positions[0] = glm::vec3(7.5f, 0.0f, 13.5f);
-            pacman->updateOtherGameObjects();
+            pacman->UpdateOtherGameObjects();
         }
         else {
             this->state = GAME_DEFEAT;
@@ -384,14 +405,13 @@ void Game::DoCollisions() {
     // CHECK COLLISION PLAYER-PINKY
     auto pinkyPtr = dynamic_cast<Pinky*>(pinky);
     auto pinkyObb = pinkyPtr->gameObject->GetTransformedBoundingBox(0);
-    collision = checkCollision(playerObb, pinkyObb);
-    if (collision) {
+    if (checkCollision(playerObb, pinkyObb)) {
         LoggerManager::LogDebug("There was a collision between PLAYER and PINKY");
         // RESOLVE COLLISION PLAYER-INKY
         if (this->lives > 1) {
             this->lives--;
             pacman->gameObjects[pacman->GetCurrentModelIndex()]->positions[0] = glm::vec3(7.5f, 0.0f, 13.5f);
-            pacman->updateOtherGameObjects();
+            pacman->UpdateOtherGameObjects();
         }
         else {
             this->state = GAME_DEFEAT;

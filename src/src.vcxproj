@@ -159,6 +159,7 @@
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="Texture2D.cpp" />
     <ClCompile Include="Utility.cpp" />
+    <ClCompile Include="VulnerableGhost.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Blinky.hpp" />
@@ -181,6 +182,7 @@
     <ClInclude Include="Shader.hpp" />
     <ClInclude Include="Texture2D.hpp" />
     <ClInclude Include="Utility.hpp" />
+    <ClInclude Include="VulnerableGhost.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\dot.fs" />
