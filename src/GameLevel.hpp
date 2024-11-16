@@ -32,7 +32,7 @@ public:
     void Load(const char *file);
 
     // render level
-    void Draw();
+    void Draw() const;
 
     // check if the level is completed (if all the dots have been eaten)
     //bool IsCompleted();

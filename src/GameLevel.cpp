@@ -6,7 +6,7 @@
 #include "GameObjectCustom.hpp"
 #include "GameObjectFromModel.hpp"
 
-std::vector<float> cube_mesh = {
+static std::vector<float> cube_mesh = {
     // Front face (z = +0.5)
     -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,  // bottom-left
      0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  0.0f,  // bottom-right
@@ -60,7 +60,7 @@ const float L = 1.0f;  // Depth along  x
 const float W = 0.1f;  // Height along y
 const float H = 1.0f;  // Length along z
 
-std::vector<float> parallelepiped_mesh = {
+static std::vector<float> parallelepiped_mesh = {
     // Front face (z = +H/2)
     -L / 2, -W / 2,  H / 2,   0.0f,  0.0f,  1.0f,   0.0f,  0.0f,  // bottom-left
      L / 2, -W / 2,  H / 2,   0.0f,  0.0f,  1.0f,   1.0f,  0.0f,  // bottom-right
@@ -112,7 +112,10 @@ std::vector<float> parallelepiped_mesh = {
 
 
 GameLevel::~GameLevel() {
-    //delete mazeWall;
+    /*delete mazeWall;
+    delete mazeFloor;
+    delete dot;
+    delete energizer;*/
 }
 
 void GameLevel::Load(const char *file) {
@@ -146,7 +149,7 @@ void GameLevel::Load(const char *file) {
     }
 }
 
-void GameLevel::Draw() {
+void GameLevel::Draw() const {
     if (this->mazeFloor->GetNumInstances() > 0) {
         this->mazeFloor->Draw();
     }
@@ -180,34 +183,34 @@ void GameLevel::init(std::vector<std::vector<unsigned int>> wallData) {
             // is a wall? is a dot? or is a hallway?
             if (wallData[x][z] == 1) {
                 // Wall
-                glm::vec3 position = glm::vec3(static_cast<float>(height - (x + 1)), 0.0f, static_cast<float>(z));
+                auto position = glm::vec3(static_cast<float>(height - (x + 1)), 0.0f, static_cast<float>(z));
                 this->mazeWallPositions.push_back(position);
             }
             else if (wallData[x][z] == 2) {
                 // Floor
-                glm::vec3 position = glm::vec3(static_cast<float>(height - (x + 1)), -0.1f, static_cast<float>(z));
+                auto position = glm::vec3(static_cast<float>(height - (x + 1)), -0.1f, static_cast<float>(z));
                 this->mazeFloorPositions.push_back(position);
                 // Dot
                 if (x + 1 < height && z + 1 < width) { // Checking the limits to avoid exceeding the array
                     if (wallData[x][z + 1] == 2 && wallData[x + 1][z] == 2 && wallData[x + 1][z + 1] == 2) {
-                        glm::vec3 position = glm::vec3(static_cast<float>(height - (x + 1)) - 0.5f, 0.25f, static_cast<float>(z) + 0.75f);
+                        auto position = glm::vec3(static_cast<float>(height - (x + 1)) - 0.5f, 0.25f, static_cast<float>(z) + 0.75f);
                         this->dotPositions.push_back(position);
                     }
                 }
             } else if (wallData[x][z] == 3) {
                 // Floor
-                glm::vec3 position = glm::vec3(static_cast<float>(height - (x + 1)), -0.1f, static_cast<float>(z));
+                auto position = glm::vec3(static_cast<float>(height - (x + 1)), -0.1f, static_cast<float>(z));
                 this->mazeFloorPositions.push_back(position);
                 // Energizer
                 if (x + 1 < height && z + 1 < width) { // Checking the limits to avoid exceeding the array
                     if (wallData[x][z + 1] == 3 && wallData[x + 1][z] == 3 && wallData[x + 1][z + 1] == 3) {
-                        glm::vec3 position = glm::vec3(static_cast<float>(height - (x + 1)) - 0.25f, 0.0f, static_cast<float>(z) + 0.5f);
+                        auto position = glm::vec3(static_cast<float>(height - (x + 1)) - 0.25f, 0.0f, static_cast<float>(z) + 0.5f);
                         this->energizerPositions.push_back(position);
                     }
                 }
             } else if (wallData[x][z] == 0) {
                 // Floor
-                glm::vec3 position = glm::vec3(static_cast<float>(height - (x + 1)), -0.1f, static_cast<float>(z));
+                auto position = glm::vec3(static_cast<float>(height - (x + 1)), -0.1f, static_cast<float>(z));
                 this->mazeFloorPositions.push_back(position);
             }
         }

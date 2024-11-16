@@ -56,12 +56,12 @@ private:
     double activationTimeAccumulator = 0.0f;
 
 	
-    [[nodiscard]] bool doCollisions(const GameObjectBase* mazeWall) const;
+    [[nodiscard]] bool doCollisions(const GameObjectBase* mazeWall, size_t instanceIndex) const;
     [[nodiscard]] int countDirectionFrequency(const glm::vec3& direction) const;
     void init() override;
     void updateRecentDirections(const glm::vec3& chosenDirection);
-	void checkIfTeleportIsNeeded(float speed) const;
+	void checkIfTeleportIsNeeded() const;
     void syncGhosts(bool syncThis) const;
     void syncAlternationGhosts() const;
-
+    void moveInstance(double deltaTime, GameObjectBase* mazeWall, size_t instanceIndex);
 };

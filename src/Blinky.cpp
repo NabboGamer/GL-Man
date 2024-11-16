@@ -173,7 +173,7 @@ bool Blinky::doCollisions(const GameObjectBase* mazeWall) const {
 	const size_t numInstancesMazeWall = mazeWall->GetNumInstances();
 	for (size_t i = 0; i < numInstancesMazeWall; i++) {
 		auto mazeWallObb = mazeWall->GetTransformedBoundingBox(i);
-		if (const bool collision = this->checkCollision(blinkyObb, mazeWallObb)) {
+		if (Blinky::checkCollision(blinkyObb, mazeWallObb)) {
             LoggerManager::LogDebug("There was a collision between BLINKY and WALL number {}", i);
             // RESOLVE COLLISION BLINKY-WALL
             const glm::vec3 correction = this->resolveCollision(blinkyObb, mazeWallObb);

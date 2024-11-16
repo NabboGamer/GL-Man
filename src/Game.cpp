@@ -167,14 +167,14 @@ void Game::Init() {
 void Game::Update(const double dt) {
     // update objects
     const auto mazeWall = this->Levels[this->level].mazeWall;
-   
-    clyde ->Move(dt, mazeWall);
-    inky  ->Move(dt, mazeWall);
-    pinky ->Move(dt, mazeWall);
+
     if (vulnerableGhost->IsActive()) {
         vulnerableGhost->Move(dt, mazeWall);
     } else {
         blinky->Move(dt, mazeWall);
+        clyde->Move(dt, mazeWall);
+        inky->Move(dt, mazeWall);
+        pinky->Move(dt, mazeWall);
     }
     // check for collisions
     this->DoCollisions();
@@ -244,7 +244,7 @@ void Game::ProcessInput(const double dt) {
     }
 }
 
-void Game::Render(const double dt) {
+void Game::Render(const double dt) const {
     if (this->state == GAME_ACTIVE || this->state == GAME_WIN) {
         // begin rendering to postprocessing framebuffer
         //Effects->BeginRender();
@@ -252,13 +252,13 @@ void Game::Render(const double dt) {
         this->Levels[this->level].Draw();
         // draw player
         pacman->Draw(dt);
-        clyde ->Draw(dt);
-        inky  ->Draw(dt);
-        pinky ->Draw(dt);
         if (vulnerableGhost->IsActive()) {
             vulnerableGhost->Draw(dt);
         } else {
             blinky->Draw(dt);
+            clyde->Draw(dt);
+            inky->Draw(dt);
+            pinky->Draw(dt);
         }
         //    // draw PowerUps
         //    for (PowerUp &powerUp : this->PowerUps)
@@ -351,20 +351,23 @@ void Game::DoCollisions() {
     // CHECK COLLISION PLAYER-GHOSTS
     // CHECK COLLISION PLAYER-BLINKY
     if (vulnerableGhost->IsActive()) {
-        auto currenGameObjectVulnerableGhost = vulnerableGhost->GetCurrentGameObject();
-        auto currenGameObjectVulnerableGhostObb = currenGameObjectVulnerableGhost->GetTransformedBoundingBox(0);
-        if (checkCollision(playerObb, currenGameObjectVulnerableGhostObb)) {
-            LoggerManager::LogDebug("There was a collision between PLAYER and VULNERABLE_GHOST");
-            // RESOLVE COLLISION PLAYER-VULNERABLE_GHOST
-            if (this->lives > 1) {
-                this->lives--;
-                pacman->gameObjects[pacman->GetCurrentModelIndex()]->positions[0] = glm::vec3(7.5f, 0.0f, 13.5f);
-                pacman->UpdateOtherGameObjects();
-            }
-            else {
-                this->state = GAME_DEFEAT;
+        for (int j = 0; j < 4; j++) {
+            auto currenGameObjectVulnerableGhost = vulnerableGhost->GetCurrentGameObject();
+            auto currenGameObjectVulnerableGhostObb = currenGameObjectVulnerableGhost->GetTransformedBoundingBox(j);
+            if (checkCollision(playerObb, currenGameObjectVulnerableGhostObb)) {
+                LoggerManager::LogDebug("There was a collision between PLAYER and VULNERABLE_GHOST");
+                // RESOLVE COLLISION PLAYER-VULNERABLE_GHOST
+                if (this->lives > 1) {
+                    this->lives--;
+                    pacman->gameObjects[pacman->GetCurrentModelIndex()]->positions[0] = glm::vec3(7.5f, 0.0f, 13.5f);
+                    pacman->UpdateOtherGameObjects();
+                }
+                else {
+                    this->state = GAME_DEFEAT;
+                }
             }
         }
+        
     } else {
         auto blinkyPtr = dynamic_cast<Blinky*>(blinky);
         auto blinkyObb = blinkyPtr->gameObject->GetTransformedBoundingBox(0);
@@ -379,58 +382,59 @@ void Game::DoCollisions() {
             else {
                 this->state = GAME_DEFEAT;
             }
-
-        }
-    }
-    
-    // CHECK COLLISION PLAYER-CLYDE
-    auto clydePtr = dynamic_cast<Clyde*>(clyde);
-    auto clydeObb = clydePtr->gameObject->GetTransformedBoundingBox(0);
-    if (checkCollision(playerObb, clydeObb)) {
-        LoggerManager::LogDebug("There was a collision between PLAYER and CLYDE");
-        // RESOLVE COLLISION PLAYER-CLYDE
-        if (this->lives > 1) {
-            this->lives--;
-            pacman->gameObjects[pacman->GetCurrentModelIndex()]->positions[0] = glm::vec3(7.5f, 0.0f, 13.5f);
-            pacman->UpdateOtherGameObjects();
-        }
-        else {
-            this->state = GAME_DEFEAT;
         }
 
-    }
-    // CHECK COLLISION PLAYER-INKY
-    auto inkyPtr = dynamic_cast<Inky*>(inky);
-    auto inkyObb = inkyPtr->gameObject->GetTransformedBoundingBox(0);
-    if (checkCollision(playerObb, inkyObb)) {
-        LoggerManager::LogDebug("There was a collision between PLAYER and INKY");
-        // RESOLVE COLLISION PLAYER-INKY
-        if (this->lives > 1) {
-            this->lives--;
-            pacman->gameObjects[pacman->GetCurrentModelIndex()]->positions[0] = glm::vec3(7.5f, 0.0f, 13.5f);
-            pacman->UpdateOtherGameObjects();
+        // CHECK COLLISION PLAYER-CLYDE
+        auto clydePtr = dynamic_cast<Clyde*>(clyde);
+        auto clydeObb = clydePtr->gameObject->GetTransformedBoundingBox(0);
+        if (checkCollision(playerObb, clydeObb)) {
+            LoggerManager::LogDebug("There was a collision between PLAYER and CLYDE");
+            // RESOLVE COLLISION PLAYER-CLYDE
+            if (this->lives > 1) {
+                this->lives--;
+                pacman->gameObjects[pacman->GetCurrentModelIndex()]->positions[0] = glm::vec3(7.5f, 0.0f, 13.5f);
+                pacman->UpdateOtherGameObjects();
+            }
+            else {
+                this->state = GAME_DEFEAT;
+            }
         }
-        else {
-            this->state = GAME_DEFEAT;
+
+        // CHECK COLLISION PLAYER-INKY
+        auto inkyPtr = dynamic_cast<Inky*>(inky);
+        auto inkyObb = inkyPtr->gameObject->GetTransformedBoundingBox(0);
+        if (checkCollision(playerObb, inkyObb)) {
+            LoggerManager::LogDebug("There was a collision between PLAYER and INKY");
+            // RESOLVE COLLISION PLAYER-INKY
+            if (this->lives > 1) {
+                this->lives--;
+                pacman->gameObjects[pacman->GetCurrentModelIndex()]->positions[0] = glm::vec3(7.5f, 0.0f, 13.5f);
+                pacman->UpdateOtherGameObjects();
+            }
+            else {
+                this->state = GAME_DEFEAT;
+            }
+
+        }
+
+        // CHECK COLLISION PLAYER-PINKY
+        auto pinkyPtr = dynamic_cast<Pinky*>(pinky);
+        auto pinkyObb = pinkyPtr->gameObject->GetTransformedBoundingBox(0);
+        if (checkCollision(playerObb, pinkyObb)) {
+            LoggerManager::LogDebug("There was a collision between PLAYER and PINKY");
+            // RESOLVE COLLISION PLAYER-INKY
+            if (this->lives > 1) {
+                this->lives--;
+                pacman->gameObjects[pacman->GetCurrentModelIndex()]->positions[0] = glm::vec3(7.5f, 0.0f, 13.5f);
+                pacman->UpdateOtherGameObjects();
+            }
+            else {
+                this->state = GAME_DEFEAT;
+            }
         }
 
     }
-    // CHECK COLLISION PLAYER-PINKY
-    auto pinkyPtr = dynamic_cast<Pinky*>(pinky);
-    auto pinkyObb = pinkyPtr->gameObject->GetTransformedBoundingBox(0);
-    if (checkCollision(playerObb, pinkyObb)) {
-        LoggerManager::LogDebug("There was a collision between PLAYER and PINKY");
-        // RESOLVE COLLISION PLAYER-INKY
-        if (this->lives > 1) {
-            this->lives--;
-            pacman->gameObjects[pacman->GetCurrentModelIndex()]->positions[0] = glm::vec3(7.5f, 0.0f, 13.5f);
-            pacman->UpdateOtherGameObjects();
-        }
-        else {
-            this->state = GAME_DEFEAT;
-        }
 
-    }
 }
 
 // OBB - OBB collision detection in XZ plane

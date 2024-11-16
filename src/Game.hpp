@@ -56,7 +56,7 @@ public:
     // game loop
     void ProcessInput(double dt);
     void Update(double dt);
-    void Render(double dt);
+    void Render(double dt) const;
     void DoCollisions();
     
     // reset
