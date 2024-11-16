@@ -50,15 +50,13 @@ void VulnerableGhost::SetActive(const bool active) {
     }
 }
 
-void VulnerableGhost::UpdateOtherGameObjects() const {
+void VulnerableGhost::UpdateOtherGameObjects(const size_t instanceIndex) const {
     for (int i = 0; i < 10; i++) {
         if (i != this->currentModelIndex) {
-            for (int j = 0; j < 4; j++) {
-                this->gameObjectsBlue[i]->positions[j] = this->gameObjectsBlue[this->currentModelIndex]->positions[j];
-                this->gameObjectsBlue[i]->directions[j] = this->gameObjectsBlue[this->currentModelIndex]->directions[j];
-                this->gameObjectsWhite[i]->positions[j] = this->gameObjectsWhite[this->currentModelIndex]->positions[j];
-                this->gameObjectsWhite[i]->directions[j] = this->gameObjectsWhite[this->currentModelIndex]->directions[j];
-            }
+            this->gameObjectsBlue[i]->positions[instanceIndex]   = this->gameObjectsBlue[this->currentModelIndex]->positions[instanceIndex];
+            this->gameObjectsBlue[i]->directions[instanceIndex]  = this->gameObjectsBlue[this->currentModelIndex]->directions[instanceIndex];
+            this->gameObjectsWhite[i]->positions[instanceIndex]  = this->gameObjectsWhite[this->currentModelIndex]->positions[instanceIndex];
+            this->gameObjectsWhite[i]->directions[instanceIndex] = this->gameObjectsWhite[this->currentModelIndex]->directions[instanceIndex];
         }
     }
 }
@@ -107,8 +105,8 @@ void VulnerableGhost::moveInstance(double deltaTime, GameObjectBase* mazeWall, s
     if (!doesItCollide && !forceDirectionChange) {
         currentGameObject->positions[instanceIndex] += speed * currentDirection;
         // Check for teleport
-        this->checkIfTeleportIsNeeded();
-        this->UpdateOtherGameObjects();
+        this->checkIfTeleportIsNeeded(instanceIndex);
+        this->UpdateOtherGameObjects(instanceIndex);
         return;
     }
 
@@ -191,8 +189,8 @@ void VulnerableGhost::moveInstance(double deltaTime, GameObjectBase* mazeWall, s
         currentGameObject->directions[instanceIndex] = chosenDirection;
         currentGameObject->positions[instanceIndex] += speed * chosenDirection;
         // Check for teleport
-        this->checkIfTeleportIsNeeded();
-        this->UpdateOtherGameObjects();
+        this->checkIfTeleportIsNeeded(instanceIndex);
+        this->UpdateOtherGameObjects(instanceIndex);
         this->updateRecentDirections(chosenDirection);
     }
     else {
@@ -244,9 +242,12 @@ void VulnerableGhost::Draw(const double deltaTime) {
         // This causes the animation to loop.
         this->currentModelIndex = (this->currentModelIndex + 1) % 10;
     }
-    GameObjectBase* currentGameObject = this->drawBlue ? this->gameObjectsBlue[this->currentModelIndex] : this->gameObjectsWhite[this->currentModelIndex];
+    GameObjectBase* currentGameObject = this->GetCurrentGameObject();
     currentGameObject->Draw();
-    this->UpdateOtherGameObjects();
+    this->UpdateOtherGameObjects(0);
+    this->UpdateOtherGameObjects(1);
+    this->UpdateOtherGameObjects(2);
+    this->UpdateOtherGameObjects(3);
 }
 
 void VulnerableGhost::init() {
@@ -313,20 +314,18 @@ void VulnerableGhost::updateRecentDirections(const glm::vec3& chosenDirection) {
     recentDirections.push_back(chosenDirection);
 }
 
-void VulnerableGhost::checkIfTeleportIsNeeded() const {
+void VulnerableGhost::checkIfTeleportIsNeeded(const size_t instanceIndex) const {
     const auto currentGameObject = this->GetCurrentGameObject();
-    for (int j = 0; j < 4; j++) {
-        const auto vulnerableGhostObb = currentGameObject->GetTransformedBoundingBox(j);
-        const glm::vec3 pMin = vulnerableGhostObb.first;
-        const glm::vec3 pMax = vulnerableGhostObb.second;
-        const size_t columnDim = this->levelMatrixDim.second;
+    const auto vulnerableGhostObb = currentGameObject->GetTransformedBoundingBox(instanceIndex);
+    const glm::vec3 pMin = vulnerableGhostObb.first;
+    const glm::vec3 pMax = vulnerableGhostObb.second;
+    const size_t columnDim = this->levelMatrixDim.second;
 
-        if (pMax.z >= static_cast<float>(columnDim) && currentGameObject->directions[j] == glm::vec3(0.0f, 0.0f, 1.0f)) {
-            currentGameObject->positions[j] = glm::vec3(currentGameObject->positions[j].x, currentGameObject->positions[j].y, 0.0f);
-        }
-        else if (pMin.z <= 0.0f && currentGameObject->directions[j] == glm::vec3(0.0f, 0.0f, -1.0f)) {
-            currentGameObject->positions[j] = glm::vec3(currentGameObject->positions[j].x, currentGameObject->positions[j].y, static_cast<float>(columnDim) - 1.0f);
-        }
+    if (pMax.z >= static_cast<float>(columnDim) && currentGameObject->directions[instanceIndex] == glm::vec3(0.0f, 0.0f, 1.0f)) {
+        currentGameObject->positions[instanceIndex] = glm::vec3(currentGameObject->positions[instanceIndex].x, currentGameObject->positions[instanceIndex].y, 0.0f);
+    }
+    else if (pMin.z <= 0.0f && currentGameObject->directions[instanceIndex] == glm::vec3(0.0f, 0.0f, -1.0f)) {
+        currentGameObject->positions[instanceIndex] = glm::vec3(currentGameObject->positions[instanceIndex].x, currentGameObject->positions[instanceIndex].y, static_cast<float>(columnDim) - 1.0f);
     }
 }
 
@@ -342,7 +341,11 @@ void VulnerableGhost::syncGhosts(const bool syncThis) const {
             this->gameObjectsBlue[this->currentModelIndex]->directions[1] = clyde->gameObject->directions[0];
             this->gameObjectsBlue[this->currentModelIndex]->directions[2] = inky->gameObject->directions[0];
             this->gameObjectsBlue[this->currentModelIndex]->directions[3] = pinky->gameObject->directions[0];
-            this->UpdateOtherGameObjects();
+
+            this->UpdateOtherGameObjects(0);
+            this->UpdateOtherGameObjects(1);
+            this->UpdateOtherGameObjects(2);
+            this->UpdateOtherGameObjects(3);
         }
         else {
             this->gameObjectsWhite[this->currentModelIndex]->positions[0] = blinky->gameObject->positions[0];
@@ -354,7 +357,11 @@ void VulnerableGhost::syncGhosts(const bool syncThis) const {
             this->gameObjectsWhite[this->currentModelIndex]->directions[1] = clyde->gameObject->directions[0];
             this->gameObjectsWhite[this->currentModelIndex]->directions[2] = inky->gameObject->directions[0];
             this->gameObjectsWhite[this->currentModelIndex]->directions[3] = pinky->gameObject->directions[0];
-            this->UpdateOtherGameObjects();
+
+            this->UpdateOtherGameObjects(0);
+            this->UpdateOtherGameObjects(1);
+            this->UpdateOtherGameObjects(2);
+            this->UpdateOtherGameObjects(3);
         }
     
     }
@@ -389,12 +396,12 @@ void VulnerableGhost::syncAlternationGhosts() const {
         if (drawBlue) {
             this->gameObjectsWhite[this->currentModelIndex]->positions[j] = this->gameObjectsBlue[this->currentModelIndex]->positions[j];
             this->gameObjectsWhite[this->currentModelIndex]->directions[j] = this->gameObjectsBlue[this->currentModelIndex]->directions[j];
-            this->UpdateOtherGameObjects();
+            this->UpdateOtherGameObjects(j);
         }
         else {
             this->gameObjectsBlue[this->currentModelIndex]->positions[j] = this->gameObjectsWhite[this->currentModelIndex]->positions[j];
             this->gameObjectsBlue[this->currentModelIndex]->directions[j] = this->gameObjectsWhite[this->currentModelIndex]->directions[j];
-            this->UpdateOtherGameObjects();
+            this->UpdateOtherGameObjects(j);
         }
     }
 }

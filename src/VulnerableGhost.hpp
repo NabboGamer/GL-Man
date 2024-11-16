@@ -24,7 +24,7 @@ public:
     [[nodiscard]] GameObjectBase* GetCurrentGameObject() const;
     [[nodiscard]] bool IsActive() const;
     void SetActive(bool active);
-    void UpdateOtherGameObjects() const;
+    void UpdateOtherGameObjects(size_t instanceIndex) const;
 	void Move(double deltaTime, GameObjectBase* mazeWall) override;
 	void Draw(double deltaTime) override;
 
@@ -60,7 +60,7 @@ private:
     [[nodiscard]] int countDirectionFrequency(const glm::vec3& direction) const;
     void init() override;
     void updateRecentDirections(const glm::vec3& chosenDirection);
-	void checkIfTeleportIsNeeded() const;
+	void checkIfTeleportIsNeeded(size_t instanceIndex) const;
     void syncGhosts(bool syncThis) const;
     void syncAlternationGhosts() const;
     void moveInstance(double deltaTime, GameObjectBase* mazeWall, size_t instanceIndex);
