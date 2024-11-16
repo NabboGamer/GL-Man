@@ -62,7 +62,8 @@ void VulnerableGhost::UpdateOtherGameObjects(const size_t instanceIndex) const {
 }
 
 void VulnerableGhost::Move(const double deltaTime, GameObjectBase* mazeWall) {
-    for (int j = 0; j < 4; j++) {
+    const int numInstances = static_cast<int>(this->GetCurrentGameObject()->GetNumInstances());
+    for (int j = 0; j < numInstances; ++j) {
         this->moveInstance(deltaTime, mazeWall, j);
     }
 }
@@ -200,7 +201,6 @@ void VulnerableGhost::moveInstance(double deltaTime, GameObjectBase* mazeWall, s
 }
 
 void VulnerableGhost::Draw(const double deltaTime) {
-
     if (this->isActive) {
         this->activationTimeAccumulator += deltaTime;
 
@@ -244,10 +244,51 @@ void VulnerableGhost::Draw(const double deltaTime) {
     }
     GameObjectBase* currentGameObject = this->GetCurrentGameObject();
     currentGameObject->Draw();
-    this->UpdateOtherGameObjects(0);
-    this->UpdateOtherGameObjects(1);
-    this->UpdateOtherGameObjects(2);
-    this->UpdateOtherGameObjects(3);
+    const int numInstances = static_cast<int>(currentGameObject->GetNumInstances());
+    for (int i = 0; i < numInstances; ++i) {
+        this->UpdateOtherGameObjects(i);
+    }
+}
+
+void VulnerableGhost::RemoveAnInstace(const size_t instanceIndex) {
+    
+    for (const auto gameObjectBlue : this->gameObjectsBlue) {
+        gameObjectBlue->positions.erase(gameObjectBlue->positions.begin() + instanceIndex);
+        gameObjectBlue->directions.erase(gameObjectBlue->directions.begin() + instanceIndex);
+        gameObjectBlue->rotations.erase(gameObjectBlue->rotations.begin() + instanceIndex);
+        gameObjectBlue->scaling.erase(gameObjectBlue->scaling.begin() + instanceIndex);
+        gameObjectBlue->UpdateNumInstance();
+    }
+
+    for (const auto gameObjectWhite : this->gameObjectsWhite) {
+        gameObjectWhite->positions.erase(gameObjectWhite->positions.begin() + instanceIndex);
+        gameObjectWhite->directions.erase(gameObjectWhite->directions.begin() + instanceIndex);
+        gameObjectWhite->rotations.erase(gameObjectWhite->rotations.begin() + instanceIndex);
+        gameObjectWhite->scaling.erase(gameObjectWhite->scaling.begin() + instanceIndex);
+        gameObjectWhite->UpdateNumInstance();
+    }
+
+    const int indexToRemove = static_cast<int>(instanceIndex);
+    // Update the indexes in the map
+    if (ghostMapping.blinkyIndex == indexToRemove) {
+        this->ghostMapping.blinkyIndex = -1; //Indicates that it has been removed
+    }
+    else if (ghostMapping.clydeIndex == indexToRemove) {
+        this->ghostMapping.clydeIndex = -1;
+    }
+    else if (ghostMapping.inkyIndex == indexToRemove) {
+        this->ghostMapping.inkyIndex = -1;
+    }
+    else if (ghostMapping.pinkyIndex == indexToRemove) {
+        this->ghostMapping.pinkyIndex = -1;
+    }
+
+    // Scale the indices for all subsequent ghosts
+    if (ghostMapping.blinkyIndex > indexToRemove) --ghostMapping.blinkyIndex;
+    if (ghostMapping.clydeIndex > indexToRemove) --ghostMapping.clydeIndex;
+    if (ghostMapping.inkyIndex > indexToRemove) --ghostMapping.inkyIndex;
+    if (ghostMapping.pinkyIndex > indexToRemove) --ghostMapping.pinkyIndex;
+    
 }
 
 void VulnerableGhost::init() {
@@ -281,6 +322,7 @@ void VulnerableGhost::init() {
                                                                  &ResourceManager::GetModel(completeString)));
     }
 
+    
 }
     
 bool VulnerableGhost::doCollisions(const GameObjectBase* mazeWall, size_t instanceIndex) const {
@@ -330,69 +372,64 @@ void VulnerableGhost::checkIfTeleportIsNeeded(const size_t instanceIndex) const 
 }
 
 void VulnerableGhost::syncGhosts(const bool syncThis) const {
+    auto& positions = drawBlue
+        ? gameObjectsBlue[currentModelIndex]->positions
+        : gameObjectsWhite[currentModelIndex]->positions;
+
+    auto& directions = drawBlue
+        ? gameObjectsBlue[currentModelIndex]->directions
+        : gameObjectsWhite[currentModelIndex]->directions;
+
     if (syncThis) {
-        if (drawBlue) {
-            this->gameObjectsBlue[this->currentModelIndex]->positions[0] = blinky->gameObject->positions[0];
-            this->gameObjectsBlue[this->currentModelIndex]->positions[1] = clyde->gameObject->positions[0];
-            this->gameObjectsBlue[this->currentModelIndex]->positions[2] = inky->gameObject->positions[0];
-            this->gameObjectsBlue[this->currentModelIndex]->positions[3] = pinky->gameObject->positions[0];
-
-            this->gameObjectsBlue[this->currentModelIndex]->directions[0] = blinky->gameObject->directions[0];
-            this->gameObjectsBlue[this->currentModelIndex]->directions[1] = clyde->gameObject->directions[0];
-            this->gameObjectsBlue[this->currentModelIndex]->directions[2] = inky->gameObject->directions[0];
-            this->gameObjectsBlue[this->currentModelIndex]->directions[3] = pinky->gameObject->directions[0];
-
-            this->UpdateOtherGameObjects(0);
-            this->UpdateOtherGameObjects(1);
-            this->UpdateOtherGameObjects(2);
-            this->UpdateOtherGameObjects(3);
+        if (ghostMapping.blinkyIndex != -1) {
+            positions[ghostMapping.blinkyIndex] = blinky->gameObject->positions[0];
+            directions[ghostMapping.blinkyIndex] = blinky->gameObject->directions[0];
         }
-        else {
-            this->gameObjectsWhite[this->currentModelIndex]->positions[0] = blinky->gameObject->positions[0];
-            this->gameObjectsWhite[this->currentModelIndex]->positions[1] = clyde->gameObject->positions[0];
-            this->gameObjectsWhite[this->currentModelIndex]->positions[2] = inky->gameObject->positions[0];
-            this->gameObjectsWhite[this->currentModelIndex]->positions[3] = pinky->gameObject->positions[0];
-
-            this->gameObjectsWhite[this->currentModelIndex]->directions[0] = blinky->gameObject->directions[0];
-            this->gameObjectsWhite[this->currentModelIndex]->directions[1] = clyde->gameObject->directions[0];
-            this->gameObjectsWhite[this->currentModelIndex]->directions[2] = inky->gameObject->directions[0];
-            this->gameObjectsWhite[this->currentModelIndex]->directions[3] = pinky->gameObject->directions[0];
-
-            this->UpdateOtherGameObjects(0);
-            this->UpdateOtherGameObjects(1);
-            this->UpdateOtherGameObjects(2);
-            this->UpdateOtherGameObjects(3);
+        if (ghostMapping.clydeIndex != -1) {
+            positions[ghostMapping.clydeIndex] = clyde->gameObject->positions[0];
+            directions[ghostMapping.clydeIndex] = clyde->gameObject->directions[0];
         }
-    
+        if (ghostMapping.inkyIndex != -1) {
+            positions[ghostMapping.inkyIndex] = inky->gameObject->positions[0];
+            directions[ghostMapping.inkyIndex] = inky->gameObject->directions[0];
+        }
+        if (ghostMapping.pinkyIndex != -1) {
+            positions[ghostMapping.pinkyIndex] = pinky->gameObject->positions[0];
+            directions[ghostMapping.pinkyIndex] = pinky->gameObject->directions[0];
+        }
+
+        for (int i = 0; i < 4; ++i) {
+            if (i == ghostMapping.blinkyIndex ||
+                i == ghostMapping.clydeIndex ||
+                i == ghostMapping.inkyIndex ||
+                i == ghostMapping.pinkyIndex) {
+                UpdateOtherGameObjects(i);
+            }
+        }
     }
     else {
-        if (drawBlue) {
-            blinky->gameObject->positions[0] = this->gameObjectsBlue[this->currentModelIndex]->positions[0];
-            clyde->gameObject->positions[0]  = this->gameObjectsBlue[this->currentModelIndex]->positions[1];
-            inky->gameObject->positions[0]   = this->gameObjectsBlue[this->currentModelIndex]->positions[2];
-            pinky->gameObject->positions[0]  = this->gameObjectsBlue[this->currentModelIndex]->positions[3];
-
-            blinky->gameObject->directions[0] = this->gameObjectsBlue[this->currentModelIndex]->directions[0];
-            clyde->gameObject->directions[0]  = this->gameObjectsBlue[this->currentModelIndex]->directions[1];
-            inky->gameObject->directions[0]   = this->gameObjectsBlue[this->currentModelIndex]->directions[2];
-            pinky->gameObject->directions[0]  = this->gameObjectsBlue[this->currentModelIndex]->directions[3];
+        if (ghostMapping.blinkyIndex != -1) {
+            blinky->gameObject->positions[0] = positions[ghostMapping.blinkyIndex];
+            blinky->gameObject->directions[0] = directions[ghostMapping.blinkyIndex];
         }
-        else {
-            blinky->gameObject->positions[0] = this->gameObjectsWhite[this->currentModelIndex]->positions[0];
-            clyde->gameObject->positions[0]  = this->gameObjectsWhite[this->currentModelIndex]->positions[1];
-            inky->gameObject->positions[0]   = this->gameObjectsWhite[this->currentModelIndex]->positions[2];
-            pinky->gameObject->positions[0]  = this->gameObjectsWhite[this->currentModelIndex]->positions[3];
-
-            blinky->gameObject->directions[0] = this->gameObjectsWhite[this->currentModelIndex]->directions[0];
-            clyde->gameObject->directions[0]  = this->gameObjectsWhite[this->currentModelIndex]->directions[1];
-            inky->gameObject->directions[0]   = this->gameObjectsWhite[this->currentModelIndex]->directions[2];
-            pinky->gameObject->directions[0]  = this->gameObjectsWhite[this->currentModelIndex]->directions[3];
+        if (ghostMapping.clydeIndex != -1) {
+            clyde->gameObject->positions[0] = positions[ghostMapping.clydeIndex];
+            clyde->gameObject->directions[0] = directions[ghostMapping.clydeIndex];
+        }
+        if (ghostMapping.inkyIndex != -1) {
+            inky->gameObject->positions[0] = positions[ghostMapping.inkyIndex];
+            inky->gameObject->directions[0] = directions[ghostMapping.inkyIndex];
+        }
+        if (ghostMapping.pinkyIndex != -1) {
+            pinky->gameObject->positions[0] = positions[ghostMapping.pinkyIndex];
+            pinky->gameObject->directions[0] = directions[ghostMapping.pinkyIndex];
         }
     }
 }
 
 void VulnerableGhost::syncAlternationGhosts() const {
-    for (int j = 0; j < 4; j++) {
+    const int numInstances = static_cast<int>(this->GetCurrentGameObject()->GetNumInstances());
+    for (int j = 0; j < numInstances; ++j) {
         if (drawBlue) {
             this->gameObjectsWhite[this->currentModelIndex]->positions[j] = this->gameObjectsBlue[this->currentModelIndex]->positions[j];
             this->gameObjectsWhite[this->currentModelIndex]->directions[j] = this->gameObjectsBlue[this->currentModelIndex]->directions[j];

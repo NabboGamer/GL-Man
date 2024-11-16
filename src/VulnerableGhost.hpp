@@ -11,11 +11,20 @@
 #include "Pinky.hpp"
 #include "GameObjectBase.hpp"
 
+struct GhostMapping {
+    int blinkyIndex;
+    int clydeIndex;
+    int inkyIndex;
+    int pinkyIndex;
+};
+
 class VulnerableGhost final : public Ghost {
 
 public:
     std::vector<GameObjectBase*> gameObjectsBlue;
     std::vector<GameObjectBase*> gameObjectsWhite;
+
+    GhostMapping ghostMapping = { 0, 1, 2, 3 };
 
 	explicit VulnerableGhost(Blinky* blinky, Clyde* clyde, Inky* inky, Pinky* pinky, std::pair<size_t, size_t> levelMatrixDim);
 	~VulnerableGhost() override;
@@ -27,6 +36,7 @@ public:
     void UpdateOtherGameObjects(size_t instanceIndex) const;
 	void Move(double deltaTime, GameObjectBase* mazeWall) override;
 	void Draw(double deltaTime) override;
+    void RemoveAnInstace(size_t instanceIndex);
 
 private:
 
@@ -54,7 +64,6 @@ private:
     double alternationTimeAccumulator = 0.0f;
     double modelSwapTimeAccumulator = 0.0f;
     double activationTimeAccumulator = 0.0f;
-
 	
     [[nodiscard]] bool doCollisions(const GameObjectBase* mazeWall, size_t instanceIndex) const;
     [[nodiscard]] int countDirectionFrequency(const glm::vec3& direction) const;

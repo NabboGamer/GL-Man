@@ -10,12 +10,20 @@
 #include "LoggerManager.hpp"
 #include "GameObjectFromModel.hpp"
 
-Clyde::Clyde(const std::pair<size_t, size_t> levelMatrixDim) : Ghost(), levelMatrixDim(levelMatrixDim) {
+Clyde::Clyde(const std::pair<size_t, size_t> levelMatrixDim) : Ghost(), levelMatrixDim(levelMatrixDim), isAlive(true) {
 	this->Clyde::init();
 }
 
 Clyde::~Clyde() {
 	delete gameObject;
+}
+
+bool Clyde::IsAlive() const {
+    return this->isAlive;
+}
+
+void Clyde::SetAlive(const bool alive) {
+    this->isAlive = alive;
 }
 
 void Clyde::Move(double deltaTime, GameObjectBase* mazeWall) {

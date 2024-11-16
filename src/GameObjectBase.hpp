@@ -31,8 +31,11 @@ public:
     // Getter
     size_t GetNumInstances() const;
 
-    //Setter
+    // Setter
     void SetNumInstances(size_t newNumInstances);
+
+    // Update
+    void UpdateNumInstance();
 
     // Pure virtual method that forces subclasses to implement their own Draw method
     virtual void Draw() = 0;

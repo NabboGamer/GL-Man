@@ -15,6 +15,9 @@ public:
 	explicit Clyde(std::pair<size_t, size_t> levelMatrixDim);
 	~Clyde() override;
 
+    bool IsAlive() const;
+    void SetAlive(bool alive);
+
 	void Move(double deltaTime, GameObjectBase* mazeWall) override;
 	void Draw(double deltaTime) override;
 
@@ -35,6 +38,7 @@ private:
     std::deque<glm::vec3> recentDirections;            // Queue of the last chosen directions
     bool skipFirstMovement = false;
     std::pair<size_t, size_t> levelMatrixDim;
+    bool isAlive;
 
 	void init() override;
 	bool doCollisions(const GameObjectBase* mazeWall) const;

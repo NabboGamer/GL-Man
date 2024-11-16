@@ -15,6 +15,9 @@ public:
 	explicit Pinky(std::pair<size_t, size_t> levelMatrixDim);
 	~Pinky() override;
 
+    bool IsAlive() const;
+    void SetAlive(bool alive);
+
 	void Move(double deltaTime, GameObjectBase* mazeWall) override;
 	void Draw(double deltaTime) override;
 
@@ -34,6 +37,7 @@ private:
     float timeSinceLastChange = 0.0f;                  // Time elapsed since last change
     std::deque<glm::vec3> recentDirections;            // Queue of the last chosen directions
     std::pair<size_t, size_t> levelMatrixDim;
+    bool isAlive;
     
 
 	void init() override;

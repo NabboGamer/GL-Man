@@ -10,12 +10,20 @@
 #include "LoggerManager.hpp"
 #include "GameObjectFromModel.hpp"
 
-Pinky::Pinky(const std::pair<size_t, size_t> levelMatrixDim) : Ghost(), levelMatrixDim(levelMatrixDim) {
+Pinky::Pinky(const std::pair<size_t, size_t> levelMatrixDim) : Ghost(), levelMatrixDim(levelMatrixDim), isAlive(true) {
 	this->Pinky::init();
 }
 
 Pinky::~Pinky() {
 	delete gameObject;
+}
+
+bool Pinky::IsAlive() const {
+    return this->isAlive;
+}
+
+void Pinky::SetAlive(const bool alive) {
+    this->isAlive = alive;
 }
 
 void Pinky::Move(double deltaTime, GameObjectBase* mazeWall) {

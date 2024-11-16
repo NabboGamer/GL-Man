@@ -10,12 +10,20 @@
 #include "LoggerManager.hpp"
 #include "GameObjectFromModel.hpp"
 
-Blinky::Blinky(const std::pair<size_t, size_t> levelMatrixDim) : Ghost(), levelMatrixDim(levelMatrixDim) {
+Blinky::Blinky(const std::pair<size_t, size_t> levelMatrixDim) : Ghost(), levelMatrixDim(levelMatrixDim), isAlive(true) {
 	this->Blinky::init();
 }
 
 Blinky::~Blinky() {
 	delete gameObject;
+}
+
+bool Blinky::IsAlive() const {
+	return this->isAlive;
+}
+
+void Blinky::SetAlive(const bool alive) {
+    this->isAlive = alive;
 }
 
 void Blinky::Move(double deltaTime, GameObjectBase* mazeWall) {
