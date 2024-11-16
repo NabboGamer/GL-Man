@@ -27,11 +27,11 @@
 
 
 // Game-related State data
-static PacMan* pacman;
-static Ghost*  blinky;
-static Ghost*  clyde;
-static Ghost*  inky;
-static Ghost*  pinky;
+static PacMan*           pacman;
+static Blinky*           blinky;
+static Clyde*            clyde;
+static Inky*             inky;
+static Pinky*            pinky;
 static VulnerableGhost*  vulnerableGhost;
 //ParticleGenerator *Particles;
 //PostProcessor     *Effects;
@@ -52,6 +52,7 @@ Game::~Game() {
     delete clyde;
     delete inky;
     delete pinky;
+    delete vulnerableGhost;
     /*delete Ball;
     delete Particles;
     delete Effects;
@@ -153,11 +154,7 @@ void Game::Init() {
     clyde  = new Clyde(levelMatrixDim);
     inky   = new Inky(levelMatrixDim);
     pinky  = new Pinky(levelMatrixDim);
-    vulnerableGhost = new VulnerableGhost(dynamic_cast<Blinky*>(blinky), 
-                                          dynamic_cast<Clyde*>(clyde), 
-                                          dynamic_cast<Inky*>(inky), 
-                                          dynamic_cast<Pinky*>(pinky), 
-                                          levelMatrixDim);
+    vulnerableGhost = new VulnerableGhost(blinky,clyde, inky, pinky, levelMatrixDim);
     // audio
     //SoundEngine->play2D(FileSystem::getPath("resources/audio/breakout.mp3").c_str(), true);
 }
@@ -171,14 +168,10 @@ void Game::Update(const double dt) {
         vulnerableGhost->Move(dt, mazeWall);
     }
     else {
-        const auto blinkyPtr = dynamic_cast<Blinky*>(blinky);
-        const auto clydePtr = dynamic_cast<Clyde*>(clyde);
-        const auto inkyPtr = dynamic_cast<Inky*>(inky);
-        const auto pinkyPtr = dynamic_cast<Pinky*>(pinky);
-        if (blinkyPtr->IsAlive()) blinkyPtr->Move(dt, mazeWall);
-        if (clydePtr->IsAlive()) clydePtr->Move(dt, mazeWall);
-        if (inkyPtr->IsAlive()) inkyPtr->Move(dt, mazeWall);
-        if (pinkyPtr->IsAlive()) pinkyPtr->Move(dt, mazeWall);
+        if (blinky->IsAlive()) blinky->Move(dt, mazeWall);
+        if (clyde->IsAlive()) clyde->Move(dt, mazeWall);
+        if (inky->IsAlive()) inky->Move(dt, mazeWall);
+        if (pinky->IsAlive()) pinky->Move(dt, mazeWall);
     }
     // check for collisions
     this->DoCollisions();
@@ -260,14 +253,10 @@ void Game::Render(const double dt) const {
             vulnerableGhost->GetCurrentGameObject()->GetNumInstances() > 0) {
             vulnerableGhost->Draw(dt);
         } else {
-            const auto blinkyPtr = dynamic_cast<Blinky*>(blinky);
-            const auto clydePtr = dynamic_cast<Clyde*>(clyde);
-            const auto inkyPtr = dynamic_cast<Inky*>(inky);
-            const auto pinkyPtr = dynamic_cast<Pinky*>(pinky);
-            if (blinkyPtr->IsAlive()) blinkyPtr->Draw(dt);
-            if (clydePtr->IsAlive()) clydePtr->Draw(dt);
-            if (inkyPtr->IsAlive()) inkyPtr->Draw(dt);
-            if (pinkyPtr->IsAlive()) pinkyPtr->Draw(dt);
+            if (blinky->IsAlive()) blinky->Draw(dt);
+            if (clyde->IsAlive()) clyde->Draw(dt);
+            if (inky->IsAlive()) inky->Draw(dt);
+            if (pinky->IsAlive()) pinky->Draw(dt);
         }
         //    // draw PowerUps
         //    for (PowerUp &powerUp : this->PowerUps)
@@ -360,28 +349,23 @@ void Game::DoCollisions() {
     // CHECK COLLISION PLAYER-GHOSTS
     // CHECK COLLISION PLAYER-BLINKY
     if (vulnerableGhost->IsActive()) {
-        auto blinkyPtr = dynamic_cast<Blinky*>(blinky);
-        auto clydePtr = dynamic_cast<Clyde*>(clyde);
-        auto inkyPtr = dynamic_cast<Inky*>(inky);
-        auto pinkyPtr = dynamic_cast<Pinky*>(pinky);
         for (int j = static_cast<int>(vulnerableGhost->GetCurrentGameObject()->GetNumInstances()) - 1 ; j >= 0; j--) {
             auto currenGameObjectVulnerableGhost = vulnerableGhost->GetCurrentGameObject();
             auto currenGameObjectVulnerableGhostObb = currenGameObjectVulnerableGhost->GetTransformedBoundingBox(j);
             if (checkCollision(playerObb, currenGameObjectVulnerableGhostObb)) {
                 LoggerManager::LogDebug("There was a collision between PLAYER and VULNERABLE_GHOST");
                 // RESOLVE COLLISION PLAYER-VULNERABLE_GHOST
-                if (vulnerableGhost->ghostMapping.blinkyIndex == j) blinkyPtr->SetAlive(false);
-                if (vulnerableGhost->ghostMapping.clydeIndex == j) clydePtr->SetAlive(false);
-                if (vulnerableGhost->ghostMapping.inkyIndex == j) inkyPtr->SetAlive(false);
-                if (vulnerableGhost->ghostMapping.pinkyIndex == j) pinkyPtr->SetAlive(false);
+                if (vulnerableGhost->ghostMapping.blinkyIndex == j) blinky->SetAlive(false);
+                if (vulnerableGhost->ghostMapping.clydeIndex == j) clyde->SetAlive(false);
+                if (vulnerableGhost->ghostMapping.inkyIndex == j) inky->SetAlive(false);
+                if (vulnerableGhost->ghostMapping.pinkyIndex == j) pinky->SetAlive(false);
                 vulnerableGhost->RemoveAnInstace(j);
             }
         }
         
     } else {
-        auto blinkyPtr = dynamic_cast<Blinky*>(blinky);
-        if (blinkyPtr->IsAlive()) {
-            auto blinkyObb = blinkyPtr->gameObject->GetTransformedBoundingBox(0);
+        if (blinky->IsAlive()) {
+            auto blinkyObb = blinky->gameObject->GetTransformedBoundingBox(0);
             if (checkCollision(playerObb, blinkyObb)) {
                 LoggerManager::LogDebug("There was a collision between PLAYER and BLINKY");
                 // RESOLVE COLLISION PLAYER-BLINKY
@@ -397,9 +381,8 @@ void Game::DoCollisions() {
         }
 
         // CHECK COLLISION PLAYER-CLYDE
-        auto clydePtr = dynamic_cast<Clyde*>(clyde);
-        if (clydePtr->IsAlive()) {
-            auto clydeObb = clydePtr->gameObject->GetTransformedBoundingBox(0);
+        if (clyde->IsAlive()) {
+            auto clydeObb = clyde->gameObject->GetTransformedBoundingBox(0);
             if (checkCollision(playerObb, clydeObb)) {
                 LoggerManager::LogDebug("There was a collision between PLAYER and CLYDE");
                 // RESOLVE COLLISION PLAYER-CLYDE
@@ -416,9 +399,8 @@ void Game::DoCollisions() {
         
 
         // CHECK COLLISION PLAYER-INKY
-        auto inkyPtr = dynamic_cast<Inky*>(inky);
-        if (inkyPtr->IsAlive()) {
-            auto inkyObb = inkyPtr->gameObject->GetTransformedBoundingBox(0);
+        if (inky->IsAlive()) {
+            auto inkyObb = inky->gameObject->GetTransformedBoundingBox(0);
             if (checkCollision(playerObb, inkyObb)) {
                 LoggerManager::LogDebug("There was a collision between PLAYER and INKY");
                 // RESOLVE COLLISION PLAYER-INKY
@@ -435,9 +417,8 @@ void Game::DoCollisions() {
         
 
         // CHECK COLLISION PLAYER-PINKY
-        auto pinkyPtr = dynamic_cast<Pinky*>(pinky);
-        if (pinkyPtr->IsAlive()) {
-            auto pinkyObb = pinkyPtr->gameObject->GetTransformedBoundingBox(0);
+        if (pinky->IsAlive()) {
+            auto pinkyObb = pinky->gameObject->GetTransformedBoundingBox(0);
             if (checkCollision(playerObb, pinkyObb)) {
                 LoggerManager::LogDebug("There was a collision between PLAYER and PINKY");
                 // RESOLVE COLLISION PLAYER-INKY
