@@ -47,7 +47,7 @@ private:
     const float  CHANGE_DIRECTION_TIME_LIMIT = 2.0f;     // Minimum limit of 2 seconds before allowing a change
     const double MODEL_SWAP_TIME_LIMIT = 0.04;           // Maximum limit of 0.04 seconds therefore the model will be changed
     const double ACTIVATION_TIME_LIMIT = 6.0f;           // Maximum limit of 6 seconds therefore the drawing will be deactivated
-    const float  ALTERNATION_INTERVAL = 1.0f;            // Time between alternations in seconds
+    const float  ALTERNATION_INTERVAL = 0.5f;            // Time between alternations in seconds
     const int    MAX_ALTERNATION = 5;                    // Maximum number of alternations
 
     Blinky* blinky;

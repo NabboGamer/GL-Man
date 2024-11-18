@@ -68,6 +68,7 @@ void Game::Init() {
     ResourceManager::LoadShader("./shaders/dot.vs",       "./shaders/dot.fs",       nullptr, "energizerShader");
     ResourceManager::LoadShader("./shaders/pacman.vs",    "./shaders/pacman.fs",    nullptr, "pacmanShader");
     ResourceManager::LoadShader("./shaders/ghost.vs",     "./shaders/ghost.fs",     nullptr, "ghostShader");
+    ResourceManager::LoadShader("./shaders/bonusSymbol.vs","./shaders/bonusSymbol.fs",nullptr,"bonusSymbolShader");
     /*ResourceManager::LoadShader("particle.vs", "particle.fs", nullptr, "particle");
     ResourceManager::LoadShader("post_processing.vs", "post_processing.fs", nullptr, "postprocessing");*/
 
@@ -93,6 +94,8 @@ void Game::Init() {
     ResourceManager::GetShader("pacmanShader").Use().SetMatrix4("projection", projection);
     ResourceManager::GetShader("ghostShader").Use().SetMatrix4("view", view);
     ResourceManager::GetShader("ghostShader").Use().SetMatrix4("projection", projection);
+    ResourceManager::GetShader("bonusSymbolShader").Use().SetMatrix4("view", view);
+    ResourceManager::GetShader("bonusSymbolShader").Use().SetMatrix4("projection", projection);
     // Insert uniform variable in fragment shader(only global variables, i.e. the same for all shaders)
     ResourceManager::GetShader("mazeWallShader").Use().SetVector3f("viewPos", cameraPos);
     ResourceManager::GetShader("mazeWallShader").Use().SetVector3f("dirLight.direction", glm::normalize(cameraAt - cameraPos));
@@ -130,6 +133,12 @@ void Game::Init() {
     ResourceManager::GetShader("ghostShader").Use().SetVector3f("dirLight.diffuse", glm::vec3(0.9f, 0.9f, 0.9f));
     ResourceManager::GetShader("ghostShader").Use().SetVector3f("dirLight.specular", glm::vec3(0.2f, 0.2f, 0.2f));
     ResourceManager::GetShader("ghostShader").Use().SetFloat("material.shininess", 32.0f);
+    ResourceManager::GetShader("bonusSymbolShader").Use().SetVector3f("viewPos", cameraPos);
+    ResourceManager::GetShader("bonusSymbolShader").Use().SetVector3f("dirLight.direction", glm::normalize(cameraAt - cameraPos));
+    ResourceManager::GetShader("bonusSymbolShader").Use().SetVector3f("dirLight.ambient", glm::vec3(0.7f, 0.7f, 0.7f));
+    ResourceManager::GetShader("bonusSymbolShader").Use().SetVector3f("dirLight.diffuse", glm::vec3(0.9f, 0.9f, 0.9f));
+    ResourceManager::GetShader("bonusSymbolShader").Use().SetVector3f("dirLight.specular", glm::vec3(0.2f, 0.2f, 0.2f));
+    ResourceManager::GetShader("bonusSymbolShader").Use().SetFloat("material.shininess", 32.0f);
 
     /// Load Textures
     ResourceManager::LoadTexture(FileSystem::getPath("../res/textures/wall_diffuse_360.png").c_str(), "mazeWallDiffuseTexture");
@@ -140,16 +149,17 @@ void Game::Init() {
     /// Load Models
     ResourceManager::LoadModel("../res/objects/powerup/coin/coin.obj", "dotModel");
     ResourceManager::LoadModel("../res/objects/powerup/coin/coin.obj", "energizerModel");
+    ResourceManager::LoadModel("../res/objects/powerup/cherries/cherries.obj", "cherriesModel");
 
     /// Load Levels
-    GameLevel levelOne;
-    levelOne.Load(FileSystem::getPath("../res/levels/one.lvl").c_str());
+    const auto levelOne = new GameLevel();
+    levelOne->Load(FileSystem::getPath("../res/levels/one.lvl").c_str());
     this->Levels.push_back(levelOne);
     this->level = 0;
 
     /// Configure Game Objects
     pacman = new PacMan();
-    const auto levelMatrixDim = this->Levels[this->level].levelMatrixDim;
+    const auto levelMatrixDim = this->Levels[this->level]->levelMatrixDim;
     blinky = new Blinky(levelMatrixDim);
     clyde  = new Clyde(levelMatrixDim);
     inky   = new Inky(levelMatrixDim);
@@ -163,7 +173,7 @@ void Game::Init() {
 
 void Game::Update(const double dt) {
     // update objects
-    const auto mazeWall = this->Levels[this->level].mazeWall;
+    const auto mazeWall = this->Levels[this->level]->mazeWall;
     if (vulnerableGhost->IsActive()) {
         vulnerableGhost->Move(dt, mazeWall);
     }
@@ -211,7 +221,7 @@ void Game::ProcessInput(const double dt) {
         else if (this->keys[GLFW_KEY_RIGHT] && permittedDirections.DIRECTION_RIGHT) {
             const auto playerObb = player->GetTransformedBoundingBox(0);
             const glm::vec3 pMax = playerObb.second;
-            const auto levelMatrixDim = this->Levels[this->level].levelMatrixDim;
+            const auto levelMatrixDim = this->Levels[this->level]->levelMatrixDim;
             const size_t columnDim = levelMatrixDim.second;
 
             permittedDirections = PermittedDirections();
@@ -226,7 +236,7 @@ void Game::ProcessInput(const double dt) {
         else if (this->keys[GLFW_KEY_LEFT] && permittedDirections.DIRECTION_LEFT) {
             const auto playerObb = player->GetTransformedBoundingBox(0);
             const glm::vec3 pMin = playerObb.first;
-            const auto levelMatrixDim = this->Levels[this->level].levelMatrixDim;
+            const auto levelMatrixDim = this->Levels[this->level]->levelMatrixDim;
             const size_t columnDim = levelMatrixDim.second;
 
             permittedDirections = PermittedDirections();
@@ -247,7 +257,7 @@ void Game::Render(const double dt) const {
         // begin rendering to postprocessing framebuffer
         //Effects->BeginRender();
         // draw level
-        this->Levels[this->level].Draw();
+        this->Levels[this->level]->Draw(dt);
         // draw player
         pacman->Draw(dt);
         if (vulnerableGhost->IsActive() && 
@@ -294,7 +304,7 @@ void Game::DoCollisions() {
     auto playerObb = player->GetTransformedBoundingBox(0);
 
     // CHECK COLLISION PLAYER-WALL
-    GameObjectBase* mazeWall = this->Levels[this->level].mazeWall;
+    GameObjectBase* mazeWall = this->Levels[this->level]->mazeWall;
     size_t numInstancesMazeWall = mazeWall->GetNumInstances();
     for (size_t i = 0; i < numInstancesMazeWall; i++) {
         auto mazeWallObb = mazeWall->GetTransformedBoundingBox(i);
@@ -307,9 +317,9 @@ void Game::DoCollisions() {
     }
 
     // CHECK COLLISION PLAYER-DOT
-    GameObjectBase* dot = this->Levels[this->level].dot;
+    GameObjectBase* dot = this->Levels[this->level]->dot;
     size_t numInstancesDot = dot->GetNumInstances();
-    std::vector<glm::vec3> dotPositions = this->Levels[this->level].dotPositions;
+    std::vector<glm::vec3> dotPositions = this->Levels[this->level]->dotPositions;
     // When removing elements from an array during iteration, a reverse for loop 
     // helps avoid problems related to changing the length of the array as you walk through it
     for (int i = static_cast<int>(numInstancesDot) - 1; i >= 0; i--) {
@@ -322,14 +332,14 @@ void Game::DoCollisions() {
             dot->directions.erase(dot->directions.begin() + i);
             dot->rotations.erase(dot->rotations.begin() + i);
             dot->scaling.erase(dot->scaling.begin() + i);
-            dot->SetNumInstances(dot->GetNumInstances() - 1);
+            dot->UpdateNumInstance();
         }
     }
 
     // CHECK COLLISION PLAYER-ENERGIZER
-    GameObjectBase* energizer = this->Levels[this->level].energizer;
+    GameObjectBase* energizer = this->Levels[this->level]->energizer;
     size_t numInstancesEnergizer = energizer->GetNumInstances();
-    std::vector<glm::vec3> energizerPositions = this->Levels[this->level].energizerPositions;
+    std::vector<glm::vec3> energizerPositions = this->Levels[this->level]->energizerPositions;
     for (int i = static_cast<int>(numInstancesEnergizer) - 1; i >= 0; i--) {
         auto energizerObb = energizer->GetTransformedBoundingBox(i);
         if (checkCollision(playerObb, energizerObb)) {
@@ -340,7 +350,7 @@ void Game::DoCollisions() {
             energizer->directions.erase(energizer->directions.begin() + i);
             energizer->rotations.erase(energizer->rotations.begin() + i);
             energizer->scaling.erase(energizer->scaling.begin() + i);
-            energizer->SetNumInstances(energizer->GetNumInstances() - 1);
+            energizer->UpdateNumInstance();
             vulnerableGhost->SetActive(true);
         }
     }

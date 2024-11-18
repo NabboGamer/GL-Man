@@ -24,6 +24,8 @@ public:
 
     std::pair<size_t, size_t> levelMatrixDim;
 
+    GameObjectBase*         bonusSymbol;
+
     // constructor
     GameLevel() { }
     ~GameLevel();
@@ -32,13 +34,21 @@ public:
     void Load(const char *file);
 
     // render level
-    void Draw() const;
+    void Draw(double deltaTime);
 
     // check if the level is completed (if all the dots have been eaten)
     //bool IsCompleted();
 
 private:
+    const double FIRST_ACTIVATION_TIME_LIMIT = 10.0f;
+    const double SECOND_ACTIVATION_TIME_LIMIT = 9.0f;
+
+    double firstActivationTimeAccumulator = 0.0f;
+    double secondActivationTimeAccumulator = 0.0f;
+
     // initialize level from tile data
     void init(std::vector<std::vector<unsigned int>> wallData);
+
+    [[nodiscard]] bool shouldSpawnBonusSymbol(double deltaTime);
 
 };

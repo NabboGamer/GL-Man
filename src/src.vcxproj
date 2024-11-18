@@ -185,6 +185,8 @@
     <ClInclude Include="VulnerableGhost.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="shaders\bonusSymbol.fs" />
+    <None Include="shaders\bonusSymbol.vs" />
     <None Include="shaders\dot.fs" />
     <None Include="shaders\dot.vs" />
     <None Include="shaders\ghost.fs" />

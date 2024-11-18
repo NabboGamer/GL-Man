@@ -5,6 +5,7 @@
 #include "ResourceManager.hpp"
 #include "GameObjectCustom.hpp"
 #include "GameObjectFromModel.hpp"
+#include "LoggerManager.hpp"
 
 static std::vector<float> cube_mesh = {
     // Front face (z = +0.5)
@@ -149,7 +150,7 @@ void GameLevel::Load(const char *file) {
     }
 }
 
-void GameLevel::Draw() const {
+void GameLevel::Draw(const double deltaTime) {
     if (this->mazeFloor->GetNumInstances() > 0) {
         this->mazeFloor->Draw();
     }
@@ -161,6 +162,9 @@ void GameLevel::Draw() const {
     }
     if (this->energizer->GetNumInstances() > 0) {
         this->energizer->Draw();
+    }
+    if (this->shouldSpawnBonusSymbol(deltaTime)) {
+        this->bonusSymbol->Draw();
     }
 }
 
@@ -262,4 +266,34 @@ void GameLevel::init(std::vector<std::vector<unsigned int>> wallData) {
                                               energizerScaling,
                                               &ResourceManager::GetShader("energizerShader"),
                                               &ResourceManager::GetModel("energizerModel"));
+
+    size_t numInstancesBonusSymbol = 1;
+	std::vector<glm::vec3> bonusSymbolPositions(numInstancesBonusSymbol, glm::vec3(13.0f, 0.0f, 14.0f));
+	std::vector<glm::vec3> bonusSymbolDirections(numInstancesBonusSymbol, glm::vec3(0.0f, 0.0f, 1.0f));
+    std::vector<float>     bonusSymbolRotations(numInstancesBonusSymbol, 90.0f);
+    std::vector<glm::vec3> bonusSymbolScaling(numInstancesBonusSymbol, glm::vec3(1.0f));
+    this->bonusSymbol = new GameObjectFromModel(bonusSymbolPositions,
+                                                bonusSymbolDirections,
+                                                bonusSymbolRotations,
+                                                bonusSymbolScaling,
+                                                &ResourceManager::GetShader("bonusSymbolShader"),
+                                                &ResourceManager::GetModel("cherriesModel"));
+
+}
+
+bool GameLevel::shouldSpawnBonusSymbol(const double deltaTime) {
+    const size_t numInstancesDot = this->dot->positions.size();
+    if (numInstancesDot > 62 && numInstancesDot <= 162) {
+        this->firstActivationTimeAccumulator += deltaTime;
+        if (this->firstActivationTimeAccumulator <= FIRST_ACTIVATION_TIME_LIMIT) {
+            return true;
+        }
+       
+    } else if (numInstancesDot <= 62) {
+        this->secondActivationTimeAccumulator += deltaTime;
+        if (this->secondActivationTimeAccumulator <= SECOND_ACTIVATION_TIME_LIMIT) {
+            return true;
+        }
+    }
+	return false;
 }

@@ -41,7 +41,7 @@ public:
     unsigned int            width, height;
     PermittedDirections     permittedDirections;
 
-    std::vector<GameLevel>  Levels;
+    std::vector<GameLevel*>  Levels;
     //std::vector<PowerUp>    PowerUps;
     unsigned int            level;
     unsigned int            lives;

@@ -178,5 +178,11 @@
     <None Include="shaders\ghost.vs">
       <Filter>Resource Files\Shaders</Filter>
     </None>
+    <None Include="shaders\bonusSymbol.fs">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="shaders\bonusSymbol.vs">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>
