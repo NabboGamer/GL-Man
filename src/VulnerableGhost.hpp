@@ -24,9 +24,9 @@ public:
     std::vector<GameObjectBase*> gameObjectsBlue;
     std::vector<GameObjectBase*> gameObjectsWhite;
 
-    GhostMapping ghostMapping = { 0, 1, 2, 3 };
+    GhostMapping ghostMapping = { .blinkyIndex= 0, .clydeIndex= 1, .inkyIndex= 2, .pinkyIndex= 3};
 
-	explicit VulnerableGhost(Blinky* blinky, Clyde* clyde, Inky* inky, Pinky* pinky, std::pair<size_t, size_t> levelMatrixDim);
+    explicit VulnerableGhost(Blinky* blinky, Clyde* clyde, Inky* inky, Pinky* pinky, std::pair<size_t, size_t> levelMatrixDim);
 	~VulnerableGhost() override;
 
     [[nodiscard]] int GetCurrentModelIndex() const;

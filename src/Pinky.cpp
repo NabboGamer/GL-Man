@@ -38,7 +38,7 @@ void Pinky::Move(double deltaTime, GameObjectBase* mazeWall) {
         // Posizione target
         auto targetPos = glm::vec3(19.0f, 0.0f, 13.75f);
 
-        glm::vec3 direction = glm::normalize(targetPos - currentPos);
+        glm::vec3 direction = glm::vec3(1.0f, 0.0f, 0.0f);
         this->gameObject->directions[0] = direction;
 
         glm::vec3 newPosition = currentPos + speed * direction;
