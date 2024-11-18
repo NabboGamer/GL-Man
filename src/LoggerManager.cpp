@@ -1,8 +1,7 @@
-#pragma once
-
-#include "LoggerManager.hpp"
 #include <spdlog/async.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
+
+#include "LoggerManager.hpp"
 
 // Static logger definition
 std::shared_ptr<spdlog::logger> LoggerManager::s_Logger = nullptr;

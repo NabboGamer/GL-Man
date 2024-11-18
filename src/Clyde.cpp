@@ -116,7 +116,7 @@ void Clyde::Move(double deltaTime, GameObjectBase* mazeWall) {
 
     // Remove the opposite direction to the direction of travel
     std::vector<glm::vec3> validDirections;
-    for (const auto& direction : possibleDirections) {
+    for (const auto& direction : Utility::possibleDirections) {
         if (direction != oppositeDirection) {
             validDirections.push_back(direction);
         }
@@ -221,10 +221,10 @@ bool Clyde::doCollisions(const GameObjectBase* mazeWall) const {
 	const size_t numInstancesMazeWall = mazeWall->GetNumInstances();
 	for (size_t i = 0; i < numInstancesMazeWall; i++) {
 		auto mazeWallObb = mazeWall->GetTransformedBoundingBox(i);
-		if (const bool collision = Clyde::checkCollision(blinkyObb, mazeWallObb)) {
+		if (checkCollision(blinkyObb, mazeWallObb)) {
             LoggerManager::LogDebug("There was a collision between CLYDE and WALL number {}", i);
             // RESOLVE COLLISION CLYDE-WALL
-            const glm::vec3 correction = Clyde::resolveCollision(blinkyObb, mazeWallObb);
+            const glm::vec3 correction = resolveCollision(blinkyObb, mazeWallObb);
             this->gameObject->positions[0] += correction; // Apply the correction vector
             return true;
         }

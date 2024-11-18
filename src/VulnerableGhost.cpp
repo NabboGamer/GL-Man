@@ -284,10 +284,10 @@ void VulnerableGhost::RemoveAnInstace(const size_t instanceIndex) {
     }
 
     // Scale the indices for all subsequent ghosts
-    if (ghostMapping.blinkyIndex > indexToRemove) --ghostMapping.blinkyIndex;
-    if (ghostMapping.clydeIndex > indexToRemove) --ghostMapping.clydeIndex;
-    if (ghostMapping.inkyIndex > indexToRemove) --ghostMapping.inkyIndex;
-    if (ghostMapping.pinkyIndex > indexToRemove) --ghostMapping.pinkyIndex;
+    if (ghostMapping.blinkyIndex > indexToRemove)  --ghostMapping.blinkyIndex;
+    if (ghostMapping.clydeIndex  > indexToRemove)  --ghostMapping.clydeIndex;
+    if (ghostMapping.inkyIndex   > indexToRemove)  --ghostMapping.inkyIndex;
+    if (ghostMapping.pinkyIndex  > indexToRemove)  --ghostMapping.pinkyIndex;
     
 }
 

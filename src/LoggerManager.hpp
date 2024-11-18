@@ -1,7 +1,6 @@
 #pragma once
 
 #include <memory>
-#include <string>
 #include <spdlog/spdlog.h>
 
 // Logging levels in ascending order of importance

@@ -76,7 +76,7 @@ void Blinky::Move(double deltaTime, GameObjectBase* mazeWall) {
 
     // Remove the opposite direction to the direction of travel
     std::vector<glm::vec3> validDirections;
-    for (const auto& direction : possibleDirections) {
+    for (const auto& direction : Utility::possibleDirections) {
         if (direction != oppositeDirection) {
             validDirections.push_back(direction);
         }
@@ -85,6 +85,7 @@ void Blinky::Move(double deltaTime, GameObjectBase* mazeWall) {
     // Remove directions that would lead to a collision
     std::vector<glm::vec3> safeDirections;
     for (const auto& direction : validDirections) {
+        //TODO:Migliorare in modo che lui non vada a sbattere(Evolutiva #2)
         newPosition = this->gameObject->positions[0] + speed * direction;
         this->gameObject->positions[0] = newPosition;
         bool doesItCollide2 = this->doCollisions(mazeWall);
@@ -181,10 +182,10 @@ bool Blinky::doCollisions(const GameObjectBase* mazeWall) const {
 	const size_t numInstancesMazeWall = mazeWall->GetNumInstances();
 	for (size_t i = 0; i < numInstancesMazeWall; i++) {
 		auto mazeWallObb = mazeWall->GetTransformedBoundingBox(i);
-		if (Blinky::checkCollision(blinkyObb, mazeWallObb)) {
+		if (checkCollision(blinkyObb, mazeWallObb)) {
             LoggerManager::LogDebug("There was a collision between BLINKY and WALL number {}", i);
             // RESOLVE COLLISION BLINKY-WALL
-            const glm::vec3 correction = this->resolveCollision(blinkyObb, mazeWallObb);
+            const glm::vec3 correction = resolveCollision(blinkyObb, mazeWallObb);
             this->gameObject->positions[0] += correction; // Apply the correction vector
             return true;
         }

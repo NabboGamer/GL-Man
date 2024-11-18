@@ -159,7 +159,7 @@ void Game::Init() {
     //SoundEngine->play2D(FileSystem::getPath("resources/audio/breakout.mp3").c_str(), true);
 }
 
-/// TODO:Gestire fantasmi con variazione dinamica del modello(vulnerable_ghost_blue e vulnerable_ghost_white)
+/// TODO:Introdurre e gestire powerup
 
 void Game::Update(const double dt) {
     // update objects
@@ -169,9 +169,9 @@ void Game::Update(const double dt) {
     }
     else {
         if (blinky->IsAlive()) blinky->Move(dt, mazeWall);
-        if (clyde->IsAlive()) clyde->Move(dt, mazeWall);
-        if (inky->IsAlive()) inky->Move(dt, mazeWall);
-        if (pinky->IsAlive()) pinky->Move(dt, mazeWall);
+        if (clyde->IsAlive())  clyde ->Move(dt, mazeWall);
+        if (inky->IsAlive())   inky  ->Move(dt, mazeWall);
+        if (pinky->IsAlive())  pinky ->Move(dt, mazeWall);
     }
     // check for collisions
     this->DoCollisions();
@@ -193,6 +193,7 @@ void Game::Update(const double dt) {
 
 void Game::ProcessInput(const double dt) {
     const auto player = pacman->gameObjects[pacman->GetCurrentModelIndex()];
+    //TODO:Capire e risolvere il fatto che Pac-Man alle volte (solo dopo una collisione) ha delle direzioni bloccate quando in realta non lo sono(Bug Fix #2)
     if (this->state == GAME_ACTIVE) {
         const float speed = PLAYER_SPEED * static_cast<float>(dt);
         // Priority: UP > DOWN > RIGHT > LEFT
@@ -254,18 +255,16 @@ void Game::Render(const double dt) const {
             vulnerableGhost->Draw(dt);
         } else {
             if (blinky->IsAlive()) blinky->Draw(dt);
-            if (clyde->IsAlive()) clyde->Draw(dt);
-            if (inky->IsAlive()) inky->Draw(dt);
-            if (pinky->IsAlive()) pinky->Draw(dt);
+            if (clyde->IsAlive())  clyde ->Draw(dt);
+            if (inky->IsAlive())   inky  ->Draw(dt);
+            if (pinky->IsAlive())  pinky ->Draw(dt);
         }
         //    // draw PowerUps
         //    for (PowerUp &powerUp : this->PowerUps)
         //        if (!powerUp.Destroyed)
         //            powerUp.Draw(*Renderer);
         //    // draw particles	
-        //    Particles->Draw();
-        //    // draw ball
-        //    Ball->Draw(*Renderer);            
+        //    Particles->Draw();            
         //// end rendering to postprocessing framebuffer
         //Effects->EndRender();
         //// render postprocessing quad
@@ -364,6 +363,7 @@ void Game::DoCollisions() {
         }
         
     } else {
+        //TODO:Gestire multi-collisioni se Pac-man e al centro che portano a perdere tutte e 3 le vite in un singolo colpo(Bug Fix #1)
         if (blinky->IsAlive()) {
             auto blinkyObb = blinky->gameObject->GetTransformedBoundingBox(0);
             if (checkCollision(playerObb, blinkyObb)) {
