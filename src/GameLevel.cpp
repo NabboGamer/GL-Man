@@ -1,3 +1,4 @@
+#include <windows.h>
 #include <fstream>
 #include <sstream>
 
@@ -166,6 +167,45 @@ void GameLevel::Draw(const double deltaTime) {
     if (this->shouldSpawnBonusSymbol(deltaTime)) {
         this->bonusSymbol->Draw();
     }
+    if (this->playerTakeBonusSymbol) {
+        this->fruitCounter->Draw();
+    }
+}
+
+bool GameLevel::GetPlayerTakeBonusSymbol() const {
+	return this->playerTakeBonusSymbol;
+}
+
+void GameLevel::SetPlayerTakeBonusSymbol(const bool value) {
+    this->playerTakeBonusSymbol = value;
+}
+
+double GameLevel::GetFirstActivationTimeAccumulator() const {
+	return this->firstActivationTimeAccumulator;
+}
+
+void GameLevel::SetFirstActivationTimeAccumulator(const double value) {
+    this->firstActivationTimeAccumulator = value;
+}
+
+double GameLevel::GetSecondActivationTimeAccumulator() const {
+	return this->secondActivationTimeAccumulator;
+}
+
+void GameLevel::SetSecondActivationTimeAccumulator(const double value) {
+    this->secondActivationTimeAccumulator = value;
+}
+
+int GameLevel::GetSymbolActive() const {
+	return this->symbolActive;
+}
+
+void GameLevel::SetSymbolActive(const int value) {
+    this->symbolActive = value;
+}
+
+void GameLevel::SetBonusSymbolPosition(const glm::vec3 newBonusSymbolPosition) const {
+    this->bonusSymbol->positions[0] = newBonusSymbolPosition;
 }
 
 //bool GameLevel::IsCompleted() {
@@ -279,6 +319,18 @@ void GameLevel::init(std::vector<std::vector<unsigned int>> wallData) {
                                                 &ResourceManager::GetShader("bonusSymbolShader"),
                                                 &ResourceManager::GetModel("cherriesModel"));
 
+    size_t numInstancesFruitCounter = 1;
+    std::vector<glm::vec3> fruitCounterPositions(numInstancesFruitCounter, glm::vec3(-2.0f, 0.0f, 27.0f));
+    std::vector<glm::vec3> fruitCounterDirections(numInstancesFruitCounter, glm::vec3(0.0f, 0.0f, 1.0f));
+    std::vector<float>     fruitCounterRotations(numInstancesFruitCounter, 90.0f);
+    std::vector<glm::vec3> fruitCounterScaling(numInstancesFruitCounter, glm::vec3(1.5f));
+    this->fruitCounter = new GameObjectFromModel(fruitCounterPositions,
+                                                 fruitCounterDirections,
+                                                 fruitCounterRotations,
+                                                 fruitCounterScaling,
+                                                 &ResourceManager::GetShader("bonusSymbolShader"),
+                                                 &ResourceManager::GetModel("cherriesFruitCounterModel"));
+
 }
 
 bool GameLevel::shouldSpawnBonusSymbol(const double deltaTime) {
@@ -286,12 +338,16 @@ bool GameLevel::shouldSpawnBonusSymbol(const double deltaTime) {
     if (numInstancesDot > 62 && numInstancesDot <= 162) {
         this->firstActivationTimeAccumulator += deltaTime;
         if (this->firstActivationTimeAccumulator <= FIRST_ACTIVATION_TIME_LIMIT) {
+            this->SetBonusSymbolPosition(glm::vec3(13.0f, 0.0f, 14.0f));
+            if (this->symbolActive == 0) this->symbolActive = 1;
             return true;
         }
        
     } else if (numInstancesDot <= 62) {
         this->secondActivationTimeAccumulator += deltaTime;
         if (this->secondActivationTimeAccumulator <= SECOND_ACTIVATION_TIME_LIMIT) {
+            this->SetBonusSymbolPosition(glm::vec3(13.0f, 0.0f, 14.0f));
+            if (this->symbolActive == 1) this->symbolActive = 2;
             return true;
         }
     }

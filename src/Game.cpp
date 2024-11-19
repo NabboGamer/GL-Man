@@ -150,6 +150,7 @@ void Game::Init() {
     ResourceManager::LoadModel("../res/objects/powerup/coin/coin.obj", "dotModel");
     ResourceManager::LoadModel("../res/objects/powerup/coin/coin.obj", "energizerModel");
     ResourceManager::LoadModel("../res/objects/powerup/cherries/cherries.obj", "cherriesModel");
+    ResourceManager::LoadModel("../res/objects/powerup/cherries/cherries.obj", "cherriesFruitCounterModel");
 
     /// Load Levels
     const auto levelOne = new GameLevel();
@@ -352,6 +353,28 @@ void Game::DoCollisions() {
             energizer->scaling.erase(energizer->scaling.begin() + i);
             energizer->UpdateNumInstance();
             vulnerableGhost->SetActive(true);
+        }
+    }
+
+    // CHECK COLLISION PLAYER-BONUS_SYMBOL
+    GameObjectBase* bonusSymbol = this->Levels[this->level]->bonusSymbol;
+    size_t numInstancesBonusSymbol = bonusSymbol->GetNumInstances();
+    for (int i = static_cast<int>(numInstancesBonusSymbol) - 1; i >= 0; i--) {
+        auto bonusSymbolObb = bonusSymbol->GetTransformedBoundingBox(i);
+        if (checkCollision(playerObb, bonusSymbolObb)) {
+            LoggerManager::LogDebug("There was a collision between PLAYER and BONUS_SYMBOL number {}", i);
+            // RESOLVE COLLISION PLAYER-BONUS_SYMBOL
+            if (this->Levels[this->level]->GetSymbolActive() == 2) {
+                this->Levels[this->level]->SetBonusSymbolPosition(glm::vec3(-2.0f, 0.0f, -2.0f));
+                this->Levels[this->level]->SetPlayerTakeBonusSymbol(true);
+
+                this->Levels[this->level]->SetSecondActivationTimeAccumulator(11.0f);
+            } else if (this->Levels[this->level]->GetSymbolActive() == 1) {
+                this->Levels[this->level]->SetBonusSymbolPosition(glm::vec3(-2.0f, 0.0f, -2.0f));
+                this->Levels[this->level]->SetPlayerTakeBonusSymbol(true);
+
+                this->Levels[this->level]->SetFirstActivationTimeAccumulator(11.0f);
+            }
         }
     }
 
