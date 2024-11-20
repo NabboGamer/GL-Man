@@ -58,10 +58,15 @@ public:
     //bool IsCompleted();
 
 private:
+    const float VISIBLE_DURATION = 0.7f;
+    const float INVISIBLE_DURATION = 0.3f;
+
     double firstActivationTimeAccumulator = 0.0f;
     double secondActivationTimeAccumulator = 0.0f;
     bool   playerTakeBonusSymbol = false;
     int    symbolActive = 0;
+    bool   energizerVisible = true;
+    double visibilityTimer = 0.0f;
 
     // initialize level from tile data
     void init(std::vector<std::vector<unsigned int>> wallData);

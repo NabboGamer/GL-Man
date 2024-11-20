@@ -162,7 +162,23 @@ void GameLevel::Draw(const double deltaTime) {
         this->dot->Draw();
     }
     if (this->energizer->GetNumInstances() > 0) {
-        this->energizer->Draw();
+        this->visibilityTimer += deltaTime;
+
+        if (this->energizerVisible && this->visibilityTimer >= VISIBLE_DURATION) {
+            // Switch to invisible state
+            this->energizerVisible = false;
+            this->visibilityTimer = 0.0f; // Reset the timer
+        }
+        else if (!this->energizerVisible && this->visibilityTimer >= INVISIBLE_DURATION) {
+            // Switch to visible state
+            this->energizerVisible = true;
+            this->visibilityTimer = 0.0f; // Reset the timer
+        }
+
+        // Draw the energizer only if visible
+        if (this->energizerVisible) {
+            this->energizer->Draw();
+        }
     }
     if (this->shouldSpawnBonusSymbol(deltaTime)) {
         this->bonusSymbol->Draw();
