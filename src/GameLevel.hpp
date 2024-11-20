@@ -29,6 +29,7 @@ public:
 
     GameObjectBase*         bonusSymbol;
     GameObjectBase*         fruitCounter;
+    GameObjectBase*         lifeCounter;
 
     // constructor
     GameLevel() { }

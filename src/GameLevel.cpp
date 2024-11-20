@@ -170,6 +170,9 @@ void GameLevel::Draw(const double deltaTime) {
     if (this->playerTakeBonusSymbol) {
         this->fruitCounter->Draw();
     }
+    if (this->lifeCounter->GetNumInstances() > 0) {
+        this->lifeCounter->Draw();
+    }
 }
 
 bool GameLevel::GetPlayerTakeBonusSymbol() const {
@@ -320,7 +323,7 @@ void GameLevel::init(std::vector<std::vector<unsigned int>> wallData) {
                                                 &ResourceManager::GetModel("cherriesModel"));
 
     size_t numInstancesFruitCounter = 1;
-    std::vector<glm::vec3> fruitCounterPositions(numInstancesFruitCounter, glm::vec3(-2.0f, 0.0f, 27.0f));
+    std::vector<glm::vec3> fruitCounterPositions(numInstancesFruitCounter, glm::vec3(-2.5f, 0.0f, 26.5f));
     std::vector<glm::vec3> fruitCounterDirections(numInstancesFruitCounter, glm::vec3(0.0f, 0.0f, 1.0f));
     std::vector<float>     fruitCounterRotations(numInstancesFruitCounter, 90.0f);
     std::vector<glm::vec3> fruitCounterScaling(numInstancesFruitCounter, glm::vec3(1.5f));
@@ -330,6 +333,18 @@ void GameLevel::init(std::vector<std::vector<unsigned int>> wallData) {
                                                  fruitCounterScaling,
                                                  &ResourceManager::GetShader("bonusSymbolShader"),
                                                  &ResourceManager::GetModel("cherriesFruitCounterModel"));
+
+
+    std::vector<glm::vec3> lifeCounterPositions  = { glm::vec3(-2.0f, 0.0f, 0.5f), glm::vec3(-2.0f, 0.0f, 2.5f), glm::vec3(-2.0f, 0.0f, 4.5f) };
+    std::vector<glm::vec3> lifeCounterDirections = { glm::vec3( 0.0f, 0.0f,-1.0f), glm::vec3( 0.0f, 0.0f,-1.0f), glm::vec3( 0.0f, 0.0f,-1.0f) };
+    std::vector<float>     lifeCounterRotations  = { 0.0f, 0.0f, 0.0f };
+    std::vector<glm::vec3> lifeCounterScaling    = { glm::vec3(0.245f), glm::vec3(0.25f) , glm::vec3(0.25f) };
+    this->lifeCounter = new GameObjectFromModel(lifeCounterPositions,
+												lifeCounterDirections,
+											    lifeCounterRotations,
+												lifeCounterScaling,
+                                                &ResourceManager::GetShader("lifeCounterShader"),
+                                                &ResourceManager::GetModel("lifeCounterPacmanModel"));
 
 }
 

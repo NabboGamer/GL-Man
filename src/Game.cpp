@@ -69,6 +69,7 @@ void Game::Init() {
     ResourceManager::LoadShader("./shaders/pacman.vs",    "./shaders/pacman.fs",    nullptr, "pacmanShader");
     ResourceManager::LoadShader("./shaders/ghost.vs",     "./shaders/ghost.fs",     nullptr, "ghostShader");
     ResourceManager::LoadShader("./shaders/bonusSymbol.vs","./shaders/bonusSymbol.fs",nullptr,"bonusSymbolShader");
+    ResourceManager::LoadShader("./shaders/pacman.vs",    "./shaders/pacman.fs",    nullptr, "lifeCounterShader");
     /*ResourceManager::LoadShader("particle.vs", "particle.fs", nullptr, "particle");
     ResourceManager::LoadShader("post_processing.vs", "post_processing.fs", nullptr, "postprocessing");*/
 
@@ -96,6 +97,8 @@ void Game::Init() {
     ResourceManager::GetShader("ghostShader").Use().SetMatrix4("projection", projection);
     ResourceManager::GetShader("bonusSymbolShader").Use().SetMatrix4("view", view);
     ResourceManager::GetShader("bonusSymbolShader").Use().SetMatrix4("projection", projection);
+    ResourceManager::GetShader("lifeCounterShader").Use().SetMatrix4("view", view);
+    ResourceManager::GetShader("lifeCounterShader").Use().SetMatrix4("projection", projection);
     // Insert uniform variable in fragment shader(only global variables, i.e. the same for all shaders)
     ResourceManager::GetShader("mazeWallShader").Use().SetVector3f("viewPos", cameraPos);
     ResourceManager::GetShader("mazeWallShader").Use().SetVector3f("dirLight.direction", glm::normalize(cameraAt - cameraPos));
@@ -139,6 +142,12 @@ void Game::Init() {
     ResourceManager::GetShader("bonusSymbolShader").Use().SetVector3f("dirLight.diffuse", glm::vec3(0.9f, 0.9f, 0.9f));
     ResourceManager::GetShader("bonusSymbolShader").Use().SetVector3f("dirLight.specular", glm::vec3(0.2f, 0.2f, 0.2f));
     ResourceManager::GetShader("bonusSymbolShader").Use().SetFloat("material.shininess", 32.0f);
+    ResourceManager::GetShader("lifeCounterShader").Use().SetVector3f("viewPos", cameraPos);
+    ResourceManager::GetShader("lifeCounterShader").Use().SetVector3f("dirLight.direction", glm::normalize(cameraAt - cameraPos));
+    ResourceManager::GetShader("lifeCounterShader").Use().SetVector3f("dirLight.ambient", glm::vec3(0.7f, 0.7f, 0.7f));
+    ResourceManager::GetShader("lifeCounterShader").Use().SetVector3f("dirLight.diffuse", glm::vec3(0.9f, 0.9f, 0.9f));
+    ResourceManager::GetShader("lifeCounterShader").Use().SetVector3f("dirLight.specular", glm::vec3(0.2f, 0.2f, 0.2f));
+    ResourceManager::GetShader("lifeCounterShader").Use().SetFloat("material.shininess", 32.0f);
 
     /// Load Textures
     ResourceManager::LoadTexture(FileSystem::getPath("../res/textures/wall_diffuse_360.png").c_str(), "mazeWallDiffuseTexture");
@@ -151,6 +160,7 @@ void Game::Init() {
     ResourceManager::LoadModel("../res/objects/powerup/coin/coin.obj", "energizerModel");
     ResourceManager::LoadModel("../res/objects/powerup/cherries/cherries.obj", "cherriesModel");
     ResourceManager::LoadModel("../res/objects/powerup/cherries/cherries.obj", "cherriesFruitCounterModel");
+    ResourceManager::LoadModel("../res/objects/pacman/pacman7/pacman7.obj", "lifeCounterPacmanModel");
 
     /// Load Levels
     const auto levelOne = new GameLevel();
@@ -367,12 +377,10 @@ void Game::DoCollisions() {
             if (this->Levels[this->level]->GetSymbolActive() == 2) {
                 this->Levels[this->level]->SetBonusSymbolPosition(glm::vec3(-2.0f, 0.0f, -2.0f));
                 this->Levels[this->level]->SetPlayerTakeBonusSymbol(true);
-
                 this->Levels[this->level]->SetSecondActivationTimeAccumulator(11.0f);
             } else if (this->Levels[this->level]->GetSymbolActive() == 1) {
                 this->Levels[this->level]->SetBonusSymbolPosition(glm::vec3(-2.0f, 0.0f, -2.0f));
                 this->Levels[this->level]->SetPlayerTakeBonusSymbol(true);
-
                 this->Levels[this->level]->SetFirstActivationTimeAccumulator(11.0f);
             }
         }
@@ -396,6 +404,7 @@ void Game::DoCollisions() {
         }
         
     } else {
+        auto lifeCounter = this->Levels[this->level]->lifeCounter;
         //TODO:Gestire multi-collisioni se Pac-man e al centro che portano a perdere tutte e 3 le vite in un singolo colpo(Bug Fix #1)
         if (blinky->IsAlive()) {
             auto blinkyObb = blinky->gameObject->GetTransformedBoundingBox(0);
@@ -406,6 +415,11 @@ void Game::DoCollisions() {
                     this->lives--;
                     pacman->gameObjects[pacman->GetCurrentModelIndex()]->positions[0] = glm::vec3(7.5f, 0.0f, 13.5f);
                     pacman->UpdateOtherGameObjects();
+                    lifeCounter->positions.erase(lifeCounter->positions.begin() + this->lives);
+                    lifeCounter->directions.erase(lifeCounter->directions.begin() + this->lives);
+                    lifeCounter->rotations.erase(lifeCounter->rotations.begin() + this->lives);
+                    lifeCounter->scaling.erase(lifeCounter->scaling.begin() + this->lives);
+                    lifeCounter->UpdateNumInstance();
                 }
                 else {
                     this->state = GAME_DEFEAT;
@@ -423,6 +437,11 @@ void Game::DoCollisions() {
                     this->lives--;
                     pacman->gameObjects[pacman->GetCurrentModelIndex()]->positions[0] = glm::vec3(7.5f, 0.0f, 13.5f);
                     pacman->UpdateOtherGameObjects();
+                    lifeCounter->positions.erase(lifeCounter->positions.begin() + this->lives);
+                    lifeCounter->directions.erase(lifeCounter->directions.begin() + this->lives);
+                    lifeCounter->rotations.erase(lifeCounter->rotations.begin() + this->lives);
+                    lifeCounter->scaling.erase(lifeCounter->scaling.begin() + this->lives);
+                    lifeCounter->UpdateNumInstance();
                 }
                 else {
                     this->state = GAME_DEFEAT;
@@ -441,6 +460,11 @@ void Game::DoCollisions() {
                     this->lives--;
                     pacman->gameObjects[pacman->GetCurrentModelIndex()]->positions[0] = glm::vec3(7.5f, 0.0f, 13.5f);
                     pacman->UpdateOtherGameObjects();
+                    lifeCounter->positions.erase(lifeCounter->positions.begin() + this->lives);
+                    lifeCounter->directions.erase(lifeCounter->directions.begin() + this->lives);
+                    lifeCounter->rotations.erase(lifeCounter->rotations.begin() + this->lives);
+                    lifeCounter->scaling.erase(lifeCounter->scaling.begin() + this->lives);
+                    lifeCounter->UpdateNumInstance();
                 }
                 else {
                     this->state = GAME_DEFEAT;
@@ -459,6 +483,11 @@ void Game::DoCollisions() {
                     this->lives--;
                     pacman->gameObjects[pacman->GetCurrentModelIndex()]->positions[0] = glm::vec3(7.5f, 0.0f, 13.5f);
                     pacman->UpdateOtherGameObjects();
+                    lifeCounter->positions.erase(lifeCounter->positions.begin() + this->lives);
+                    lifeCounter->directions.erase(lifeCounter->directions.begin() + this->lives);
+                    lifeCounter->rotations.erase(lifeCounter->rotations.begin() + this->lives);
+                    lifeCounter->scaling.erase(lifeCounter->scaling.begin() + this->lives);
+                    lifeCounter->UpdateNumInstance();
                 }
                 else {
                     this->state = GAME_DEFEAT;
