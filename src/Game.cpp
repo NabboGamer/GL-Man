@@ -1,9 +1,8 @@
 #include <windows.h>
 #include <algorithm>
 #include <sstream>
-
-//#include <irrklang/irrKlang.h>
-//using namespace irrklang;
+#include <irrKlang.h>
+using namespace irrklang;
 
 #include "Game.hpp"
 #include "custom_types.hpp"
@@ -35,7 +34,11 @@ static Pinky*            pinky;
 static VulnerableGhost*  vulnerableGhost;
 //ParticleGenerator *Particles;
 //PostProcessor     *Effects;
-//ISoundEngine      *SoundEngine = createIrrKlangDevice();
+ISoundEngine*            soundEngine;
+ISoundSource*            pacmanChompSound;
+ISoundSource*            pacmanDeathSound;
+ISoundSource*            pacmanEatFruitSound;
+ISoundSource*            pacmanEatGhostSound;
 //TextRenderer      *Text;
 
 // Initial speed of the player
@@ -168,6 +171,19 @@ void Game::Init() {
     this->Levels.push_back(levelOne);
     this->level = 0;
 
+    /// Load and Configure Music Tracks
+    soundEngine = createIrrKlangDevice();
+    // Preload audio tracks
+    pacmanChompSound    = soundEngine->addSoundSourceFromFile(FileSystem::getPath("../res/sounds/pacman_chomp.wav").c_str());
+    pacmanDeathSound    = soundEngine->addSoundSourceFromFile(FileSystem::getPath("../res/sounds/pacman_death.wav").c_str());
+    pacmanEatFruitSound = soundEngine->addSoundSourceFromFile(FileSystem::getPath("../res/sounds/pacman_eatfruit.wav").c_str());
+    pacmanEatGhostSound = soundEngine->addSoundSourceFromFile(FileSystem::getPath("../res/sounds/pacman_eatghost.wav").c_str());
+    // Set a default volume for each source
+    pacmanChompSound->setDefaultVolume(0.7f);
+    pacmanDeathSound->setDefaultVolume(0.7f);
+    pacmanEatFruitSound->setDefaultVolume(0.7f);
+    pacmanEatGhostSound->setDefaultVolume(0.7f);
+
     /// Configure Game Objects
     pacman = new PacMan();
     const auto levelMatrixDim = this->Levels[this->level]->levelMatrixDim;
@@ -176,11 +192,10 @@ void Game::Init() {
     inky   = new Inky(levelMatrixDim);
     pinky  = new Pinky(levelMatrixDim);
     vulnerableGhost = new VulnerableGhost(blinky,clyde, inky, pinky, levelMatrixDim);
-    // audio
-    //SoundEngine->play2D(FileSystem::getPath("resources/audio/breakout.mp3").c_str(), true);
+    
 }
 
-/// TODO:Introdurre e gestire powerup
+/// TODO:Introdurre e gestire suoni
 
 void Game::Update(const double dt) {
     // update objects
@@ -195,7 +210,7 @@ void Game::Update(const double dt) {
         if (pinky->IsAlive())  pinky ->Move(dt, mazeWall);
     }
     // check for collisions
-    this->DoCollisions();
+    this->DoCollisions(dt);
 //    // update particles
 //    Particles->Update(dt, *Ball, 2, glm::vec2(Ball->Radius / 2.0f));
 //    // update PowerUps
@@ -310,7 +325,7 @@ void Game::Render(const double dt) const {
 bool checkCollision(const CustomTypes::obb& obb1, const CustomTypes::obb& obb2);
 glm::vec3 resolveCollision(const CustomTypes::obb& playerObb, const CustomTypes::obb& wallObb, PermittedDirections& permittedDirections);
 
-void Game::DoCollisions() {
+void Game::DoCollisions(double dt) {
     auto player = pacman->gameObjects[pacman->GetCurrentModelIndex()];
     auto playerObb = player->GetTransformedBoundingBox(0);
 
@@ -327,6 +342,7 @@ void Game::DoCollisions() {
         }
     }
 
+    this->chompTimer += dt;
     // CHECK COLLISION PLAYER-DOT
     GameObjectBase* dot = this->Levels[this->level]->dot;
     size_t numInstancesDot = dot->GetNumInstances();
@@ -336,6 +352,10 @@ void Game::DoCollisions() {
     for (int i = static_cast<int>(numInstancesDot) - 1; i >= 0; i--) {
         auto dotObb = dot->GetTransformedBoundingBox(i);
         if (checkCollision(playerObb, dotObb)) {
+            if (chompTimer >= CHOMP_INTERVAL) {
+                soundEngine->play2D(pacmanChompSound, false);
+                chompTimer = 0.0;
+            }
             LoggerManager::LogDebug("There was a collision between PLAYER and DOT number {}", i);
             // RESOLVE COLLISION PLAYER-DOT
             dotPositions.erase(dotPositions.begin() + i);
@@ -354,6 +374,10 @@ void Game::DoCollisions() {
     for (int i = static_cast<int>(numInstancesEnergizer) - 1; i >= 0; i--) {
         auto energizerObb = energizer->GetTransformedBoundingBox(i);
         if (checkCollision(playerObb, energizerObb)) {
+            if (chompTimer >= CHOMP_INTERVAL) {
+                soundEngine->play2D(pacmanChompSound, false);
+                chompTimer = 0.0; // Resetta il timer
+            }
             LoggerManager::LogDebug("There was a collision between PLAYER and ENERGIZER number {}", i);
             // RESOLVE COLLISION PLAYER-ENERGIZER
             energizerPositions.erase(energizerPositions.begin() + i);
@@ -372,6 +396,7 @@ void Game::DoCollisions() {
     for (int i = static_cast<int>(numInstancesBonusSymbol) - 1; i >= 0; i--) {
         auto bonusSymbolObb = bonusSymbol->GetTransformedBoundingBox(i);
         if (checkCollision(playerObb, bonusSymbolObb)) {
+            soundEngine->play2D(pacmanEatFruitSound, false);
             LoggerManager::LogDebug("There was a collision between PLAYER and BONUS_SYMBOL number {}", i);
             // RESOLVE COLLISION PLAYER-BONUS_SYMBOL
             if (this->Levels[this->level]->GetSymbolActive() == 2) {
@@ -393,6 +418,7 @@ void Game::DoCollisions() {
             auto currenGameObjectVulnerableGhost = vulnerableGhost->GetCurrentGameObject();
             auto currenGameObjectVulnerableGhostObb = currenGameObjectVulnerableGhost->GetTransformedBoundingBox(j);
             if (checkCollision(playerObb, currenGameObjectVulnerableGhostObb)) {
+                soundEngine->play2D(pacmanEatGhostSound, false);
                 LoggerManager::LogDebug("There was a collision between PLAYER and VULNERABLE_GHOST");
                 // RESOLVE COLLISION PLAYER-VULNERABLE_GHOST
                 if (vulnerableGhost->ghostMapping.blinkyIndex == j) blinky->SetAlive(false);
@@ -409,6 +435,7 @@ void Game::DoCollisions() {
         if (blinky->IsAlive()) {
             auto blinkyObb = blinky->gameObject->GetTransformedBoundingBox(0);
             if (checkCollision(playerObb, blinkyObb)) {
+                soundEngine->play2D(pacmanDeathSound, false);
                 LoggerManager::LogDebug("There was a collision between PLAYER and BLINKY");
                 // RESOLVE COLLISION PLAYER-BLINKY
                 if (this->lives > 1) {
@@ -431,6 +458,7 @@ void Game::DoCollisions() {
         if (clyde->IsAlive()) {
             auto clydeObb = clyde->gameObject->GetTransformedBoundingBox(0);
             if (checkCollision(playerObb, clydeObb)) {
+                soundEngine->play2D(pacmanDeathSound, false);
                 LoggerManager::LogDebug("There was a collision between PLAYER and CLYDE");
                 // RESOLVE COLLISION PLAYER-CLYDE
                 if (this->lives > 1) {
@@ -454,6 +482,7 @@ void Game::DoCollisions() {
         if (inky->IsAlive()) {
             auto inkyObb = inky->gameObject->GetTransformedBoundingBox(0);
             if (checkCollision(playerObb, inkyObb)) {
+                soundEngine->play2D(pacmanDeathSound, false);
                 LoggerManager::LogDebug("There was a collision between PLAYER and INKY");
                 // RESOLVE COLLISION PLAYER-INKY
                 if (this->lives > 1) {
@@ -477,6 +506,7 @@ void Game::DoCollisions() {
         if (pinky->IsAlive()) {
             auto pinkyObb = pinky->gameObject->GetTransformedBoundingBox(0);
             if (checkCollision(playerObb, pinkyObb)) {
+                soundEngine->play2D(pacmanDeathSound, false);
                 LoggerManager::LogDebug("There was a collision between PLAYER and PINKY");
                 // RESOLVE COLLISION PLAYER-INKY
                 if (this->lives > 1) {

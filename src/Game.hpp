@@ -57,7 +57,7 @@ public:
     void ProcessInput(double dt);
     void Update(double dt);
     void Render(double dt) const;
-    void DoCollisions();
+    void DoCollisions(double dt);
     
     // reset
     //void ResetLevel();
@@ -74,5 +74,8 @@ private:
     glm::vec3 cameraDir;		// Direction of gaze (the direction is reversed)
     glm::vec3 cameraSide;		// Direction of the lateral movement 
     glm::vec3 cameraUp;			// Vector that completes the orthonormal basis of the camera
+
+    const double CHOMP_INTERVAL = 0.5;
+	double chompTimer = 0.0;
 
 };
