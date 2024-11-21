@@ -174,15 +174,16 @@ void Game::Init() {
     /// Load and Configure Music Tracks
     soundEngine = createIrrKlangDevice();
     // Preload audio tracks
-    pacmanChompSound    = soundEngine->addSoundSourceFromFile(FileSystem::getPath("../res/sounds/pacman_chomp.wav").c_str());
-    pacmanDeathSound    = soundEngine->addSoundSourceFromFile(FileSystem::getPath("../res/sounds/pacman_death.wav").c_str());
-    pacmanEatFruitSound = soundEngine->addSoundSourceFromFile(FileSystem::getPath("../res/sounds/pacman_eatfruit.wav").c_str());
-    pacmanEatGhostSound = soundEngine->addSoundSourceFromFile(FileSystem::getPath("../res/sounds/pacman_eatghost.wav").c_str());
+    pacmanChompSound    = soundEngine->addSoundSourceFromFile(FileSystem::getPath("../res/sounds/03. PAC-MAN - Eating The Pac-dots.flac").c_str());
+    pacmanEatFruitSound = soundEngine->addSoundSourceFromFile(FileSystem::getPath("../res/sounds/11. PAC-MAN - Eating The Fruit.flac").c_str());
+    pacmanEatGhostSound = soundEngine->addSoundSourceFromFile(FileSystem::getPath("../res/sounds/13. PAC-MAN - Eating The Ghost.flac").c_str());
+    pacmanDeathSound    = soundEngine->addSoundSourceFromFile(FileSystem::getPath("../res/sounds/15. Fail.flac").c_str());
+
     // Set a default volume for each source
-    pacmanChompSound->setDefaultVolume(0.7f);
-    pacmanDeathSound->setDefaultVolume(0.7f);
-    pacmanEatFruitSound->setDefaultVolume(0.7f);
-    pacmanEatGhostSound->setDefaultVolume(0.7f);
+    pacmanChompSound->setDefaultVolume(1.0f);
+    pacmanDeathSound->setDefaultVolume(1.0f);
+    pacmanEatFruitSound->setDefaultVolume(1.0f);
+    pacmanEatGhostSound->setDefaultVolume(1.0f);
 
     /// Configure Game Objects
     pacman = new PacMan();
@@ -195,7 +196,7 @@ void Game::Init() {
     
 }
 
-/// TODO:Introdurre e gestire suoni
+/// TODO:Introdurre e gestire suoni(Aggiungere sirena(suono fantasmi) da link su telegram)
 
 void Game::Update(const double dt) {
     // update objects
@@ -376,7 +377,7 @@ void Game::DoCollisions(double dt) {
         if (checkCollision(playerObb, energizerObb)) {
             if (chompTimer >= CHOMP_INTERVAL) {
                 soundEngine->play2D(pacmanChompSound, false);
-                chompTimer = 0.0; // Resetta il timer
+                chompTimer = 0.0;
             }
             LoggerManager::LogDebug("There was a collision between PLAYER and ENERGIZER number {}", i);
             // RESOLVE COLLISION PLAYER-ENERGIZER
