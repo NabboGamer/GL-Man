@@ -173,6 +173,12 @@ void Game::Init() {
 
     /// Load and Configure Music Tracks
     soundEngine = createIrrKlangDevice();
+    // Play a short, irrelevant sound at the start of the game to force IrrKlang to initialize.
+    // This trick prepare the audio engine and eliminates the delay when a significant sound is first played.
+    soundEngine->play2D(FileSystem::getPath("../res/sounds/17. Silence.flac").c_str(),
+                        false, 
+                        false, 
+                        true)->stop();
     // Preload audio tracks
     pacmanChompSound    = soundEngine->addSoundSourceFromFile(FileSystem::getPath("../res/sounds/03. PAC-MAN - Eating The Pac-dots.flac").c_str());
     pacmanEatFruitSound = soundEngine->addSoundSourceFromFile(FileSystem::getPath("../res/sounds/11. PAC-MAN - Eating The Fruit.flac").c_str());
@@ -214,8 +220,6 @@ void Game::Update(const double dt) {
     this->DoCollisions(dt);
 //    // update particles
 //    Particles->Update(dt, *Ball, 2, glm::vec2(Ball->Radius / 2.0f));
-//    // update PowerUps
-//    this->UpdatePowerUps(dt);
 //
 //    // check win condition
 //    if (this->State == GAME_ACTIVE && this->Levels[this->Level].IsCompleted())
@@ -296,10 +300,6 @@ void Game::Render(const double dt) const {
             if (inky->IsAlive())   inky  ->Draw(dt);
             if (pinky->IsAlive())  pinky ->Draw(dt);
         }
-        //    // draw PowerUps
-        //    for (PowerUp &powerUp : this->PowerUps)
-        //        if (!powerUp.Destroyed)
-        //            powerUp.Draw(*Renderer);
         //    // draw particles	
         //    Particles->Draw();            
         //// end rendering to postprocessing framebuffer

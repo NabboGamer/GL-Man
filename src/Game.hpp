@@ -62,10 +62,6 @@ public:
     // reset
     //void ResetLevel();
     //void ResetPlayer();
-    
-    // powerups
-    //void SpawnPowerUps(GameObject& block);
-    //void UpdatePowerUps(float dt);
 
 private:
     glm::vec3 cameraPos;		// Camera position
