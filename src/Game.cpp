@@ -302,33 +302,6 @@ void Game::Init() {
 
 /// TODO:Introdurre stampa a schermo del punteggio
 
-void Game::Update(const double dt) {
-    // update objects
-    const auto mazeWall = this->Levels[this->level]->mazeWall;
-    if (vulnerableGhost->IsActive()) {
-        vulnerableGhost->Move(dt, mazeWall);
-    }
-    else {
-        if (blinky->IsAlive()) blinky->Move(dt, mazeWall);
-        if (clyde->IsAlive())  clyde ->Move(dt, mazeWall);
-        if (inky->IsAlive())   inky  ->Move(dt, mazeWall);
-        if (pinky->IsAlive())  pinky ->Move(dt, mazeWall);
-    }
-    // check for collisions
-    this->DoCollisions(dt);
-//    // update particles
-//    Particles->Update(dt, *Ball, 2, glm::vec2(Ball->Radius / 2.0f));
-//
-//    // check win condition
-//    if (this->State == GAME_ACTIVE && this->Levels[this->Level].IsCompleted())
-//    {
-//        this->ResetLevel();
-//        this->ResetPlayer();
-//        Effects->Chaos = true;
-//        this->State = GAME_WIN;
-//    }
-}
-
 
 void Game::ProcessInput(const double dt) {
     const auto player = pacman->gameObjects[pacman->GetCurrentModelIndex()];
@@ -381,6 +354,32 @@ void Game::ProcessInput(const double dt) {
     }
 }
 
+void Game::Update(const double dt) {
+    // update objects
+    const auto mazeWall = this->Levels[this->level]->mazeWall;
+    if (vulnerableGhost->IsActive()) {
+        vulnerableGhost->Move(dt, mazeWall);
+    }
+    else {
+        if (blinky->IsAlive()) blinky->Move(dt, mazeWall);
+        if (clyde->IsAlive())  clyde->Move(dt, mazeWall);
+        if (inky->IsAlive())   inky->Move(dt, mazeWall);
+        if (pinky->IsAlive())  pinky->Move(dt, mazeWall);
+    }
+    // check for collisions
+    this->DoCollisions(dt);
+    //    // update particles
+    //    Particles->Update(dt, *Ball, 2, glm::vec2(Ball->Radius / 2.0f));
+    //
+    //    // check win condition
+    //    if (this->State == GAME_ACTIVE && this->Levels[this->Level].IsCompleted())
+    //    {
+    //        this->ResetLevel();
+    //        this->ResetPlayer();
+    //        Effects->Chaos = true;
+    //        this->State = GAME_WIN;
+    //    }
+}
 
 void Game::Render(const double dt) const {
     if (this->state == GAME_ACTIVE || this->state == GAME_WIN) {
@@ -517,7 +516,8 @@ void Game::DoCollisions(double dt) {
     }
 
     // CHECK COLLISION PLAYER-GHOSTS
-    // CHECK COLLISION PLAYER-BLINKY
+
+    // CHECK COLLISION PLAYER-VULNERABLE_GHOST
     if (vulnerableGhost->IsActive()) {
         for (int j = static_cast<int>(vulnerableGhost->GetCurrentGameObject()->GetNumInstances()) - 1 ; j >= 0; j--) {
             auto currenGameObjectVulnerableGhost = vulnerableGhost->GetCurrentGameObject();
@@ -537,7 +537,9 @@ void Game::DoCollisions(double dt) {
     } else {
         auto lifeCounter = this->Levels[this->level]->lifeCounter;
         //TODO:Gestire multi-collisioni se Pac-man e al centro che portano a perdere tutte e 3 le vite in un singolo colpo(Bug Fix #1)
-        if (blinky->IsAlive()) {
+
+        // CHECK COLLISION PLAYER-BLINKY
+    	if (blinky->IsAlive()) {
             auto blinkyObb = blinky->gameObject->GetTransformedBoundingBox(0);
             if (checkCollision(playerObb, blinkyObb)) {
                 soundEngine->play2D(pacmanDeathSound, false);

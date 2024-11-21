@@ -372,6 +372,8 @@ bool GameLevel::shouldSpawnBonusSymbol(const double deltaTime) {
             this->SetBonusSymbolPosition(glm::vec3(13.0f, 0.0f, 14.0f));
             if (this->symbolActive == 0) this->symbolActive = 1;
             return true;
+        } else {
+            this->SetBonusSymbolPosition(glm::vec3(-2.0f, 0.0f, -2.0f));
         }
        
     } else if (numInstancesDot <= 62) {
@@ -380,6 +382,8 @@ bool GameLevel::shouldSpawnBonusSymbol(const double deltaTime) {
             this->SetBonusSymbolPosition(glm::vec3(13.0f, 0.0f, 14.0f));
             if (this->symbolActive == 1) this->symbolActive = 2;
             return true;
+        } else {
+            this->SetBonusSymbolPosition(glm::vec3(-2.0f, 0.0f, -2.0f));
         }
     }
 	return false;
