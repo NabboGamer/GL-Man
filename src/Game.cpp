@@ -13,7 +13,6 @@ using namespace irrklang;
 #include "GameObjectCustom.hpp"
 #include "GameObjectFromModel.hpp"
 #include "PacMan.hpp"
-#include "Ghost.hpp"
 #include "Blinky.hpp"
 #include "Clyde.hpp"
 #include "Inky.hpp"
@@ -26,28 +25,118 @@ using namespace irrklang;
 
 
 // Game-related State data
-static PacMan*           pacman;
-static Blinky*           blinky;
-static Clyde*            clyde;
-static Inky*             inky;
-static Pinky*            pinky;
-static VulnerableGhost*  vulnerableGhost;
-//ParticleGenerator *Particles;
-//PostProcessor     *Effects;
-ISoundEngine*            soundEngine;
-ISoundSource*            pacmanChompSound;
-ISoundSource*            pacmanDeathSound;
-ISoundSource*            pacmanEatFruitSound;
-ISoundSource*            pacmanEatGhostSound;
-//TextRenderer      *Text;
+namespace {
+    PacMan*               pacman;
+    Blinky*               blinky;
+    Clyde*                clyde;
+    Inky*                 inky;
+    Pinky*                pinky;
+    VulnerableGhost*      vulnerableGhost;
+    //ParticleGenerator*  Particles;
+    //PostProcessor*      Effects;
+    ISoundEngine*         soundEngine;
+    ISoundSource*         pacmanChompSound;
+    ISoundSource*         pacmanDeathSound;
+    ISoundSource*         pacmanEatFruitSound;
+    ISoundSource*         pacmanEatGhostSound;
+    ISoundSource*         ghostNormalMove;
+    ISoundSource*         ghostTurnBlue;
+	ISoundSource*         currentPlayingSound;
+    ISound*               currentSoundInstance = nullptr;
+    //TextRenderer*       Text;
+}
 
 // Initial speed of the player
-static float PLAYER_SPEED = 7.5f;
-
-Game::Game(unsigned int width, unsigned int height) : state(GAME_ACTIVE), keys(), keysProcessed(), width(width),
-                                                      height(height), level(0), lives(3), cameraPos(), cameraAt(),
-													  up(),cameraDir(),cameraSide(),cameraUp() {
+namespace {
+    constexpr float PLAYER_SPEED = 7.5f;
 }
+
+namespace {
+
+    // Function to detect OBB - OBB collision in XZ plane
+    bool checkCollision(const CustomTypes::obb& obb1, const CustomTypes::obb& obb2) {
+        const glm::vec3 box1_min = obb1.first;
+        const glm::vec3 box1_max = obb1.second;
+        const glm::vec3 box2_min = obb2.first;
+        const glm::vec3 box2_max = obb2.second;
+
+        // Check only on X and Z axes
+        const bool overlapX = box1_max.x >= box2_min.x && box1_min.x <= box2_max.x;
+        const bool overlapZ = box1_max.z >= box2_min.z && box1_min.z <= box2_max.z;
+
+        return overlapX && overlapZ;
+    }
+
+    // Function to resolve collision in XZ plane
+    glm::vec3 resolveCollision(const CustomTypes::obb& playerObb, const CustomTypes::obb& wallObb, PermittedDirections& permittedDirections) {
+        const glm::vec3 playerMin = playerObb.first;
+        const glm::vec3 playerMax = playerObb.second;
+        const glm::vec3 wallMin = wallObb.first;
+        const glm::vec3 wallMax = wallObb.second;
+
+        // Calculate the penetration depth on the X and Z axes
+        const float overlapX = std::min(playerMax.x - wallMin.x, wallMax.x - playerMin.x);
+        const float overlapZ = std::min(playerMax.z - wallMin.z, wallMax.z - playerMin.z);
+
+        // Find the axis with the least penetration and use that value to resolve the collision
+        if (overlapX < overlapZ) {
+            if (playerMax.x < wallMax.x) {
+                permittedDirections = PermittedDirections();
+                permittedDirections.DIRECTION_UP = false;
+                return { -overlapX, 0.0f, 0.0f };
+            }
+            else {
+                permittedDirections = PermittedDirections();
+                permittedDirections.DIRECTION_DOWN = false;
+                return { overlapX, 0.0f, 0.0f };
+            }
+        }
+        else {
+            if (playerMax.z < wallMax.z) {
+                permittedDirections = PermittedDirections();
+                permittedDirections.DIRECTION_RIGHT = false;
+                return { 0.0f, 0.0f, -overlapZ };
+            }
+            else {
+                permittedDirections = PermittedDirections();
+                permittedDirections.DIRECTION_LEFT = false;
+                return { 0.0f, 0.0f, overlapZ };
+            }
+        }
+    }
+
+    // Function to play sounds in loop, with diversity control compared to the current sound
+    void playSoundIfChanged(ISoundSource* newSound, const bool loop = false) {
+        if (currentPlayingSound != newSound) {
+            // Stop the current sound
+            if (currentSoundInstance) {
+                currentSoundInstance->stop();
+                currentSoundInstance = nullptr;
+            }
+            // Start the new sound
+            currentSoundInstance = soundEngine->play2D(newSound, loop, false, true);
+            if (currentSoundInstance) {
+                currentSoundInstance->setIsPaused(false); // Make sure it starts
+            }
+            currentPlayingSound = newSound; // Update the current sound
+        }
+    }
+
+    // Function to stop the current sound
+    void stopCurrentSound() {
+        if (currentSoundInstance) {
+            currentSoundInstance->stop();
+            currentSoundInstance = nullptr;
+        }
+        //currentPlayingSound->drop();
+    }
+
+}
+
+Game::Game(const unsigned int width, const unsigned int height)
+    : state(GAME_ACTIVE), keys(), keysProcessed(), width(width),
+      height(height), level(0), lives(3), cameraPos(), cameraAt(),
+      up(),cameraDir(),cameraSide(),cameraUp() { }
 
 Game::~Game() {
     delete pacman;
@@ -56,11 +145,16 @@ Game::~Game() {
     delete inky;
     delete pinky;
     delete vulnerableGhost;
-    /*delete Ball;
-    delete Particles;
-    delete Effects;
-    delete Text;
-    SoundEngine->drop();*/
+    /*delete Particles;
+    delete Effects;*/
+    /*pacmanChompSound->drop();
+    pacmanDeathSound->drop();
+    pacmanEatFruitSound->drop();
+    pacmanEatGhostSound->drop();
+    ghostNormalMove->drop();
+    ghostTurnBlue->drop();*/
+    //soundEngine->drop();
+    /*delete Text;*/
 }
 
 void Game::Init() {
@@ -181,15 +275,20 @@ void Game::Init() {
                         true)->stop();
     // Preload audio tracks
     pacmanChompSound    = soundEngine->addSoundSourceFromFile(FileSystem::getPath("../res/sounds/03. PAC-MAN - Eating The Pac-dots.flac").c_str());
+    ghostNormalMove     = soundEngine->addSoundSourceFromFile(FileSystem::getPath("../res/sounds/06. Ghost - Normal Move.flac").c_str());
     pacmanEatFruitSound = soundEngine->addSoundSourceFromFile(FileSystem::getPath("../res/sounds/11. PAC-MAN - Eating The Fruit.flac").c_str());
+    ghostTurnBlue       = soundEngine->addSoundSourceFromFile(FileSystem::getPath("../res/sounds/12. Ghost - Turn to Blue.flac").c_str());
     pacmanEatGhostSound = soundEngine->addSoundSourceFromFile(FileSystem::getPath("../res/sounds/13. PAC-MAN - Eating The Ghost.flac").c_str());
     pacmanDeathSound    = soundEngine->addSoundSourceFromFile(FileSystem::getPath("../res/sounds/15. Fail.flac").c_str());
 
     // Set a default volume for each source
-    pacmanChompSound->setDefaultVolume(1.0f);
-    pacmanDeathSound->setDefaultVolume(1.0f);
+    pacmanChompSound   ->setDefaultVolume(1.0f);
+    ghostNormalMove    ->setDefaultVolume(1.0f);
     pacmanEatFruitSound->setDefaultVolume(1.0f);
+    ghostTurnBlue      ->setDefaultVolume(1.0f);
     pacmanEatGhostSound->setDefaultVolume(1.0f);
+    pacmanDeathSound   ->setDefaultVolume(1.0f);
+    
 
     /// Configure Game Objects
     pacman = new PacMan();
@@ -199,10 +298,9 @@ void Game::Init() {
     inky   = new Inky(levelMatrixDim);
     pinky  = new Pinky(levelMatrixDim);
     vulnerableGhost = new VulnerableGhost(blinky,clyde, inky, pinky, levelMatrixDim);
-    
 }
 
-/// TODO:Introdurre e gestire suoni(Aggiungere sirena(suono fantasmi) da link su telegram)
+/// TODO:Introdurre stampa a schermo del punteggio
 
 void Game::Update(const double dt) {
     // update objects
@@ -283,6 +381,7 @@ void Game::ProcessInput(const double dt) {
     }
 }
 
+
 void Game::Render(const double dt) const {
     if (this->state == GAME_ACTIVE || this->state == GAME_WIN) {
         // begin rendering to postprocessing framebuffer
@@ -291,14 +390,22 @@ void Game::Render(const double dt) const {
         this->Levels[this->level]->Draw(dt);
         // draw player
         pacman->Draw(dt);
-        if (vulnerableGhost->IsActive() && 
-            vulnerableGhost->GetCurrentGameObject()->GetNumInstances() > 0) {
+        if (vulnerableGhost->IsActive() && vulnerableGhost->GetCurrentGameObject()->GetNumInstances() > 0) {
+
             vulnerableGhost->Draw(dt);
+            playSoundIfChanged(ghostTurnBlue, true);
         } else {
             if (blinky->IsAlive()) blinky->Draw(dt);
             if (clyde->IsAlive())  clyde ->Draw(dt);
             if (inky->IsAlive())   inky  ->Draw(dt);
             if (pinky->IsAlive())  pinky ->Draw(dt);
+
+            if (blinky->IsAlive() || clyde->IsAlive() || inky->IsAlive() || pinky->IsAlive()) {
+                playSoundIfChanged(ghostNormalMove, true);
+            }
+            else {
+                stopCurrentSound();
+            }
         }
         //    // draw particles	
         //    Particles->Draw();            
@@ -323,9 +430,6 @@ void Game::Render(const double dt) const {
 }
 
 // collision detection
-bool checkCollision(const CustomTypes::obb& obb1, const CustomTypes::obb& obb2);
-glm::vec3 resolveCollision(const CustomTypes::obb& playerObb, const CustomTypes::obb& wallObb, PermittedDirections& permittedDirections);
-
 void Game::DoCollisions(double dt) {
     auto player = pacman->gameObjects[pacman->GetCurrentModelIndex()];
     auto playerObb = player->GetTransformedBoundingBox(0);
@@ -525,58 +629,7 @@ void Game::DoCollisions(double dt) {
                 }
             }
         }
-        
 
     }
 
-}
-
-// OBB - OBB collision detection in XZ plane
-bool checkCollision(const CustomTypes::obb& obb1, const CustomTypes::obb& obb2) {
-    const glm::vec3 box1_min = obb1.first;
-    const glm::vec3 box1_max = obb1.second;
-    const glm::vec3 box2_min = obb2.first;
-    const glm::vec3 box2_max = obb2.second;
-
-    // Check only on X and Z axes
-    const bool overlapX = box1_max.x >= box2_min.x && box1_min.x <= box2_max.x;
-    const bool overlapZ = box1_max.z >= box2_min.z && box1_min.z <= box2_max.z;
-
-    return overlapX && overlapZ;
-}
-
-// Function to resolve collision in XZ plane
-glm::vec3 resolveCollision(const CustomTypes::obb& playerObb, const CustomTypes::obb& wallObb, PermittedDirections& permittedDirections) {
-    const glm::vec3 playerMin = playerObb.first;
-    const glm::vec3 playerMax = playerObb.second;
-    const glm::vec3 wallMin = wallObb.first;
-    const glm::vec3 wallMax = wallObb.second;
-
-    // Calculate the penetration depth on the X and Z axes
-    const float overlapX = std::min(playerMax.x - wallMin.x, wallMax.x - playerMin.x);
-    const float overlapZ = std::min(playerMax.z - wallMin.z, wallMax.z - playerMin.z);
-
-    // Find the axis with the least penetration and use that value to resolve the collision
-    if (overlapX < overlapZ) {
-        if (playerMax.x < wallMax.x) {
-            permittedDirections = PermittedDirections();
-            permittedDirections.DIRECTION_UP = false;
-            return {-overlapX, 0.0f, 0.0f};
-        } else {
-            permittedDirections = PermittedDirections();
-            permittedDirections.DIRECTION_DOWN = false;
-            return {overlapX, 0.0f, 0.0f};
-        }
-    }
-    else {
-        if (playerMax.z < wallMax.z) {
-            permittedDirections = PermittedDirections();
-            permittedDirections.DIRECTION_RIGHT = false;
-            return {0.0f, 0.0f, -overlapZ};
-        } else {
-            permittedDirections = PermittedDirections();
-            permittedDirections.DIRECTION_LEFT = false;
-            return {0.0f, 0.0f, overlapZ};
-        }
-    }
 }
