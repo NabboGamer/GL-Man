@@ -39,8 +39,9 @@ namespace {
     ISoundSource*         pacmanDeathSound;
     ISoundSource*         pacmanEatFruitSound;
     ISoundSource*         pacmanEatGhostSound;
-    ISoundSource*         ghostNormalMove;
-    ISoundSource*         ghostTurnBlue;
+    ISoundSource*         ghostNormalMoveSound;
+    ISoundSource*         ghostTurnBlueSound;
+    ISoundSource*         pacmanEatsAllGhostsSound;
 	ISoundSource*         currentPlayingSound;
     ISound*               currentSoundInstance = nullptr;
     TextRenderer*         text;
@@ -131,12 +132,17 @@ namespace {
         //currentPlayingSound->drop();
     }
 
+    // Function to calculate points
+    int calculatePoints(const int ghostCounter) {
+        return 200 * (1 << (ghostCounter - 1)); // 200, 400, 800, 1600
+    }
+
 }
 
 Game::Game(const unsigned int width, const unsigned int height)
     : state(GAME_ACTIVE), keys(), keysProcessed(), width(width),
-      height(height), level(0), lives(3), cameraPos(), cameraAt(),
-      up(),cameraDir(),cameraSide(),cameraUp() { }
+      height(height), level(0), lives(3), score(0), cameraPos(),
+      cameraAt(), up(),cameraDir(),cameraSide(),cameraUp() { }
 
 Game::~Game() {
     delete pacman;
@@ -151,10 +157,10 @@ Game::~Game() {
     pacmanDeathSound->drop();
     pacmanEatFruitSound->drop();
     pacmanEatGhostSound->drop();
-    ghostNormalMove->drop();
-    ghostTurnBlue->drop();*/
+    ghostNormalMoveSound->drop();
+    ghostTurnBlueSound->drop();*/
     //soundEngine->drop();
-    /*delete Text;*/
+    delete text;
 }
 
 void Game::Init() {
@@ -283,31 +289,31 @@ void Game::Init() {
                         false, 
                         true)->stop();
     // Preload audio tracks
-    pacmanChompSound    = soundEngine->addSoundSourceFromFile(FileSystem::getPath("../res/sounds/03. PAC-MAN - Eating The Pac-dots.flac").c_str());
-    ghostNormalMove     = soundEngine->addSoundSourceFromFile(FileSystem::getPath("../res/sounds/06. Ghost - Normal Move.flac").c_str());
-    pacmanEatFruitSound = soundEngine->addSoundSourceFromFile(FileSystem::getPath("../res/sounds/11. PAC-MAN - Eating The Fruit.flac").c_str());
-    ghostTurnBlue       = soundEngine->addSoundSourceFromFile(FileSystem::getPath("../res/sounds/12. Ghost - Turn to Blue.flac").c_str());
-    pacmanEatGhostSound = soundEngine->addSoundSourceFromFile(FileSystem::getPath("../res/sounds/13. PAC-MAN - Eating The Ghost.flac").c_str());
-    pacmanDeathSound    = soundEngine->addSoundSourceFromFile(FileSystem::getPath("../res/sounds/15. Fail.flac").c_str());
+    pacmanChompSound         = soundEngine->addSoundSourceFromFile(FileSystem::getPath("../res/sounds/03. PAC-MAN - Eating The Pac-dots.flac").c_str());
+    pacmanEatsAllGhostsSound = soundEngine->addSoundSourceFromFile(FileSystem::getPath("../res/sounds/05. PAC-MAN - All the ghosts have been eaten.flac").c_str());
+    ghostNormalMoveSound     = soundEngine->addSoundSourceFromFile(FileSystem::getPath("../res/sounds/06. Ghost - Normal Move.flac").c_str());
+    pacmanEatFruitSound      = soundEngine->addSoundSourceFromFile(FileSystem::getPath("../res/sounds/11. PAC-MAN - Eating The Fruit.flac").c_str());
+    ghostTurnBlueSound       = soundEngine->addSoundSourceFromFile(FileSystem::getPath("../res/sounds/12. Ghost - Turn to Blue.flac").c_str());
+    pacmanEatGhostSound      = soundEngine->addSoundSourceFromFile(FileSystem::getPath("../res/sounds/13. PAC-MAN - Eating The Ghost.flac").c_str());
+    pacmanDeathSound         = soundEngine->addSoundSourceFromFile(FileSystem::getPath("../res/sounds/15. Fail.flac").c_str());
 
     // Set a default volume for each source
-    pacmanChompSound   ->setDefaultVolume(1.0f);
-    ghostNormalMove    ->setDefaultVolume(1.0f);
-    pacmanEatFruitSound->setDefaultVolume(1.0f);
-    ghostTurnBlue      ->setDefaultVolume(1.0f);
-    pacmanEatGhostSound->setDefaultVolume(1.0f);
-    pacmanDeathSound   ->setDefaultVolume(1.0f);
+    pacmanChompSound        ->setDefaultVolume(1.0f);
+    ghostNormalMoveSound    ->setDefaultVolume(1.0f);
+    pacmanEatFruitSound     ->setDefaultVolume(1.0f);
+    ghostTurnBlueSound      ->setDefaultVolume(1.0f);
+    pacmanEatGhostSound     ->setDefaultVolume(1.0f);
+    pacmanDeathSound        ->setDefaultVolume(1.0f);
+    pacmanEatsAllGhostsSound->setDefaultVolume(1.0f);
 
     /// Configure render-specific objects
     text = new TextRenderer(this->width, this->height);
-    text->Load(FileSystem::getPath("../res/fonts/eight_bit_dragon.ttf").c_str(), 24);
+    text->Load(FileSystem::getPath("../res/fonts/eight_bit_dragon.ttf"), 32);
     
 }
 
-/// TODO:Introdurre stampa a schermo del punteggio
 /// TODO:Introdurre una funzione che si occupa di resettare la posizione di Pac-Man e dei fantasmi quando si viene presi da un fantasma
 /// TODO:Introdurre respawn dei fantasmi una volta che vengono mangiati da Pac-man
-/// TODO:Introdurre suono aggiuntivo e punteggio bonus quando tutti i fantasmi vengono mangiati con un solo energizer
 /// TODO:Introdurre WIN CONDITION
 
 
@@ -400,7 +406,7 @@ void Game::Render(const double dt) const {
         if (vulnerableGhost->IsActive() && vulnerableGhost->GetCurrentGameObject()->GetNumInstances() > 0) {
 
             vulnerableGhost->Draw(dt);
-            playSoundIfChanged(ghostTurnBlue, true);
+            playSoundIfChanged(ghostTurnBlueSound, true);
         } else {
             if (blinky->IsAlive()) blinky->Draw(dt);
             if (clyde->IsAlive())  clyde ->Draw(dt);
@@ -408,7 +414,7 @@ void Game::Render(const double dt) const {
             if (pinky->IsAlive())  pinky ->Draw(dt);
 
             if (blinky->IsAlive() || clyde->IsAlive() || inky->IsAlive() || pinky->IsAlive()) {
-                playSoundIfChanged(ghostNormalMove, true);
+                playSoundIfChanged(ghostNormalMoveSound, true);
             }
             else {
                 stopCurrentSound();
@@ -423,9 +429,12 @@ void Game::Render(const double dt) const {
         //Effects->Render(glfwGetTime());
 
         // render text (don't include in postprocessing)
-        //std::stringstream ss; ss << this->Lives;
-        //Text->RenderText("Lives:" + ss.str(), 5.0f, 5.0f, 1.0f);
-        text->RenderText("Ciao", 100, 100, 1.0f);
+        const float widthFloat = static_cast<float>(this->width);
+        const std::string scoreString = std::to_string(this->score);
+        text->RenderText("1UP",        (widthFloat / 2.0f) - (widthFloat / 5.0f), 10,  1.0f);
+        text->RenderText(scoreString,    (widthFloat / 2.0f) - (widthFloat / 5.0f), 50,  1.0f);
+        text->RenderText("HIGH SCORE", (widthFloat / 2.0f) - (widthFloat / 20.0f), 10, 1.0f);
+        text->RenderText(scoreString,    (widthFloat / 2.0f) - (widthFloat / 20.0f), 50, 1.0f);
     }
     /*if (this->State == GAME_MENU)
     {
@@ -479,6 +488,7 @@ void Game::DoCollisions(double dt) {
             dot->rotations.erase(dot->rotations.begin() + i);
             dot->scaling.erase(dot->scaling.begin() + i);
             dot->UpdateNumInstance();
+            this->score += 10;
         }
     }
 
@@ -502,6 +512,7 @@ void Game::DoCollisions(double dt) {
             energizer->scaling.erase(energizer->scaling.begin() + i);
             energizer->UpdateNumInstance();
             vulnerableGhost->SetActive(true);
+            this->score += 50;
         }
     }
 
@@ -523,6 +534,7 @@ void Game::DoCollisions(double dt) {
                 this->Levels[this->level]->SetPlayerTakeBonusSymbol(true);
                 this->Levels[this->level]->SetFirstActivationTimeAccumulator(11.0f);
             }
+            this->score += 100;
         }
     }
 
@@ -542,10 +554,17 @@ void Game::DoCollisions(double dt) {
                 if (vulnerableGhost->ghostMapping.inkyIndex == j) inky->SetAlive(false);
                 if (vulnerableGhost->ghostMapping.pinkyIndex == j) pinky->SetAlive(false);
                 vulnerableGhost->RemoveAnInstace(j);
+                this->ghostCounter++;
+                int points = calculatePoints(this->ghostCounter);
+                this->score += points;
+                if (this->ghostCounter == 4) {
+                    soundEngine->play2D(pacmanEatsAllGhostsSound, false);
+                }
             }
         }
         
     } else {
+        this->ghostCounter = 0;
         auto lifeCounter = this->Levels[this->level]->lifeCounter;
         //TODO:Gestire multi-collisioni se Pac-man e al centro che portano a perdere tutte e 3 le vite in un singolo colpo(Bug Fix #1)
 

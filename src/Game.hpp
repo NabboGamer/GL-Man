@@ -42,9 +42,9 @@ public:
     PermittedDirections     permittedDirections;
 
     std::vector<GameLevel*>  Levels;
-    //std::vector<PowerUp>    PowerUps;
-    unsigned int            level;
-    unsigned int            lives;
+    unsigned int             level;
+    unsigned int             lives;
+    unsigned int             score;
 
     // constructor/destructor
     Game(unsigned int width, unsigned int height);
@@ -64,14 +64,15 @@ public:
     //void ResetPlayer();
 
 private:
+    const double CHOMP_INTERVAL = 0.5;
+
     glm::vec3 cameraPos;		// Camera position
     glm::vec3 cameraAt;			// Point where the camera "looks"
     glm::vec3 up;				// Up vector
     glm::vec3 cameraDir;		// Direction of gaze (the direction is reversed)
     glm::vec3 cameraSide;		// Direction of the lateral movement 
     glm::vec3 cameraUp;			// Vector that completes the orthonormal basis of the camera
-
-    const double CHOMP_INTERVAL = 0.5;
-	double chompTimer = 0.0;
+	double    chompTimer = 0.0; // Timer utilized to decide if reproduce or not the pacman chomp sound
+    int       ghostCounter = 0; // Counts the number of ghosts eaten during the effect of an energizer
 
 };
