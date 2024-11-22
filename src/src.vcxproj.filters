@@ -81,6 +81,9 @@
     <ClCompile Include="VulnerableGhost.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TextRenderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FileSystem.hpp">
@@ -146,6 +149,9 @@
     <ClInclude Include="VulnerableGhost.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="TextRenderer.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\mazeWall.fs">
@@ -182,6 +188,12 @@
       <Filter>Resource Files\Shaders</Filter>
     </None>
     <None Include="shaders\bonusSymbol.vs">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="shaders\text.fs">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="shaders\text.vs">
       <Filter>Resource Files\Shaders</Filter>
     </None>
   </ItemGroup>

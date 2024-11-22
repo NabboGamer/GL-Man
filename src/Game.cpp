@@ -21,7 +21,7 @@ using namespace irrklang;
 #include "VulnerableGhost.hpp"
 //#include "particle_generator.h"
 //#include "post_processor.h"
-//#include "text_renderer.h"
+#include "TextRenderer.hpp"
 
 
 // Game-related State data
@@ -43,7 +43,7 @@ namespace {
     ISoundSource*         ghostTurnBlue;
 	ISoundSource*         currentPlayingSound;
     ISound*               currentSoundInstance = nullptr;
-    //TextRenderer*       Text;
+    TextRenderer*         text;
 }
 
 // Initial speed of the player
@@ -265,6 +265,15 @@ void Game::Init() {
     this->Levels.push_back(levelOne);
     this->level = 0;
 
+    /// Configure Game Objects
+    pacman = new PacMan();
+    const auto levelMatrixDim = this->Levels[this->level]->levelMatrixDim;
+    blinky = new Blinky(levelMatrixDim);
+    clyde = new Clyde(levelMatrixDim);
+    inky = new Inky(levelMatrixDim);
+    pinky = new Pinky(levelMatrixDim);
+    vulnerableGhost = new VulnerableGhost(blinky, clyde, inky, pinky, levelMatrixDim);
+
     /// Load and Configure Music Tracks
     soundEngine = createIrrKlangDevice();
     // Play a short, irrelevant sound at the start of the game to force IrrKlang to initialize.
@@ -288,19 +297,18 @@ void Game::Init() {
     ghostTurnBlue      ->setDefaultVolume(1.0f);
     pacmanEatGhostSound->setDefaultVolume(1.0f);
     pacmanDeathSound   ->setDefaultVolume(1.0f);
-    
 
-    /// Configure Game Objects
-    pacman = new PacMan();
-    const auto levelMatrixDim = this->Levels[this->level]->levelMatrixDim;
-    blinky = new Blinky(levelMatrixDim);
-    clyde  = new Clyde(levelMatrixDim);
-    inky   = new Inky(levelMatrixDim);
-    pinky  = new Pinky(levelMatrixDim);
-    vulnerableGhost = new VulnerableGhost(blinky,clyde, inky, pinky, levelMatrixDim);
+    /// Configure render-specific objects
+    text = new TextRenderer(this->width, this->height);
+    text->Load(FileSystem::getPath("../res/fonts/eight_bit_dragon.ttf").c_str(), 24);
+    
 }
 
 /// TODO:Introdurre stampa a schermo del punteggio
+/// TODO:Introdurre una funzione che si occupa di resettare la posizione di Pac-Man e dei fantasmi quando si viene presi da un fantasma
+/// TODO:Introdurre respawn dei fantasmi una volta che vengono mangiati da Pac-man
+/// TODO:Introdurre suono aggiuntivo e punteggio bonus quando tutti i fantasmi vengono mangiati con un solo energizer
+/// TODO:Introdurre WIN CONDITION
 
 
 void Game::ProcessInput(const double dt) {
@@ -406,15 +414,18 @@ void Game::Render(const double dt) const {
                 stopCurrentSound();
             }
         }
+        
         //    // draw particles	
         //    Particles->Draw();            
         //// end rendering to postprocessing framebuffer
         //Effects->EndRender();
         //// render postprocessing quad
         //Effects->Render(glfwGetTime());
-        //// render text (don't include in postprocessing)
+
+        // render text (don't include in postprocessing)
         //std::stringstream ss; ss << this->Lives;
         //Text->RenderText("Lives:" + ss.str(), 5.0f, 5.0f, 1.0f);
+        text->RenderText("Ciao", 100, 100, 1.0f);
     }
     /*if (this->State == GAME_MENU)
     {

@@ -107,13 +107,13 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <EnableModules>true</EnableModules>
-      <AdditionalIncludeDirectories>$(SolutionDir)\src\dependencies\include\glad;$(SolutionDir)\src\dependencies\include\GLFW;$(SolutionDir)\src\dependencies\include\glm;$(SolutionDir)\src\dependencies\include\KHR;$(SolutionDir)\src\dependencies\include\stb;$(SolutionDir)\src\dependencies\include\assimp;$(SolutionDir)\src\dependencies\include\spdlog;$(SolutionDir)\src\dependencies\include\irrKlang;$(SolutionDir)\src\dependencies\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\src\dependencies\include\glad;$(SolutionDir)\src\dependencies\include\GLFW;$(SolutionDir)\src\dependencies\include\glm;$(SolutionDir)\src\dependencies\include\KHR;$(SolutionDir)\src\dependencies\include\stb;$(SolutionDir)\src\dependencies\include\assimp;$(SolutionDir)\src\dependencies\include\spdlog;$(SolutionDir)\src\dependencies\include\irrKlang;$(SolutionDir)\src\dependencies\include\freetype;$(SolutionDir)\src\dependencies\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)\src\dependencies\lib</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opengl32.lib;user32.lib;gdi32.lib;shell32.lib;glfw3.lib;assimp.lib;irrKlang.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;user32.lib;gdi32.lib;shell32.lib;glfw3.lib;assimp.lib;irrKlang.lib;freetype.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -127,7 +127,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <EnableModules>true</EnableModules>
-      <AdditionalIncludeDirectories>$(SolutionDir)\src\dependencies\include\glad;$(SolutionDir)\src\dependencies\include\GLFW;$(SolutionDir)\src\dependencies\include\glm;$(SolutionDir)\src\dependencies\include\KHR;$(SolutionDir)\src\dependencies\include\stb;$(SolutionDir)\src\dependencies\include\assimp;$(SolutionDir)\src\dependencies\include\spdlog;$(SolutionDir)\src\dependencies\include\irrKlang;$(SolutionDir)\src\dependencies\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\src\dependencies\include\glad;$(SolutionDir)\src\dependencies\include\GLFW;$(SolutionDir)\src\dependencies\include\glm;$(SolutionDir)\src\dependencies\include\KHR;$(SolutionDir)\src\dependencies\include\stb;$(SolutionDir)\src\dependencies\include\assimp;$(SolutionDir)\src\dependencies\include\spdlog;$(SolutionDir)\src\dependencies\include\irrKlang;$(SolutionDir)\src\dependencies\include\freetype;$(SolutionDir)\src\dependencies\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -135,7 +135,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)\src\dependencies\lib</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opengl32.lib;user32.lib;gdi32.lib;shell32.lib;glfw3.lib;assimp.lib;irrKlang.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;user32.lib;gdi32.lib;shell32.lib;glfw3.lib;assimp.lib;irrKlang.lib;freetype.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -157,6 +157,7 @@
     <ClCompile Include="program.cpp" />
     <ClCompile Include="ResourceManager.cpp" />
     <ClCompile Include="Shader.cpp" />
+    <ClCompile Include="TextRenderer.cpp" />
     <ClCompile Include="Texture2D.cpp" />
     <ClCompile Include="Utility.cpp" />
     <ClCompile Include="VulnerableGhost.cpp" />
@@ -180,6 +181,7 @@
     <ClInclude Include="Pinky.hpp" />
     <ClInclude Include="ResourceManager.hpp" />
     <ClInclude Include="Shader.hpp" />
+    <ClInclude Include="TextRenderer.hpp" />
     <ClInclude Include="Texture2D.hpp" />
     <ClInclude Include="Utility.hpp" />
     <ClInclude Include="VulnerableGhost.hpp" />
@@ -197,6 +199,8 @@
     <None Include="shaders\mazeWall.vs" />
     <None Include="shaders\pacman.fs" />
     <None Include="shaders\pacman.vs" />
+    <None Include="shaders\text.fs" />
+    <None Include="shaders\text.vs" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

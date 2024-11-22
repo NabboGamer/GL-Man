@@ -57,8 +57,9 @@ int main() {
     // OpenGL configuration
     // --------------------
     glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-    /*glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);*/
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_DEPTH_TEST);
 
     // initialize game
     // ---------------
@@ -69,8 +70,6 @@ int main() {
     // -------------------
     double deltaTime = 0.0f;
     double lastFrame = 0.0f;
-
-    glEnable(GL_DEPTH_TEST);
 
     while (!glfwWindowShouldClose(window)) {
         // calculate delta time
