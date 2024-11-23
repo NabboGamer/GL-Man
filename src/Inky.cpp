@@ -33,8 +33,9 @@ void Inky::Move(double deltaTime, GameObjectBase* mazeWall) {
 
     // Checj if Inky is in the starting point
     glm::vec3 currentPos = this->gameObject->positions[0];
-    if (currentPos.x >= 15.0f && currentPos.x <= 17.0f &&
+    if (currentPos.x >= 16.0f && currentPos.x <= 19.0f &&
         currentPos.z >= 12.0f && currentPos.z <= 16.0f) {
+
         if (!this->skipFirstMovement) {
             auto targetPos = glm::vec3(16.0f, 0.0f, 13.75f);
 
@@ -65,6 +66,7 @@ void Inky::Move(double deltaTime, GameObjectBase* mazeWall) {
                 this->gameObject->positions[0] = targetPos;
                 this->gameObject->directions[0] = glm::vec3(0.0f, 0.0f, -1.0f);
                 this->timeSinceLastChange = 0.0f;
+                this->skipFirstMovement = false;
             }
             return;
         }

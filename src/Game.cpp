@@ -312,10 +312,8 @@ void Game::Init() {
     
 }
 
-/// TODO:Introdurre una funzione che si occupa di resettare la posizione di Pac-Man e dei fantasmi quando si viene presi da un fantasma
 /// TODO:Introdurre respawn dei fantasmi una volta che vengono mangiati da Pac-man
 /// TODO:Introdurre WIN CONDITION
-
 
 void Game::ProcessInput(const double dt) {
     const auto player = pacman->gameObjects[pacman->GetCurrentModelIndex()];
@@ -577,8 +575,7 @@ void Game::DoCollisions(double dt) {
                 // RESOLVE COLLISION PLAYER-BLINKY
                 if (this->lives > 1) {
                     this->lives--;
-                    pacman->gameObjects[pacman->GetCurrentModelIndex()]->positions[0] = glm::vec3(7.5f, 0.0f, 13.5f);
-                    pacman->UpdateOtherGameObjects();
+                    ResetPlayerAndGhosts();
                     lifeCounter->positions.erase(lifeCounter->positions.begin() + this->lives);
                     lifeCounter->directions.erase(lifeCounter->directions.begin() + this->lives);
                     lifeCounter->rotations.erase(lifeCounter->rotations.begin() + this->lives);
@@ -600,8 +597,7 @@ void Game::DoCollisions(double dt) {
                 // RESOLVE COLLISION PLAYER-CLYDE
                 if (this->lives > 1) {
                     this->lives--;
-                    pacman->gameObjects[pacman->GetCurrentModelIndex()]->positions[0] = glm::vec3(7.5f, 0.0f, 13.5f);
-                    pacman->UpdateOtherGameObjects();
+                    ResetPlayerAndGhosts();
                     lifeCounter->positions.erase(lifeCounter->positions.begin() + this->lives);
                     lifeCounter->directions.erase(lifeCounter->directions.begin() + this->lives);
                     lifeCounter->rotations.erase(lifeCounter->rotations.begin() + this->lives);
@@ -624,8 +620,7 @@ void Game::DoCollisions(double dt) {
                 // RESOLVE COLLISION PLAYER-INKY
                 if (this->lives > 1) {
                     this->lives--;
-                    pacman->gameObjects[pacman->GetCurrentModelIndex()]->positions[0] = glm::vec3(7.5f, 0.0f, 13.5f);
-                    pacman->UpdateOtherGameObjects();
+                    ResetPlayerAndGhosts();
                     lifeCounter->positions.erase(lifeCounter->positions.begin() + this->lives);
                     lifeCounter->directions.erase(lifeCounter->directions.begin() + this->lives);
                     lifeCounter->rotations.erase(lifeCounter->rotations.begin() + this->lives);
@@ -648,8 +643,7 @@ void Game::DoCollisions(double dt) {
                 // RESOLVE COLLISION PLAYER-INKY
                 if (this->lives > 1) {
                     this->lives--;
-                    pacman->gameObjects[pacman->GetCurrentModelIndex()]->positions[0] = glm::vec3(7.5f, 0.0f, 13.5f);
-                    pacman->UpdateOtherGameObjects();
+                    ResetPlayerAndGhosts();
                     lifeCounter->positions.erase(lifeCounter->positions.begin() + this->lives);
                     lifeCounter->directions.erase(lifeCounter->directions.begin() + this->lives);
                     lifeCounter->rotations.erase(lifeCounter->rotations.begin() + this->lives);
@@ -664,4 +658,30 @@ void Game::DoCollisions(double dt) {
 
     }
 
+}
+
+void Game::ResetPlayerAndGhosts() {
+    pacman->gameObjects[pacman->GetCurrentModelIndex()]->positions[0]  = glm::vec3(7.5f, 0.0f, 13.5f);
+    pacman->gameObjects[pacman->GetCurrentModelIndex()]->directions[0] = glm::vec3(0.0f, 0.0f, -1.0f);
+    pacman->UpdateOtherGameObjects();
+
+    if (blinky->IsAlive()) {
+        blinky->gameObject->positions[0]  = glm::vec3(19.0f, 0.0f, 13.75f);
+        blinky->gameObject->directions[0] = glm::vec3(0.0f, 0.0f, -1.0f);
+    }
+
+    if (clyde->IsAlive()) {
+        clyde->gameObject->positions[0]  = glm::vec3(16.0f, 0.0f, 15.5f);
+        clyde->gameObject->directions[0] = glm::vec3(1.0f, 0.0f, 0.0f);
+    }
+
+    if (inky->IsAlive()) {
+        inky->gameObject->positions[0]  = glm::vec3(16.0f, 0.0f, 12.25f);
+        inky->gameObject->directions[0] = glm::vec3(1.0f, 0.0f, 0.0f);
+    }
+
+    if (pinky->IsAlive()) {
+        pinky->gameObject->positions[0]  = glm::vec3(16.0f, 0.0f, 13.85f);
+        pinky->gameObject->directions[0] = glm::vec3(-1.0f, 0.0f, 0.0f);
+    }
 }

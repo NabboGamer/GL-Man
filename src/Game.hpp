@@ -61,7 +61,7 @@ public:
     
     // reset
     //void ResetLevel();
-    //void ResetPlayer();
+    static void ResetPlayerAndGhosts();
 
 private:
     const double CHOMP_INTERVAL = 0.5;

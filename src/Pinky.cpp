@@ -33,7 +33,7 @@ void Pinky::Move(double deltaTime, GameObjectBase* mazeWall) {
 
     // Check if Pinky is in the starting point
     glm::vec3 currentPos = this->gameObject->positions[0];
-    if (currentPos.x >= 15.0f && currentPos.x <= 17.0f &&
+    if (currentPos.x >= 16.0f && currentPos.x <= 19.0f &&
         currentPos.z >= 12.0f && currentPos.z <= 16.0f) {
         // Posizione target
         auto targetPos = glm::vec3(19.0f, 0.0f, 13.75f);
@@ -45,6 +45,7 @@ void Pinky::Move(double deltaTime, GameObjectBase* mazeWall) {
         this->gameObject->positions[0] = newPosition;
 
         if (glm::distance(currentPos, targetPos) <= speed) {
+            // Pinky never enters here because of his too slow speed
             this->gameObject->positions[0] = targetPos;
             this->gameObject->directions[0] = glm::vec3(0.0f, 0.0f, -1.0f);
             this->timeSinceLastChange = 0.0f;
