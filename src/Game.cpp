@@ -42,6 +42,7 @@ namespace {
     ISoundSource*         ghostNormalMoveSound;
     ISoundSource*         ghostTurnBlueSound;
     ISoundSource*         pacmanEatsAllGhostsSound;
+    ISoundSource*         victorySound;
 	ISoundSource*         currentPlayingSound;
     ISound*               currentSoundInstance = nullptr;
     TextRenderer*         text;
@@ -296,6 +297,7 @@ void Game::Init() {
     ghostTurnBlueSound       = soundEngine->addSoundSourceFromFile(FileSystem::getPath("../res/sounds/12. Ghost - Turn to Blue.flac").c_str());
     pacmanEatGhostSound      = soundEngine->addSoundSourceFromFile(FileSystem::getPath("../res/sounds/13. PAC-MAN - Eating The Ghost.flac").c_str());
     pacmanDeathSound         = soundEngine->addSoundSourceFromFile(FileSystem::getPath("../res/sounds/15. Fail.flac").c_str());
+    victorySound             = soundEngine->addSoundSourceFromFile(FileSystem::getPath("../res/sounds/16. Coffee Break Music.flac").c_str());
 
     // Set a default volume for each source
     pacmanChompSound        ->setDefaultVolume(1.0f);
@@ -305,6 +307,7 @@ void Game::Init() {
     pacmanEatGhostSound     ->setDefaultVolume(1.0f);
     pacmanDeathSound        ->setDefaultVolume(1.0f);
     pacmanEatsAllGhostsSound->setDefaultVolume(1.0f);
+    victorySound            ->setDefaultVolume(1.0f);
 
     /// Configure render-specific objects
     text = new TextRenderer(this->width, this->height);
@@ -437,6 +440,7 @@ void Game::Update(const double dt) {
         /*this->ResetLevel();
         this->ResetPlayer();*/
         this->state = GAME_WIN;
+        soundEngine->play2D(victorySound, false);
     }
 }
 
@@ -487,13 +491,17 @@ void Game::Render(const double dt) const {
         Text->RenderText("Press W or S to select level", 245.0f, this->Height / 2.0f + 20.0f, 0.75f);
     }*/
     if (this->state == GAME_WIN) {
-        //Text->RenderText("You WON!!!", 320.0f, this->Height / 2.0f - 20.0f, 1.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-        //Text->RenderText("Press ENTER to retry or ESC to quit", 130.0f, this->Height / 2.0f, 1.0f, glm::vec3(1.0f, 1.0f, 0.0f));
+        const float widthFloat = static_cast<float>(this->width);
+        const float heightFloat = static_cast<float>(this->height);
+        text->RenderText("You WON!!!",        (widthFloat / 2.0f) - (widthFloat / 20.0f),         (heightFloat / 2.0f) - (heightFloat / 9.0f),         1.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+        text->RenderText("Press ESC to quit", (widthFloat / 2.0f) - (widthFloat / 20.0f) - 70.0f, (heightFloat / 2.0f) - (heightFloat / 9.0f) + 40.0f, 1.0f, glm::vec3(0.0f, 1.0f, 0.0f));
         stopCurrentSound();
     }
     if (this->state == GAME_DEFEAT) {
-        //Text->RenderText("You WON!!!", 320.0f, this->Height / 2.0f - 20.0f, 1.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-        //Text->RenderText("Press ENTER to retry or ESC to quit", 130.0f, this->Height / 2.0f, 1.0f, glm::vec3(1.0f, 1.0f, 0.0f));
+        const float widthFloat = static_cast<float>(this->width);
+        const float heightFloat = static_cast<float>(this->height);
+        text->RenderText("You LOST!!!",       (widthFloat / 2.0f) - (widthFloat / 20.0f),         (heightFloat / 2.0f) - (heightFloat / 9.0f),         1.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+        text->RenderText("Press ESC to quit", (widthFloat / 2.0f) - (widthFloat / 20.0f) - 60.0f, (heightFloat / 2.0f) - (heightFloat / 9.0f) + 40.0f, 1.0f, glm::vec3(1.0f, 0.0f, 0.0f));
         stopCurrentSound();
     }
 }
