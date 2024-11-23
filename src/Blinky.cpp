@@ -160,6 +160,24 @@ void Blinky::Draw(double deltaTime) {
 	this->gameObject->Draw();
 }
 
+bool Blinky::ShouldRespawn(const double deltaTime) {
+	if (this->IsAlive() == false) {
+        this->respawnTimeAccumulator += deltaTime;
+        if (this->respawnTimeAccumulator >= this->RESPAWN_TIME_LIMIT) {
+            this->respawnTimeAccumulator = 0.0f;
+            return true;
+        }
+	}
+    return false;
+}
+
+void Blinky::ResetGameObjectProperties() const {
+    this->gameObject->positions  = { glm::vec3(19.0f, 0.0f, 13.75f) };
+    this->gameObject->directions = { glm::vec3(0.0f, 0.0f, -1.0f) };
+    this->gameObject->rotations  = { 0.0f };
+    this->gameObject->scaling    = { glm::vec3(0.25f) };
+}
+
 void Blinky::init() {
 	const std::vector<glm::vec3> blinkyPositions  = { glm::vec3(19.0f, 0.0f, 13.75f) };
 	const std::vector<glm::vec3> blinkyDirections = { glm::vec3(0.0f, 0.0f, -1.0f) };

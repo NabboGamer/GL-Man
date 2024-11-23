@@ -291,6 +291,43 @@ void VulnerableGhost::RemoveAnInstace(const size_t instanceIndex) {
     
 }
 
+void VulnerableGhost::AddAnInstance(const glm::vec3& position, const glm::vec3& direction, const float rotation, const glm::vec3& scale) {
+
+    for (const auto gameObjectBlue : this->gameObjectsBlue) {
+        gameObjectBlue->positions.push_back(position);
+        gameObjectBlue->directions.push_back(direction);
+        gameObjectBlue->rotations.push_back(rotation);
+        gameObjectBlue->scaling.push_back(scale);
+        gameObjectBlue->UpdateNumInstance();
+    }
+
+    for (const auto gameObjectWhite : this->gameObjectsWhite) {
+        gameObjectWhite->positions.push_back(position);
+        gameObjectWhite->directions.push_back(direction);
+        gameObjectWhite->rotations.push_back(rotation);
+        gameObjectWhite->scaling.push_back(scale);
+        gameObjectWhite->UpdateNumInstance();
+    }
+
+    // Update mapping if necessary
+    const int newIndex = static_cast<int>(this->gameObjectsBlue[0]->positions.size() - 1); // New Index of the instance
+
+    // Find an unmapped ghost and assign it the new index
+    if (ghostMapping.blinkyIndex == -1) {
+        ghostMapping.blinkyIndex = newIndex;
+    }
+    else if (ghostMapping.clydeIndex == -1) {
+        ghostMapping.clydeIndex = newIndex;
+    }
+    else if (ghostMapping.inkyIndex == -1) {
+        ghostMapping.inkyIndex = newIndex;
+    }
+    else if (ghostMapping.pinkyIndex == -1) {
+        ghostMapping.pinkyIndex = newIndex;
+    }
+}
+
+
 void VulnerableGhost::init() {
 	const std::vector<glm::vec3> vulnerableGhostPositions(4, glm::vec3(19.0f, 0.0f, 13.75f));
 	const std::vector<glm::vec3> vulnerableGhostDirections(4, glm::vec3(0.0f, 0.0f, -1.0f));

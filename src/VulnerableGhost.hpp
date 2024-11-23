@@ -37,6 +37,7 @@ public:
 	void Move(double deltaTime, GameObjectBase* mazeWall) override;
 	void Draw(double deltaTime) override;
     void RemoveAnInstace(size_t instanceIndex);
+    void AddAnInstance(const glm::vec3& position, const glm::vec3& direction, float rotation, const glm::vec3& scale);
 
 private:
 

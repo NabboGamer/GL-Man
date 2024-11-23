@@ -181,6 +181,24 @@ void Pinky::Draw(double deltaTime) {
 	this->gameObject->Draw();
 }
 
+bool Pinky::ShouldRespawn(const double deltaTime) {
+    if (this->IsAlive() == false) {
+        this->respawnTimeAccumulator += deltaTime;
+        if (this->respawnTimeAccumulator >= this->RESPAWN_TIME_LIMIT) {
+            this->respawnTimeAccumulator = 0.0f;
+            return true;
+        }
+    }
+    return false;
+}
+
+void Pinky::ResetGameObjectProperties() const {
+    this->gameObject->positions  = { glm::vec3(16.0f, 0.0f, 13.85f) };
+    this->gameObject->directions = { glm::vec3(-1.0f, 0.0f, 0.0f) };
+    this->gameObject->rotations  = { 0.0f };
+    this->gameObject->scaling    = { glm::vec3(0.25f) };
+}
+
 void Pinky::init() {
 	const std::vector<glm::vec3> pinkyPositions  = { glm::vec3(16.0f, 0.0f, 13.85f) };
 	const std::vector<glm::vec3> pinkyDirections = { glm::vec3(-1.0f, 0.0f, 0.0f) };

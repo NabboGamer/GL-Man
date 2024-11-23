@@ -312,7 +312,6 @@ void Game::Init() {
     
 }
 
-/// TODO:Introdurre respawn dei fantasmi una volta che vengono mangiati da Pac-man
 /// TODO:Introdurre WIN CONDITION
 
 void Game::ProcessInput(const double dt) {
@@ -373,10 +372,56 @@ void Game::Update(const double dt) {
         vulnerableGhost->Move(dt, mazeWall);
     }
     else {
-        if (blinky->IsAlive()) blinky->Move(dt, mazeWall);
-        if (clyde->IsAlive())  clyde->Move(dt, mazeWall);
-        if (inky->IsAlive())   inky->Move(dt, mazeWall);
-        if (pinky->IsAlive())  pinky->Move(dt, mazeWall);
+        if (blinky->IsAlive()) {
+            blinky->Move(dt, mazeWall);
+        } else if (blinky->ShouldRespawn(dt)){
+            blinky->ResetGameObjectProperties();
+            blinky->SetAlive(true);
+            blinky->Move(dt, mazeWall);
+            vulnerableGhost->AddAnInstance(blinky->gameObject->positions[0],
+                                           blinky->gameObject->directions[0],
+                                           blinky->gameObject->rotations[0],
+                                           blinky->gameObject->scaling[0]);
+        }
+
+        if (clyde->IsAlive()) {
+            clyde->Move(dt, mazeWall);
+        } else if (clyde->ShouldRespawn(dt)) {
+            clyde->ResetGameObjectProperties();
+            clyde->SetAlive(true);
+            clyde->Move(dt, mazeWall);
+            vulnerableGhost->AddAnInstance(clyde->gameObject->positions[0],
+                                           clyde->gameObject->directions[0],
+                                           clyde->gameObject->rotations[0],
+                                           clyde->gameObject->scaling[0]);
+        }
+
+        if (inky->IsAlive()) {
+            inky->Move(dt, mazeWall);
+        }
+        else if (inky->ShouldRespawn(dt)) {
+            inky->ResetGameObjectProperties();
+            inky->SetAlive(true);
+            inky->Move(dt, mazeWall);
+            vulnerableGhost->AddAnInstance(inky->gameObject->positions[0],
+                                           inky->gameObject->directions[0],
+                                           inky->gameObject->rotations[0],
+                                           inky->gameObject->scaling[0]);
+        }
+
+        if (pinky->IsAlive()) {
+            pinky->Move(dt, mazeWall);
+        }
+        else if (pinky->ShouldRespawn(dt)) {
+            pinky->ResetGameObjectProperties();
+            pinky->SetAlive(true);
+            pinky->Move(dt, mazeWall);
+            vulnerableGhost->AddAnInstance(pinky->gameObject->positions[0],
+                                           pinky->gameObject->directions[0],
+                                           pinky->gameObject->rotations[0],
+                                           pinky->gameObject->scaling[0]);
+        }
+
     }
     // check for collisions
     this->DoCollisions(dt);
@@ -429,8 +474,8 @@ void Game::Render(const double dt) const {
         // render text (don't include in postprocessing)
         const float widthFloat = static_cast<float>(this->width);
         const std::string scoreString = std::to_string(this->score);
-        text->RenderText("1UP",        (widthFloat / 2.0f) - (widthFloat / 5.0f), 10,  1.0f);
-        text->RenderText(scoreString,    (widthFloat / 2.0f) - (widthFloat / 5.0f), 50,  1.0f);
+        text->RenderText("1UP",        (widthFloat / 2.0f) - (widthFloat /  5.0f), 10, 1.0f);
+        text->RenderText(scoreString,    (widthFloat / 2.0f) - (widthFloat /  5.0f), 50, 1.0f);
         text->RenderText("HIGH SCORE", (widthFloat / 2.0f) - (widthFloat / 20.0f), 10, 1.0f);
         text->RenderText(scoreString,    (widthFloat / 2.0f) - (widthFloat / 20.0f), 50, 1.0f);
     }
@@ -548,9 +593,9 @@ void Game::DoCollisions(double dt) {
                 LoggerManager::LogDebug("There was a collision between PLAYER and VULNERABLE_GHOST");
                 // RESOLVE COLLISION PLAYER-VULNERABLE_GHOST
                 if (vulnerableGhost->ghostMapping.blinkyIndex == j) blinky->SetAlive(false);
-                if (vulnerableGhost->ghostMapping.clydeIndex == j) clyde->SetAlive(false);
-                if (vulnerableGhost->ghostMapping.inkyIndex == j) inky->SetAlive(false);
-                if (vulnerableGhost->ghostMapping.pinkyIndex == j) pinky->SetAlive(false);
+                if (vulnerableGhost->ghostMapping.clydeIndex  == j)  clyde->SetAlive(false);
+                if (vulnerableGhost->ghostMapping.inkyIndex   == j)   inky->SetAlive(false);
+                if (vulnerableGhost->ghostMapping.pinkyIndex  == j)  pinky->SetAlive(false);
                 vulnerableGhost->RemoveAnInstace(j);
                 this->ghostCounter++;
                 int points = calculatePoints(this->ghostCounter);
