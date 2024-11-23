@@ -55,7 +55,7 @@ public:
 
 
     // check if the level is completed (if all the dots have been eaten)
-    //bool IsCompleted();
+    [[nodiscard]] bool IsCompleted() const;
 
 private:
     const float VISIBLE_DURATION = 0.7f;

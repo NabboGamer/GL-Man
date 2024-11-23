@@ -227,12 +227,13 @@ void GameLevel::SetBonusSymbolPosition(const glm::vec3 newBonusSymbolPosition) c
     this->bonusSymbol->positions[0] = newBonusSymbolPosition;
 }
 
-//bool GameLevel::IsCompleted() {
-//    for (GameObject &tile : this->Bricks)
-//        if (!tile.IsSolid && !tile.Destroyed)
-//            return false;
-//    return true;
-//}
+bool GameLevel::IsCompleted() const {
+    if (this->dot->GetNumInstances() == 0 &&
+        this->energizer->GetNumInstances() == 0) {
+        return true;
+    }
+    return false;
+}
 
 void GameLevel::init(std::vector<std::vector<unsigned int>> wallData) {
     // calculate dimensions

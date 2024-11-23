@@ -312,12 +312,11 @@ void Game::Init() {
     
 }
 
-/// TODO:Introdurre WIN CONDITION
-
 void Game::ProcessInput(const double dt) {
     const auto player = pacman->gameObjects[pacman->GetCurrentModelIndex()];
     //TODO:Capire e risolvere il fatto che Pac-Man alle volte (solo dopo una collisione) ha delle direzioni bloccate quando in realta non lo sono(Bug Fix #2)
     if (this->state == GAME_ACTIVE) {
+
         const float speed = PLAYER_SPEED * static_cast<float>(dt);
         // Priority: UP > DOWN > RIGHT > LEFT
         // move player model
@@ -366,80 +365,83 @@ void Game::ProcessInput(const double dt) {
 }
 
 void Game::Update(const double dt) {
-    // update objects
-    const auto mazeWall = this->Levels[this->level]->mazeWall;
-    if (vulnerableGhost->IsActive()) {
-        vulnerableGhost->Move(dt, mazeWall);
+
+    if (this->state == GAME_ACTIVE) {
+        // update objects
+        const auto mazeWall = this->Levels[this->level]->mazeWall;
+        if (vulnerableGhost->IsActive()) {
+            vulnerableGhost->Move(dt, mazeWall);
+        }
+        else {
+            if (blinky->IsAlive()) {
+                blinky->Move(dt, mazeWall);
+            }
+            else if (blinky->ShouldRespawn(dt)) {
+                blinky->ResetGameObjectProperties();
+                blinky->SetAlive(true);
+                blinky->Move(dt, mazeWall);
+                vulnerableGhost->AddAnInstance(blinky->gameObject->positions[0],
+                                               blinky->gameObject->directions[0],
+                                               blinky->gameObject->rotations[0],
+                                               blinky->gameObject->scaling[0]);
+            }
+
+            if (clyde->IsAlive()) {
+                clyde->Move(dt, mazeWall);
+            }
+            else if (clyde->ShouldRespawn(dt)) {
+                clyde->ResetGameObjectProperties();
+                clyde->SetAlive(true);
+                clyde->Move(dt, mazeWall);
+                vulnerableGhost->AddAnInstance(clyde->gameObject->positions[0],
+                                               clyde->gameObject->directions[0],
+                                               clyde->gameObject->rotations[0],
+                                               clyde->gameObject->scaling[0]);
+            }
+
+            if (inky->IsAlive()) {
+                inky->Move(dt, mazeWall);
+            }
+            else if (inky->ShouldRespawn(dt)) {
+                inky->ResetGameObjectProperties();
+                inky->SetAlive(true);
+                inky->Move(dt, mazeWall);
+                vulnerableGhost->AddAnInstance(inky->gameObject->positions[0],
+                                               inky->gameObject->directions[0],
+                                               inky->gameObject->rotations[0],
+                                               inky->gameObject->scaling[0]);
+            }
+
+            if (pinky->IsAlive()) {
+                pinky->Move(dt, mazeWall);
+            }
+            else if (pinky->ShouldRespawn(dt)) {
+                pinky->ResetGameObjectProperties();
+                pinky->SetAlive(true);
+                pinky->Move(dt, mazeWall);
+                vulnerableGhost->AddAnInstance(pinky->gameObject->positions[0],
+                                               pinky->gameObject->directions[0],
+                                               pinky->gameObject->rotations[0],
+                                               pinky->gameObject->scaling[0]);
+            }
+
+        }
+        // check for collisions
+        this->DoCollisions(dt);
+        //    // update particles
+        //    Particles->Update(dt, *Ball, 2, glm::vec2(Ball->Radius / 2.0f));
     }
-    else {
-        if (blinky->IsAlive()) {
-            blinky->Move(dt, mazeWall);
-        } else if (blinky->ShouldRespawn(dt)){
-            blinky->ResetGameObjectProperties();
-            blinky->SetAlive(true);
-            blinky->Move(dt, mazeWall);
-            vulnerableGhost->AddAnInstance(blinky->gameObject->positions[0],
-                                           blinky->gameObject->directions[0],
-                                           blinky->gameObject->rotations[0],
-                                           blinky->gameObject->scaling[0]);
-        }
-
-        if (clyde->IsAlive()) {
-            clyde->Move(dt, mazeWall);
-        } else if (clyde->ShouldRespawn(dt)) {
-            clyde->ResetGameObjectProperties();
-            clyde->SetAlive(true);
-            clyde->Move(dt, mazeWall);
-            vulnerableGhost->AddAnInstance(clyde->gameObject->positions[0],
-                                           clyde->gameObject->directions[0],
-                                           clyde->gameObject->rotations[0],
-                                           clyde->gameObject->scaling[0]);
-        }
-
-        if (inky->IsAlive()) {
-            inky->Move(dt, mazeWall);
-        }
-        else if (inky->ShouldRespawn(dt)) {
-            inky->ResetGameObjectProperties();
-            inky->SetAlive(true);
-            inky->Move(dt, mazeWall);
-            vulnerableGhost->AddAnInstance(inky->gameObject->positions[0],
-                                           inky->gameObject->directions[0],
-                                           inky->gameObject->rotations[0],
-                                           inky->gameObject->scaling[0]);
-        }
-
-        if (pinky->IsAlive()) {
-            pinky->Move(dt, mazeWall);
-        }
-        else if (pinky->ShouldRespawn(dt)) {
-            pinky->ResetGameObjectProperties();
-            pinky->SetAlive(true);
-            pinky->Move(dt, mazeWall);
-            vulnerableGhost->AddAnInstance(pinky->gameObject->positions[0],
-                                           pinky->gameObject->directions[0],
-                                           pinky->gameObject->rotations[0],
-                                           pinky->gameObject->scaling[0]);
-        }
-
+    
+    // check win condition
+    if (this->state == GAME_ACTIVE && this->Levels[this->level]->IsCompleted()) {
+        /*this->ResetLevel();
+        this->ResetPlayer();*/
+        this->state = GAME_WIN;
     }
-    // check for collisions
-    this->DoCollisions(dt);
-    //    // update particles
-    //    Particles->Update(dt, *Ball, 2, glm::vec2(Ball->Radius / 2.0f));
-    //
-    //    // check win condition
-    //    if (this->State == GAME_ACTIVE && this->Levels[this->Level].IsCompleted())
-    //    {
-    //        this->ResetLevel();
-    //        this->ResetPlayer();
-    //        Effects->Chaos = true;
-    //        this->State = GAME_WIN;
-    //    }
 }
 
 void Game::Render(const double dt) const {
-    if (this->state == GAME_ACTIVE || this->state == GAME_WIN) {
+    if (this->state == GAME_ACTIVE || this->state == GAME_WIN || this->state == GAME_DEFEAT) {
         // begin rendering to postprocessing framebuffer
         //Effects->BeginRender();
         // draw level
@@ -483,12 +485,17 @@ void Game::Render(const double dt) const {
     {
         Text->RenderText("Press ENTER to start", 250.0f, this->Height / 2.0f, 1.0f);
         Text->RenderText("Press W or S to select level", 245.0f, this->Height / 2.0f + 20.0f, 0.75f);
-    }
-    if (this->State == GAME_WIN)
-    {
-        Text->RenderText("You WON!!!", 320.0f, this->Height / 2.0f - 20.0f, 1.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-        Text->RenderText("Press ENTER to retry or ESC to quit", 130.0f, this->Height / 2.0f, 1.0f, glm::vec3(1.0f, 1.0f, 0.0f));
     }*/
+    if (this->state == GAME_WIN) {
+        //Text->RenderText("You WON!!!", 320.0f, this->Height / 2.0f - 20.0f, 1.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+        //Text->RenderText("Press ENTER to retry or ESC to quit", 130.0f, this->Height / 2.0f, 1.0f, glm::vec3(1.0f, 1.0f, 0.0f));
+        stopCurrentSound();
+    }
+    if (this->state == GAME_DEFEAT) {
+        //Text->RenderText("You WON!!!", 320.0f, this->Height / 2.0f - 20.0f, 1.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+        //Text->RenderText("Press ENTER to retry or ESC to quit", 130.0f, this->Height / 2.0f, 1.0f, glm::vec3(1.0f, 1.0f, 0.0f));
+        stopCurrentSound();
+    }
 }
 
 // collision detection
@@ -618,17 +625,16 @@ void Game::DoCollisions(double dt) {
                 soundEngine->play2D(pacmanDeathSound, false);
                 LoggerManager::LogDebug("There was a collision between PLAYER and BLINKY");
                 // RESOLVE COLLISION PLAYER-BLINKY
-                if (this->lives > 1) {
-                    this->lives--;
-                    ResetPlayerAndGhosts();
-                    lifeCounter->positions.erase(lifeCounter->positions.begin() + this->lives);
-                    lifeCounter->directions.erase(lifeCounter->directions.begin() + this->lives);
-                    lifeCounter->rotations.erase(lifeCounter->rotations.begin() + this->lives);
-                    lifeCounter->scaling.erase(lifeCounter->scaling.begin() + this->lives);
-                    lifeCounter->UpdateNumInstance();
-                }
-                else {
+                this->lives--;
+                lifeCounter->positions.erase(lifeCounter->positions.begin() + this->lives);
+                lifeCounter->directions.erase(lifeCounter->directions.begin() + this->lives);
+                lifeCounter->rotations.erase(lifeCounter->rotations.begin() + this->lives);
+                lifeCounter->scaling.erase(lifeCounter->scaling.begin() + this->lives);
+                lifeCounter->UpdateNumInstance();
+            	if (this->lives == 0) {
                     this->state = GAME_DEFEAT;
+                } else {
+                    ResetPlayerAndGhosts();
                 }
             }
         }
@@ -640,17 +646,16 @@ void Game::DoCollisions(double dt) {
                 soundEngine->play2D(pacmanDeathSound, false);
                 LoggerManager::LogDebug("There was a collision between PLAYER and CLYDE");
                 // RESOLVE COLLISION PLAYER-CLYDE
-                if (this->lives > 1) {
-                    this->lives--;
-                    ResetPlayerAndGhosts();
-                    lifeCounter->positions.erase(lifeCounter->positions.begin() + this->lives);
-                    lifeCounter->directions.erase(lifeCounter->directions.begin() + this->lives);
-                    lifeCounter->rotations.erase(lifeCounter->rotations.begin() + this->lives);
-                    lifeCounter->scaling.erase(lifeCounter->scaling.begin() + this->lives);
-                    lifeCounter->UpdateNumInstance();
-                }
-                else {
+                this->lives--;
+                lifeCounter->positions.erase(lifeCounter->positions.begin() + this->lives);
+                lifeCounter->directions.erase(lifeCounter->directions.begin() + this->lives);
+                lifeCounter->rotations.erase(lifeCounter->rotations.begin() + this->lives);
+                lifeCounter->scaling.erase(lifeCounter->scaling.begin() + this->lives);
+                lifeCounter->UpdateNumInstance();
+                if (this->lives == 0) {
                     this->state = GAME_DEFEAT;
+                } else {
+                    ResetPlayerAndGhosts();
                 }
             }
         }
@@ -663,17 +668,16 @@ void Game::DoCollisions(double dt) {
                 soundEngine->play2D(pacmanDeathSound, false);
                 LoggerManager::LogDebug("There was a collision between PLAYER and INKY");
                 // RESOLVE COLLISION PLAYER-INKY
-                if (this->lives > 1) {
-                    this->lives--;
-                    ResetPlayerAndGhosts();
-                    lifeCounter->positions.erase(lifeCounter->positions.begin() + this->lives);
-                    lifeCounter->directions.erase(lifeCounter->directions.begin() + this->lives);
-                    lifeCounter->rotations.erase(lifeCounter->rotations.begin() + this->lives);
-                    lifeCounter->scaling.erase(lifeCounter->scaling.begin() + this->lives);
-                    lifeCounter->UpdateNumInstance();
-                }
-                else {
+                this->lives--;
+                lifeCounter->positions.erase(lifeCounter->positions.begin() + this->lives);
+                lifeCounter->directions.erase(lifeCounter->directions.begin() + this->lives);
+                lifeCounter->rotations.erase(lifeCounter->rotations.begin() + this->lives);
+                lifeCounter->scaling.erase(lifeCounter->scaling.begin() + this->lives);
+                lifeCounter->UpdateNumInstance();
+                if (this->lives == 0) {
                     this->state = GAME_DEFEAT;
+                } else {
+                    ResetPlayerAndGhosts();
                 }
             }
         }
@@ -686,17 +690,16 @@ void Game::DoCollisions(double dt) {
                 soundEngine->play2D(pacmanDeathSound, false);
                 LoggerManager::LogDebug("There was a collision between PLAYER and PINKY");
                 // RESOLVE COLLISION PLAYER-INKY
-                if (this->lives > 1) {
-                    this->lives--;
-                    ResetPlayerAndGhosts();
-                    lifeCounter->positions.erase(lifeCounter->positions.begin() + this->lives);
-                    lifeCounter->directions.erase(lifeCounter->directions.begin() + this->lives);
-                    lifeCounter->rotations.erase(lifeCounter->rotations.begin() + this->lives);
-                    lifeCounter->scaling.erase(lifeCounter->scaling.begin() + this->lives);
-                    lifeCounter->UpdateNumInstance();
-                }
-                else {
+                this->lives--;
+                lifeCounter->positions.erase(lifeCounter->positions.begin() + this->lives);
+                lifeCounter->directions.erase(lifeCounter->directions.begin() + this->lives);
+                lifeCounter->rotations.erase(lifeCounter->rotations.begin() + this->lives);
+                lifeCounter->scaling.erase(lifeCounter->scaling.begin() + this->lives);
+                lifeCounter->UpdateNumInstance();
+                if (this->lives == 0) {
                     this->state = GAME_DEFEAT;
+                } else {
+                    ResetPlayerAndGhosts();
                 }
             }
         }
