@@ -37,16 +37,25 @@ bool VulnerableGhost::IsActive() const {
 }
 
 void VulnerableGhost::SetActive(const bool active) {
-    this->isActive = active;
-    if (active) {
+    if (this->isActive && active) {
         this->activationTimeAccumulator = 0.0f; // Reset the timer
         this->alternationTimeAccumulator = 0.0f;
         this->modelSwapTimeAccumulator = 0.0f;
         this->alternateCount = 0;
         this->drawBlue = true;
-        this->syncGhosts(true);
     } else {
-        this->syncGhosts(false);
+        this->isActive = active;
+        if (active) {
+            this->activationTimeAccumulator = 0.0f; // Reset the timer
+            this->alternationTimeAccumulator = 0.0f;
+            this->modelSwapTimeAccumulator = 0.0f;
+            this->alternateCount = 0;
+            this->drawBlue = true;
+            this->syncGhosts(true);
+        }
+        else {
+            this->syncGhosts(false);
+        }
     }
 }
 
