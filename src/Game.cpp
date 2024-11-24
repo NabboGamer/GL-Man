@@ -371,6 +371,14 @@ void Game::Update(const double dt) {
 
     if (this->state == GAME_ACTIVE) {
         // update objects
+        if (pacman->IsInvulnerable()) {
+            this->spawnProctectionTimeAccumulator += dt;
+            if (this->spawnProctectionTimeAccumulator >= this->SPAWN_PROTECTION_TIME_LIMIT) {
+                pacman->SetInvulnerable(false);
+                this->spawnProctectionTimeAccumulator = 0.0f;
+            }
+        }
+
         const auto mazeWall = this->Levels[this->level]->mazeWall;
         if (vulnerableGhost->IsActive()) {
             vulnerableGhost->Move(dt, mazeWall);
@@ -626,88 +634,99 @@ void Game::DoCollisions(double dt) {
         auto lifeCounter = this->Levels[this->level]->lifeCounter;
         //TODO:Gestire multi-collisioni se Pac-man e al centro che portano a perdere tutte e 3 le vite in un singolo colpo(Bug Fix #1)
 
-        // CHECK COLLISION PLAYER-BLINKY
-    	if (blinky->IsAlive()) {
-            auto blinkyObb = blinky->gameObject->GetTransformedBoundingBox(0);
-            if (checkCollision(playerObb, blinkyObb)) {
-                soundEngine->play2D(pacmanDeathSound, false);
-                LoggerManager::LogDebug("There was a collision between PLAYER and BLINKY");
-                // RESOLVE COLLISION PLAYER-BLINKY
-                this->lives--;
-                lifeCounter->positions.erase(lifeCounter->positions.begin() + this->lives);
-                lifeCounter->directions.erase(lifeCounter->directions.begin() + this->lives);
-                lifeCounter->rotations.erase(lifeCounter->rotations.begin() + this->lives);
-                lifeCounter->scaling.erase(lifeCounter->scaling.begin() + this->lives);
-                lifeCounter->UpdateNumInstance();
-            	if (this->lives == 0) {
-                    this->state = GAME_DEFEAT;
-                } else {
-                    ResetPlayerAndGhosts();
+        if (!pacman->IsInvulnerable()) {
+
+            // CHECK COLLISION PLAYER-BLINKY
+            if (blinky->IsAlive()) {
+                auto blinkyObb = blinky->gameObject->GetTransformedBoundingBox(0);
+                if (checkCollision(playerObb, blinkyObb)) {
+                    soundEngine->play2D(pacmanDeathSound, false);
+                    LoggerManager::LogDebug("There was a collision between PLAYER and BLINKY");
+                    // RESOLVE COLLISION PLAYER-BLINKY
+                    this->lives--;
+                    lifeCounter->positions.erase(lifeCounter->positions.begin() + this->lives);
+                    lifeCounter->directions.erase(lifeCounter->directions.begin() + this->lives);
+                    lifeCounter->rotations.erase(lifeCounter->rotations.begin() + this->lives);
+                    lifeCounter->scaling.erase(lifeCounter->scaling.begin() + this->lives);
+                    lifeCounter->UpdateNumInstance();
+                    pacman->SetInvulnerable(true);
+                    if (this->lives == 0) {
+                        this->state = GAME_DEFEAT;
+                    }
+                    else {
+                        ResetPlayerAndGhosts();
+                    }
                 }
             }
-        }
 
-        // CHECK COLLISION PLAYER-CLYDE
-        if (clyde->IsAlive()) {
-            auto clydeObb = clyde->gameObject->GetTransformedBoundingBox(0);
-            if (checkCollision(playerObb, clydeObb)) {
-                soundEngine->play2D(pacmanDeathSound, false);
-                LoggerManager::LogDebug("There was a collision between PLAYER and CLYDE");
-                // RESOLVE COLLISION PLAYER-CLYDE
-                this->lives--;
-                lifeCounter->positions.erase(lifeCounter->positions.begin() + this->lives);
-                lifeCounter->directions.erase(lifeCounter->directions.begin() + this->lives);
-                lifeCounter->rotations.erase(lifeCounter->rotations.begin() + this->lives);
-                lifeCounter->scaling.erase(lifeCounter->scaling.begin() + this->lives);
-                lifeCounter->UpdateNumInstance();
-                if (this->lives == 0) {
-                    this->state = GAME_DEFEAT;
-                } else {
-                    ResetPlayerAndGhosts();
+            // CHECK COLLISION PLAYER-CLYDE
+            if (clyde->IsAlive()) {
+                auto clydeObb = clyde->gameObject->GetTransformedBoundingBox(0);
+                if (checkCollision(playerObb, clydeObb)) {
+                    soundEngine->play2D(pacmanDeathSound, false);
+                    LoggerManager::LogDebug("There was a collision between PLAYER and CLYDE");
+                    // RESOLVE COLLISION PLAYER-CLYDE
+                    this->lives--;
+                    lifeCounter->positions.erase(lifeCounter->positions.begin() + this->lives);
+                    lifeCounter->directions.erase(lifeCounter->directions.begin() + this->lives);
+                    lifeCounter->rotations.erase(lifeCounter->rotations.begin() + this->lives);
+                    lifeCounter->scaling.erase(lifeCounter->scaling.begin() + this->lives);
+                    lifeCounter->UpdateNumInstance();
+                    pacman->SetInvulnerable(true);
+                    if (this->lives == 0) {
+                        this->state = GAME_DEFEAT;
+                    }
+                    else {
+                        ResetPlayerAndGhosts();
+                    }
                 }
             }
-        }
-        
 
-        // CHECK COLLISION PLAYER-INKY
-        if (inky->IsAlive()) {
-            auto inkyObb = inky->gameObject->GetTransformedBoundingBox(0);
-            if (checkCollision(playerObb, inkyObb)) {
-                soundEngine->play2D(pacmanDeathSound, false);
-                LoggerManager::LogDebug("There was a collision between PLAYER and INKY");
-                // RESOLVE COLLISION PLAYER-INKY
-                this->lives--;
-                lifeCounter->positions.erase(lifeCounter->positions.begin() + this->lives);
-                lifeCounter->directions.erase(lifeCounter->directions.begin() + this->lives);
-                lifeCounter->rotations.erase(lifeCounter->rotations.begin() + this->lives);
-                lifeCounter->scaling.erase(lifeCounter->scaling.begin() + this->lives);
-                lifeCounter->UpdateNumInstance();
-                if (this->lives == 0) {
-                    this->state = GAME_DEFEAT;
-                } else {
-                    ResetPlayerAndGhosts();
+
+            // CHECK COLLISION PLAYER-INKY
+            if (inky->IsAlive()) {
+                auto inkyObb = inky->gameObject->GetTransformedBoundingBox(0);
+                if (checkCollision(playerObb, inkyObb)) {
+                    soundEngine->play2D(pacmanDeathSound, false);
+                    LoggerManager::LogDebug("There was a collision between PLAYER and INKY");
+                    // RESOLVE COLLISION PLAYER-INKY
+                    this->lives--;
+                    lifeCounter->positions.erase(lifeCounter->positions.begin() + this->lives);
+                    lifeCounter->directions.erase(lifeCounter->directions.begin() + this->lives);
+                    lifeCounter->rotations.erase(lifeCounter->rotations.begin() + this->lives);
+                    lifeCounter->scaling.erase(lifeCounter->scaling.begin() + this->lives);
+                    lifeCounter->UpdateNumInstance();
+                    pacman->SetInvulnerable(true);
+                    if (this->lives == 0) {
+                        this->state = GAME_DEFEAT;
+                    }
+                    else {
+                        ResetPlayerAndGhosts();
+                    }
                 }
             }
-        }
-        
 
-        // CHECK COLLISION PLAYER-PINKY
-        if (pinky->IsAlive()) {
-            auto pinkyObb = pinky->gameObject->GetTransformedBoundingBox(0);
-            if (checkCollision(playerObb, pinkyObb)) {
-                soundEngine->play2D(pacmanDeathSound, false);
-                LoggerManager::LogDebug("There was a collision between PLAYER and PINKY");
-                // RESOLVE COLLISION PLAYER-INKY
-                this->lives--;
-                lifeCounter->positions.erase(lifeCounter->positions.begin() + this->lives);
-                lifeCounter->directions.erase(lifeCounter->directions.begin() + this->lives);
-                lifeCounter->rotations.erase(lifeCounter->rotations.begin() + this->lives);
-                lifeCounter->scaling.erase(lifeCounter->scaling.begin() + this->lives);
-                lifeCounter->UpdateNumInstance();
-                if (this->lives == 0) {
-                    this->state = GAME_DEFEAT;
-                } else {
-                    ResetPlayerAndGhosts();
+
+            // CHECK COLLISION PLAYER-PINKY
+            if (pinky->IsAlive()) {
+                auto pinkyObb = pinky->gameObject->GetTransformedBoundingBox(0);
+                if (checkCollision(playerObb, pinkyObb)) {
+                    soundEngine->play2D(pacmanDeathSound, false);
+                    LoggerManager::LogDebug("There was a collision between PLAYER and PINKY");
+                    // RESOLVE COLLISION PLAYER-INKY
+                    this->lives--;
+                    lifeCounter->positions.erase(lifeCounter->positions.begin() + this->lives);
+                    lifeCounter->directions.erase(lifeCounter->directions.begin() + this->lives);
+                    lifeCounter->rotations.erase(lifeCounter->rotations.begin() + this->lives);
+                    lifeCounter->scaling.erase(lifeCounter->scaling.begin() + this->lives);
+                    lifeCounter->UpdateNumInstance();
+                    pacman->SetInvulnerable(true);
+                    if (this->lives == 0) {
+                        this->state = GAME_DEFEAT;
+                    }
+                    else {
+                        ResetPlayerAndGhosts();
+                    }
                 }
             }
         }

@@ -19,13 +19,19 @@ int PacMan::GetCurrentModelIndex() const {
 	return this->currentModelIndex;
 }
 
+bool PacMan::IsInvulnerable() const {
+	return this->invulnerable;
+}
+
+void PacMan::SetInvulnerable(const bool value) {
+	this->invulnerable = value;
+}
+
 void PacMan::UpdateOtherGameObjects() const {
 	for (int i = 0; i < 10; i++) {
 		if (i != this->currentModelIndex) {
 			this->gameObjects[i]->positions[0] = this->gameObjects[this->currentModelIndex]->positions[0];
 			this->gameObjects[i]->directions[0] = this->gameObjects[this->currentModelIndex]->directions[0];
-			/*this->gameObjects[i]->rotations[0]  = this->gameObjects[currentModelIndex]->rotations[0];
-			this->gameObjects[i]->scaling[0]    = this->gameObjects[currentModelIndex]->scaling[0];*/
 		}
 	}
 }
