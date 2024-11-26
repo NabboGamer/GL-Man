@@ -14,22 +14,59 @@ extern "C" {
 #include "ResourceManager.hpp"
 #include "LoggerManager.hpp"
 
-// GLFW function declarations
-static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
-static void calculateFPS();
-
 // The Width of the screen
-const unsigned int SCREEN_WIDTH = 2048;
+constexpr unsigned int SCREEN_WIDTH  = 2048;
 // The Height of the screen
-const unsigned int SCREEN_HEIGHT = 1152;
+constexpr unsigned int SCREEN_HEIGHT = 1152;
 
-static unsigned int fps = 0;
-static unsigned int frameCount = 0;
-static double previousTime = 0;
-static double timeInterval = 0;
+namespace {
+    unsigned int fps = 0;
+    unsigned int frameCount = 0;
+    double       previousTime = 0;
+    double       timeInterval = 0;
 
-static Game GLMan(SCREEN_WIDTH, SCREEN_HEIGHT);
+    Game GLMan(SCREEN_WIDTH, SCREEN_HEIGHT);
+
+}
+
+namespace {
+
+    void key_callback(GLFWwindow* window, const int key, int scancode, const int action, int mode) {
+        // when a user presses the escape key, we set the WindowShouldClose property to true, closing the application
+        if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
+            glfwSetWindowShouldClose(window, true);
+        }
+        if (key >= 0 && key < 1024) {
+            if (action == GLFW_PRESS) {
+                GLMan.keys[key] = true;
+            }
+            else if (action == GLFW_RELEASE) {
+                GLMan.keys[key] = false;
+                GLMan.keysProcessed[key] = false;
+            }
+        }
+    }
+
+    void framebuffer_size_callback(GLFWwindow* window, const int width, const int height) {
+        // make sure the viewport matches the new window dimensions; note that width and 
+        // height will be significantly larger than specified on retina displays.
+        glViewport(0, 0, width, height);
+    }
+
+    void calculateFPS() {
+        frameCount++;
+        const double currentTime = glfwGetTime();
+        timeInterval = currentTime - previousTime;
+
+        // If a second has passed, update the fps variable
+        if (timeInterval > 1.0f) {
+            fps = frameCount;
+            previousTime = currentTime;
+            frameCount = 0;
+        }
+    }
+
+}
 
 int main() {
     glfwInit();
@@ -105,38 +142,4 @@ int main() {
 
     glfwTerminate();
     return 0;
-}
-
-void key_callback(GLFWwindow* window, const int key, int scancode, const int action, int mode) {
-    // when a user presses the escape key, we set the WindowShouldClose property to true, closing the application
-    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
-        glfwSetWindowShouldClose(window, true);
-    }
-    if (key >= 0 && key < 1024) {
-        if (action == GLFW_PRESS) {
-            GLMan.keys[key] = true;
-        } else if (action == GLFW_RELEASE) {
-            GLMan.keys[key] = false;
-            GLMan.keysProcessed[key] = false;
-        }
-    }
-}
-
-void framebuffer_size_callback(GLFWwindow* window, const int width, const int height) {
-    // make sure the viewport matches the new window dimensions; note that width and 
-    // height will be significantly larger than specified on retina displays.
-    glViewport(0, 0, width, height);
-}
-
-void calculateFPS() {
-    frameCount++;
-    const double currentTime = glfwGetTime();
-    timeInterval = currentTime - previousTime;
-
-    // If a second has passed, update the fps variable
-    if (timeInterval > 1.0f) {
-        fps = frameCount;
-        previousTime = currentTime;
-        frameCount = 0;
-    }
 }
