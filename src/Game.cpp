@@ -1,4 +1,4 @@
-#include <windows.h>
+﻿#include <windows.h>
 #include <algorithm>
 #include <sstream>
 #include <irrKlang.h>
@@ -73,37 +73,56 @@ namespace {
     glm::vec3 resolveCollision(const CustomTypes::obb& playerObb, const CustomTypes::obb& wallObb, PermittedDirections& permittedDirections) {
         const glm::vec3 playerMin = playerObb.first;
         const glm::vec3 playerMax = playerObb.second;
-        const glm::vec3 wallMin = wallObb.first;
-        const glm::vec3 wallMax = wallObb.second;
+        const glm::vec3 wallMin   = wallObb.first;
+        const glm::vec3 wallMax   = wallObb.second;
 
-        // Calculate the penetration depth on the X and Z axes
-        const float overlapX = std::min(playerMax.x - wallMin.x, wallMax.x - playerMin.x);
-        const float overlapZ = std::min(playerMax.z - wallMin.z, wallMax.z - playerMin.z);
+        // Calculating overlaps
+        const float overlapX = std::min(playerMax.x, wallMax.x) - std::max(playerMin.x, wallMin.x);
+        const float overlapZ = std::min(playerMax.z, wallMax.z) - std::max(playerMin.z, wallMin.z);
 
-        // Find the axis with the least penetration and use that value to resolve the collision
-        if (overlapX < overlapZ) {
+        // Tolerance for comparison
+        constexpr float epsilon = 0.001f;
+
+        // Resets all values ​​to true so that only one direction is blocked at a time
+        permittedDirections = PermittedDirections();
+
+        // Determine the axis with the least penetration
+        if (std::abs(overlapX - overlapZ) < epsilon) {
+
+            // Special case Nearly equal overlaps
             if (playerMax.x < wallMax.x) {
-                permittedDirections = PermittedDirections();
                 permittedDirections.DIRECTION_UP = false;
                 return { -overlapX, 0.0f, 0.0f };
             }
             else {
-                permittedDirections = PermittedDirections();
                 permittedDirections.DIRECTION_DOWN = false;
                 return { overlapX, 0.0f, 0.0f };
             }
+
+        }
+        else if (overlapX < overlapZ) {
+
+            if (playerMax.x < wallMax.x) {
+                permittedDirections.DIRECTION_UP = false;
+                return { -overlapX, 0.0f, 0.0f };
+            }
+            else {
+                permittedDirections.DIRECTION_DOWN = false;
+                return { overlapX, 0.0f, 0.0f };
+            }
+
         }
         else {
+
             if (playerMax.z < wallMax.z) {
-                permittedDirections = PermittedDirections();
                 permittedDirections.DIRECTION_RIGHT = false;
                 return { 0.0f, 0.0f, -overlapZ };
             }
             else {
-                permittedDirections = PermittedDirections();
                 permittedDirections.DIRECTION_LEFT = false;
                 return { 0.0f, 0.0f, overlapZ };
             }
+
         }
     }
 
@@ -363,7 +382,12 @@ void Game::ProcessInput(const double dt) {
                 player->positions[0] += speed * player->directions[0];
             }
         }
-        
+        /*LoggerManager::LogInfo("----------------------------");
+        LoggerManager::LogInfo("DIRECTION_UP:{}", permittedDirections.DIRECTION_UP);
+        LoggerManager::LogInfo("DIRECTION_DOWN:{}", permittedDirections.DIRECTION_DOWN);
+        LoggerManager::LogInfo("DIRECTION_LEFT:{}", permittedDirections.DIRECTION_LEFT);
+        LoggerManager::LogInfo("DIRECTION_RIGHT:{}", permittedDirections.DIRECTION_RIGHT);
+        LoggerManager::LogInfo("----------------------------");*/
     }
 }
 
