@@ -252,8 +252,10 @@ void VulnerableGhost::Draw(const double deltaTime) {
         this->currentModelIndex = (this->currentModelIndex + 1) % 10;
     }
     GameObjectBase* currentGameObject = this->GetCurrentGameObject();
-    currentGameObject->Draw();
     const int numInstances = static_cast<int>(currentGameObject->GetNumInstances());
+    if (numInstances > 0) {
+        currentGameObject->Draw();
+    }
     for (int i = 0; i < numInstances; ++i) {
         this->UpdateOtherGameObjects(i);
     }

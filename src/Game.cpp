@@ -460,10 +460,15 @@ void Game::Render(const double dt) const {
         this->Levels[this->level]->Draw(dt);
         // draw player
         pacman->Draw(dt);
-        if (vulnerableGhost->IsActive() && vulnerableGhost->GetCurrentGameObject()->GetNumInstances() > 0) {
-
+        if (vulnerableGhost->IsActive()) {
             vulnerableGhost->Draw(dt);
-            playSoundIfChanged(ghostTurnBlueSound, true);
+
+            if (vulnerableGhost->GetCurrentGameObject()->GetNumInstances() > 0) {
+                playSoundIfChanged(ghostTurnBlueSound, true);
+            } else {
+                stopCurrentSound();
+            }
+            
         } else {
             if (blinky->IsAlive()) blinky->Draw(dt);
             if (clyde->IsAlive())  clyde ->Draw(dt);
