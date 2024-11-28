@@ -202,5 +202,11 @@
     <None Include="shaders\text.vs">
       <Filter>Resource Files\Shaders</Filter>
     </None>
+    <None Include="shaders\hdr.fs">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="shaders\hdr.vs">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

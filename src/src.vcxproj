@@ -195,6 +195,8 @@
     <None Include="shaders\dot.vs" />
     <None Include="shaders\ghost.fs" />
     <None Include="shaders\ghost.vs" />
+    <None Include="shaders\hdr.fs" />
+    <None Include="shaders\hdr.vs" />
     <None Include="shaders\mazeFloor.fs" />
     <None Include="shaders\mazeFloor.vs" />
     <None Include="shaders\mazeWall.fs" />

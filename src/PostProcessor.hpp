@@ -1,4 +1,5 @@
 #pragma once
+#include "Shader.hpp"
 
 class PostProcessor {
 
@@ -7,16 +8,22 @@ public:
     // state
     unsigned int width;
 	unsigned int height;
+    Shader*      hdrShader;
 
     // constructor/decostructor
-    PostProcessor(unsigned int width, unsigned int height, bool useMSAA, unsigned int numSampleMSAA);
+    PostProcessor(unsigned int width, unsigned int height, bool useMSAA, unsigned int numSampleMSAA, 
+                  Shader* hdrShader, bool useHDR, float exposure, float gamma);
     ~PostProcessor();
 
     // Getter/Setter
     [[nodiscard]] bool GetUseMSAA() const;
     [[nodiscard]] unsigned int GetNumSampleMSAA() const;
+    [[nodiscard]] float GetExposure() const;
+    [[nodiscard]] float GetGamma() const;
     void SetUseMSAA(bool value);
     void SetNumSampleMSAA(unsigned int value);
+    void SetExposure(float value);
+    void SetGamma(float value);
 
     // prepares the postprocessor's framebuffer operations before rendering the game
     void BeginRender() const;
@@ -47,5 +54,9 @@ private:
     unsigned int CBHDR;      // Color  Buffer        for High Dynamic Range
     unsigned int RBOHDR;     // Render Buffer Object for High Dynamic Range
 
+    float        exposure;
+    float        gamma;
+
     void initRenderData();
+    static void renderQuad();
 };

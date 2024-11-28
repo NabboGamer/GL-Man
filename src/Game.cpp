@@ -195,6 +195,7 @@ void Game::Init() {
     ResourceManager::LoadShader("./shaders/ghost.vs",      "./shaders/ghost.fs",      nullptr, "ghostShader");
     ResourceManager::LoadShader("./shaders/bonusSymbol.vs","./shaders/bonusSymbol.fs",nullptr, "bonusSymbolShader");
     ResourceManager::LoadShader("./shaders/pacman.vs",     "./shaders/pacman.fs",     nullptr, "lifeCounterShader");
+    ResourceManager::LoadShader("./shaders/hdr.vs",        "./shaders/hdr.fs",        nullptr, "hdrShader");
     /*ResourceManager::LoadShader("particle.vs", "particle.fs", nullptr, "particle");
     ResourceManager::LoadShader("post_processing.vs", "post_processing.fs", nullptr, "postprocessing");*/
 
@@ -224,6 +225,7 @@ void Game::Init() {
     ResourceManager::GetShader("bonusSymbolShader").Use().SetMatrix4("projection", projection);
     ResourceManager::GetShader("lifeCounterShader").Use().SetMatrix4("view", view);
     ResourceManager::GetShader("lifeCounterShader").Use().SetMatrix4("projection", projection);
+    ResourceManager::GetShader("hdrShader").Use().SetMatrix4("projection", projection);
     // Insert uniform variable in fragment shader(only global variables, i.e. the same for all shaders)
     ResourceManager::GetShader("mazeWallShader").Use().SetVector3f("viewPos", cameraPos);
     ResourceManager::GetShader("mazeWallShader").Use().SetVector3f("dirLight.direction", glm::normalize(cameraAt - cameraPos));
@@ -334,7 +336,9 @@ void Game::Init() {
     text = new TextRenderer(this->width, this->height);
     text->Load(FileSystem::getPath("../res/fonts/eight_bit_dragon.ttf"), 32);
 
-    postProcessor = new PostProcessor(this->width, this->height, true, 4);
+    postProcessor = new PostProcessor(this->width, this->height, true, 4,
+									  &ResourceManager::GetShader("hdrShader"), false,
+									  0.5f, 2.2f);
 }
 
 void Game::ProcessInput(const double dt) {
@@ -385,6 +389,21 @@ void Game::ProcessInput(const double dt) {
                 player->positions[0] += speed * player->directions[0];
             }
         }
+
+        /*if (this->keys[GLFW_KEY_Q]) {
+            if (postProcessor->GetExposure() > 0.0f) {
+                postProcessor->SetExposure(postProcessor->GetExposure() - 0.001f);
+            }
+            else {
+                postProcessor->SetExposure(0.0f);
+            }
+            //std::cout << "Exposure: "<< exposure << std::endl;
+
+        }
+        else if (this->keys[GLFW_KEY_E]) {
+            postProcessor->SetExposure(postProcessor->GetExposure() + 0.001f);
+            //std::cout << "Exposure: " << exposure << std::endl;
+        }*/
         /*LoggerManager::LogInfo("----------------------------");
         LoggerManager::LogInfo("DIRECTION_UP:{}", permittedDirections.DIRECTION_UP);
         LoggerManager::LogInfo("DIRECTION_DOWN:{}", permittedDirections.DIRECTION_DOWN);
@@ -525,6 +544,8 @@ void Game::Render(const double dt) const {
         text->RenderText(scoreString,    (widthFloat / 2.0f) - (widthFloat /  5.0f), 50, 1.0f);
         text->RenderText("HIGH SCORE", (widthFloat / 2.0f) - (widthFloat / 20.0f), 10, 1.0f);
         text->RenderText(scoreString,    (widthFloat / 2.0f) - (widthFloat / 20.0f), 50, 1.0f);
+        /*std::string exposure = "exposure=" + std::to_string(postProcessor->GetExposure());
+        text->RenderText(exposure,    (widthFloat / 2.0f) - (widthFloat / 20.0f), 80, 1.0f);*/
     }
     /*if (this->State == GAME_MENU)
     {
