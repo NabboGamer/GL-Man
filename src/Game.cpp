@@ -530,12 +530,11 @@ void Game::Render(const double dt) const {
         }
         
         //    // draw particles	
-        //    Particles->Draw();            
+        //    Particles->Draw();
+
         // end rendering to postprocessing framebuffer
         postProcessor->Render(dt);
         postProcessor->EndRender();
-        //// render postprocessing quad
-        //Effects->Render(glfwGetTime());
 
         // render text (don't include in postprocessing)
         const float widthFloat = static_cast<float>(this->width);

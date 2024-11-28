@@ -1,4 +1,5 @@
 #pragma once
+
 #include "Shader.hpp"
 
 class PostProcessor {
@@ -37,9 +38,11 @@ public:
 private:
 
     // options
-    bool         useMSAA;
-    bool         useHDR;
-    unsigned int numSampleMSAA;
+    bool          useMSAA;
+    bool          useHDR;
+    unsigned int  numSampleMSAA;
+    float         exposure;
+    float         gamma;
 
     // render state
     unsigned int FBO;
@@ -53,9 +56,6 @@ private:
     unsigned int FBOHDR;     // Frame  Buffer Object for High Dynamic Range
     unsigned int CBHDR;      // Color  Buffer        for High Dynamic Range
     unsigned int RBOHDR;     // Render Buffer Object for High Dynamic Range
-
-    float        exposure;
-    float        gamma;
 
     void initRenderData();
     static void renderQuad();

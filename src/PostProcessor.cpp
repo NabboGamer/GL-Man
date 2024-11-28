@@ -124,7 +124,7 @@ void PostProcessor::Render(double deltaTime) const {
 
 
 void PostProcessor::initRenderData() {
-	// --- Normal Framebuffer setup ---
+	/// --- Normal Framebuffer setup ---
 	glGenFramebuffers(1, &this->FBO);
 	glBindFramebuffer(GL_FRAMEBUFFER, this->FBO);
 
@@ -153,7 +153,7 @@ void PostProcessor::initRenderData() {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 
-	// --- MSAA Framebuffer Setup ---
+	/// --- MSAA Framebuffer Setup ---
 	glGenFramebuffers(1, &this->FBOMSAA);
 	glBindFramebuffer(GL_FRAMEBUFFER, this->FBOMSAA);
 
@@ -180,7 +180,7 @@ void PostProcessor::initRenderData() {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 
-	// --- HDR Framebuffer Setup ---
+	/// --- HDR Framebuffer Setup ---
 	glGenFramebuffers(1, &this->FBOHDR);
 	glBindFramebuffer(GL_FRAMEBUFFER, this->FBOHDR);
 
