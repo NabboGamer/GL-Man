@@ -20,8 +20,8 @@ using namespace irrklang;
 #include "Utility.hpp"
 #include "VulnerableGhost.hpp"
 //#include "particle_generator.h"
-//#include "post_processor.h"
 #include "TextRenderer.hpp"
+#include "PostProcessor.hpp"
 
 
 // Game-related State data
@@ -33,7 +33,6 @@ namespace {
     Pinky*                pinky;
     VulnerableGhost*      vulnerableGhost;
     //ParticleGenerator*  Particles;
-    //PostProcessor*      Effects;
     ISoundEngine*         soundEngine;
     ISoundSource*         pacmanChompSound;
     ISoundSource*         pacmanDeathSound;
@@ -46,6 +45,8 @@ namespace {
 	ISoundSource*         currentPlayingSound;
     ISound*               currentSoundInstance = nullptr;
     TextRenderer*         text;
+    PostProcessor*        postProcessor;
+
 }
 
 // Initial speed of the player
@@ -181,18 +182,19 @@ Game::~Game() {
     ghostTurnBlueSound->drop();*/
     //soundEngine->drop();
     delete text;
+    delete postProcessor;
 }
 
 void Game::Init() {
     /// Load Shaders
-    ResourceManager::LoadShader("./shaders/mazeWall.vs",  "./shaders/mazeWall.fs",  nullptr, "mazeWallShader");
-    ResourceManager::LoadShader("./shaders/mazeFloor.vs", "./shaders/mazeFloor.fs", nullptr, "mazeFloorShader");
-    ResourceManager::LoadShader("./shaders/dot.vs",       "./shaders/dot.fs",       nullptr, "dotShader");
-    ResourceManager::LoadShader("./shaders/dot.vs",       "./shaders/dot.fs",       nullptr, "energizerShader");
-    ResourceManager::LoadShader("./shaders/pacman.vs",    "./shaders/pacman.fs",    nullptr, "pacmanShader");
-    ResourceManager::LoadShader("./shaders/ghost.vs",     "./shaders/ghost.fs",     nullptr, "ghostShader");
-    ResourceManager::LoadShader("./shaders/bonusSymbol.vs","./shaders/bonusSymbol.fs",nullptr,"bonusSymbolShader");
-    ResourceManager::LoadShader("./shaders/pacman.vs",    "./shaders/pacman.fs",    nullptr, "lifeCounterShader");
+    ResourceManager::LoadShader("./shaders/mazeWall.vs",   "./shaders/mazeWall.fs",   nullptr, "mazeWallShader");
+    ResourceManager::LoadShader("./shaders/mazeFloor.vs",  "./shaders/mazeFloor.fs",  nullptr, "mazeFloorShader");
+    ResourceManager::LoadShader("./shaders/dot.vs",        "./shaders/dot.fs",        nullptr, "dotShader");
+    ResourceManager::LoadShader("./shaders/dot.vs",        "./shaders/dot.fs",        nullptr, "energizerShader");
+    ResourceManager::LoadShader("./shaders/pacman.vs",     "./shaders/pacman.fs",     nullptr, "pacmanShader");
+    ResourceManager::LoadShader("./shaders/ghost.vs",      "./shaders/ghost.fs",      nullptr, "ghostShader");
+    ResourceManager::LoadShader("./shaders/bonusSymbol.vs","./shaders/bonusSymbol.fs",nullptr, "bonusSymbolShader");
+    ResourceManager::LoadShader("./shaders/pacman.vs",     "./shaders/pacman.fs",     nullptr, "lifeCounterShader");
     /*ResourceManager::LoadShader("particle.vs", "particle.fs", nullptr, "particle");
     ResourceManager::LoadShader("post_processing.vs", "post_processing.fs", nullptr, "postprocessing");*/
 
@@ -331,7 +333,8 @@ void Game::Init() {
     /// Configure render-specific objects
     text = new TextRenderer(this->width, this->height);
     text->Load(FileSystem::getPath("../res/fonts/eight_bit_dragon.ttf"), 32);
-    
+
+    postProcessor = new PostProcessor(this->width, this->height, true, 4);
 }
 
 void Game::ProcessInput(const double dt) {
@@ -479,7 +482,7 @@ void Game::Update(const double dt) {
 void Game::Render(const double dt) const {
     if (this->state == GAME_ACTIVE || this->state == GAME_WIN || this->state == GAME_DEFEAT) {
         // begin rendering to postprocessing framebuffer
-        //Effects->BeginRender();
+        postProcessor->BeginRender();
         // draw level
         this->Levels[this->level]->Draw(dt);
         // draw player
@@ -509,8 +512,9 @@ void Game::Render(const double dt) const {
         
         //    // draw particles	
         //    Particles->Draw();            
-        //// end rendering to postprocessing framebuffer
-        //Effects->EndRender();
+        // end rendering to postprocessing framebuffer
+        postProcessor->Render(dt);
+        postProcessor->EndRender();
         //// render postprocessing quad
         //Effects->Render(glfwGetTime());
 

@@ -107,7 +107,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <EnableModules>true</EnableModules>
-      <AdditionalIncludeDirectories>$(SolutionDir)\src\dependencies\include\glad;$(SolutionDir)\src\dependencies\include\GLFW;$(SolutionDir)\src\dependencies\include\glm;$(SolutionDir)\src\dependencies\include\KHR;$(SolutionDir)\src\dependencies\include\stb;$(SolutionDir)\src\dependencies\include\assimp;$(SolutionDir)\src\dependencies\include\spdlog;$(SolutionDir)\src\dependencies\include\irrKlang;$(SolutionDir)\src\dependencies\include\freetype;$(SolutionDir)\src\dependencies\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\src\dependencies\include\glad;$(SolutionDir)\src\dependencies\include\GLFW;$(SolutionDir)\src\dependencies\include\glm;$(SolutionDir)\src\dependencies\include\KHR;$(SolutionDir)\src\dependencies\include\stb;$(SolutionDir)\src\dependencies\include\assimp;$(SolutionDir)\src\dependencies\include\spdlog;$(SolutionDir)\src\dependencies\include\irrKlang;$(SolutionDir)\src\dependencies\include\freetype;$(SolutionDir)\src\dependencies\include\imgui;$(SolutionDir)\src\dependencies\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -127,7 +127,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <EnableModules>true</EnableModules>
-      <AdditionalIncludeDirectories>$(SolutionDir)\src\dependencies\include\glad;$(SolutionDir)\src\dependencies\include\GLFW;$(SolutionDir)\src\dependencies\include\glm;$(SolutionDir)\src\dependencies\include\KHR;$(SolutionDir)\src\dependencies\include\stb;$(SolutionDir)\src\dependencies\include\assimp;$(SolutionDir)\src\dependencies\include\spdlog;$(SolutionDir)\src\dependencies\include\irrKlang;$(SolutionDir)\src\dependencies\include\freetype;$(SolutionDir)\src\dependencies\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\src\dependencies\include\glad;$(SolutionDir)\src\dependencies\include\GLFW;$(SolutionDir)\src\dependencies\include\glm;$(SolutionDir)\src\dependencies\include\KHR;$(SolutionDir)\src\dependencies\include\stb;$(SolutionDir)\src\dependencies\include\assimp;$(SolutionDir)\src\dependencies\include\spdlog;$(SolutionDir)\src\dependencies\include\irrKlang;$(SolutionDir)\src\dependencies\include\freetype;$(SolutionDir)\src\dependencies\include\imgui;$(SolutionDir)\src\dependencies\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -154,6 +154,7 @@
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="PacMan.cpp" />
     <ClCompile Include="Pinky.cpp" />
+    <ClCompile Include="PostProcessor.cpp" />
     <ClCompile Include="program.cpp" />
     <ClCompile Include="ResourceManager.cpp" />
     <ClCompile Include="Shader.cpp" />
@@ -179,6 +180,7 @@
     <ClInclude Include="Model.hpp" />
     <ClInclude Include="PacMan.hpp" />
     <ClInclude Include="Pinky.hpp" />
+    <ClInclude Include="PostProcessor.hpp" />
     <ClInclude Include="ResourceManager.hpp" />
     <ClInclude Include="Shader.hpp" />
     <ClInclude Include="TextRenderer.hpp" />
