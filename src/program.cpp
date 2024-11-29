@@ -11,22 +11,24 @@ extern "C" {
 #include <iostream>
 
 #include "Game.hpp"
+#include "Menu.hpp"
 #include "ResourceManager.hpp"
 #include "LoggerManager.hpp"
 
 // The Width of the screen
-constexpr unsigned int SCREEN_WIDTH  = 2048;
+constexpr unsigned int SCREEN_WIDTH = 1920;
 // The Height of the screen
-constexpr unsigned int SCREEN_HEIGHT = 1152;
+constexpr unsigned int SCREEN_HEIGHT = 1080;
 
 namespace {
-    unsigned int fps = 0;
-    unsigned int frameCount = 0;
-    double       previousTime = 0;
-    double       timeInterval = 0;
+    unsigned int  fps = 0;
+    unsigned int  frameCount = 0;
+    double        previousTime = 0;
+    double        timeInterval = 0;
+    bool          showGame = false;
 
-    Game GLMan(SCREEN_WIDTH, SCREEN_HEIGHT);
-
+    Game* GLMan;
+    Menu* GLManMenu;
 }
 
 namespace {
@@ -38,11 +40,11 @@ namespace {
         }
         if (key >= 0 && key < 1024) {
             if (action == GLFW_PRESS) {
-                GLMan.keys[key] = true;
+                GLMan->keys[key] = true;
             }
             else if (action == GLFW_RELEASE) {
-                GLMan.keys[key] = false;
-                GLMan.keysProcessed[key] = false;
+                GLMan->keys[key] = false;
+                GLMan->keysProcessed[key] = false;
             }
         }
     }
@@ -78,8 +80,27 @@ int main() {
 #endif
     glfwWindowHint(GLFW_RESIZABLE, false);
 
+    GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+    if (!monitor) {
+        glfwTerminate();
+        return -1;
+    }
+
+    const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+    if (!mode) {
+        glfwTerminate();
+        return -1;
+    }
+
     GLFWwindow* window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "GL-Man", nullptr, nullptr);
+
+    if (!window) {
+        glfwTerminate();
+        return -1;
+    }
+
     glfwMakeContextCurrent(window);
+    glfwFocusWindow(window);
 
     // glad: load all OpenGL function pointers
     // ---------------------------------------
@@ -87,9 +108,6 @@ int main() {
         std::cout << "Failed to initialize GLAD" << '\n';
         return -1;
     }
-
-    glfwSetKeyCallback(window, key_callback);
-    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
     // OpenGL configuration
     // --------------------
@@ -101,7 +119,13 @@ int main() {
     // initialize game
     // ---------------
     LoggerManager::Init();
-    GLMan.Init();
+    GLMan = new Game(SCREEN_WIDTH, SCREEN_HEIGHT);
+    GLMan->Init();
+    GLManMenu = new Menu(window, SCREEN_WIDTH, SCREEN_HEIGHT, showGame);
+    GLManMenu->Init();
+
+    glfwSetKeyCallback(window, key_callback);
+    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
     // deltaTime variables
     // -------------------
@@ -118,19 +142,24 @@ int main() {
         calculateFPS();
         //LoggerManager::LogInfo("FPS: {}", fps);
 
-        // manage user input
-        // -----------------
-        GLMan.ProcessInput(deltaTime);
-
-        // update game state
-        // -----------------
-        GLMan.Update(deltaTime);
-
-        // render
-        // ------
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        GLMan.Render(deltaTime);
+        if (!showGame) {
+            GLManMenu->Render(deltaTime);
+        }
+        else {
+            // manage user input
+            // -----------------
+            GLMan->ProcessInput(deltaTime);
+
+            // update game state
+            // -----------------
+            GLMan->Update(deltaTime);
+
+            // render
+            // ------
+            GLMan->Render(deltaTime);
+        }
 
         glfwSwapBuffers(window);
     }
