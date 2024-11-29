@@ -2,12 +2,15 @@
 #include "Texture2D.hpp"
 
 
-
-Texture2D::Texture2D() : width(0), height(0), internalFormat(GL_RGB), imageFormat(GL_RGB), wrapS(GL_REPEAT), wrapT(GL_REPEAT), filterMin(GL_LINEAR_MIPMAP_LINEAR), filterMax(GL_LINEAR) {
-    glGenTextures(1, &this->id);
+Texture2D::Texture2D()
+         : id(0), width(0), height(0), internalFormat(GL_RGB), imageFormat(GL_RGB),
+           wrapS(GL_REPEAT), wrapT(GL_REPEAT), filterMin(GL_LINEAR_MIPMAP_LINEAR), filterMax(GL_LINEAR) {
 }
 
 void Texture2D::Generate(unsigned int width, unsigned int height, unsigned char* data, GLenum dataType) {
+    if (this->id == 0) {
+        glGenTextures(1, &this->id); // Generate ID only if needed
+    }
     // Set width and height
     this->width = width;
     this->height = height;
