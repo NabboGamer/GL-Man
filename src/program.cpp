@@ -109,6 +109,9 @@ int main() {
         return -1;
     }
 
+    glfwSetKeyCallback(window, key_callback);
+    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+
     // OpenGL configuration
     // --------------------
     glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -123,9 +126,6 @@ int main() {
     GLMan->Init();
     GLManMenu = new Menu(window, SCREEN_WIDTH, SCREEN_HEIGHT, showGame);
     GLManMenu->Init();
-
-    glfwSetKeyCallback(window, key_callback);
-    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
     // deltaTime variables
     // -------------------
