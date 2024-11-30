@@ -124,10 +124,12 @@ int main() {
     // ---------------
     auto config = CustomStructs::Config();
     LoggerManager::Init();
-    GLMan = new Game(SCREEN_WIDTH, SCREEN_HEIGHT, config);
-    GLMan->Init();
+    
     GLManMenu = new Menu(window, SCREEN_WIDTH, SCREEN_HEIGHT, showGame, config);
     GLManMenu->Init();
+    
+    GLMan = new Game(SCREEN_WIDTH, SCREEN_HEIGHT, config);
+    GLMan->Init();
 
     // deltaTime variables
     // -------------------
