@@ -93,7 +93,7 @@ int main() {
         return -1;
     }
 
-    GLFWwindow* window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "GL-Man", nullptr, nullptr);
+    GLFWwindow* window = glfwCreateWindow(mode->width, mode->width, "GL-Man", monitor, nullptr);
 
     if (!window) {
         glfwTerminate();
@@ -115,7 +115,7 @@ int main() {
 
     // OpenGL configuration
     // --------------------
-    glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+    glViewport(0, 0, mode->width, mode->height);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_DEPTH_TEST);
@@ -125,10 +125,10 @@ int main() {
     auto config = CustomStructs::Config();
     LoggerManager::Init();
     
-    GLManMenu = new Menu(window, SCREEN_WIDTH, SCREEN_HEIGHT, showGame, config);
+    GLManMenu = new Menu(window, mode->width, mode->height, showGame, config);
     GLManMenu->Init();
     
-    GLMan = new Game(SCREEN_WIDTH, SCREEN_HEIGHT, config);
+    GLMan = new Game(mode->width, mode->height, config);
     GLMan->Init();
 
     // deltaTime variables
