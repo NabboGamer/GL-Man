@@ -9,3 +9,14 @@ namespace CustomTypes {
     typedef std::pair<glm::vec3, glm::vec3> obb;
 
 }
+
+namespace CustomStructs {
+
+    struct Config {
+        bool useMSAA = false;
+        unsigned int numSampleMSAA = 4;
+        bool useHDR = false;
+        float exposure = 0.5f;
+    };
+	
+}

@@ -11,6 +11,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "GameLevel.hpp"
+#include "custom_types.hpp"
 //#include "power_up.h"
 
 // Represents the current state of the game
@@ -46,7 +47,7 @@ public:
     unsigned int             score;
 
     // constructor/destructor
-    Game(unsigned int width, unsigned int height);
+    Game(unsigned int width, unsigned int height, CustomStructs::Config& config);
     ~Game();
 
     // initialize game state (load all shaders/textures/levels)
@@ -75,5 +76,6 @@ private:
 	double    chompTimer = 0.0;                         // Timer utilized to decide if reproduce or not the pacman chomp sound
     int       ghostCounter = 0;                         // Counts the number of ghosts eaten during the effect of an energizer
     double    spawnProctectionTimeAccumulator = 0.0f;
-
+    CustomStructs::Config& config;
+	
 };

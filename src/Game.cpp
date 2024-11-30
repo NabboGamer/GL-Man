@@ -160,10 +160,10 @@ namespace {
 
 }
 
-Game::Game(const unsigned int width, const unsigned int height)
+Game::Game(const unsigned int width, const unsigned int height, CustomStructs::Config& config)
     : state(GAME_ACTIVE), keys(), keysProcessed(), width(width),
       height(height), level(0), lives(3), score(0), cameraPos(),
-      cameraAt(), up(),cameraDir(),cameraSide(),cameraUp() { }
+      cameraAt(), up(),cameraDir(),cameraSide(),cameraUp(), config(config) { }
 
 Game::~Game() {
     delete pacman;
@@ -501,6 +501,9 @@ void Game::Update(const double dt) {
 void Game::Render(const double dt) const {
     if (this->state == GAME_ACTIVE || this->state == GAME_WIN || this->state == GAME_DEFEAT) {
         // begin rendering to postprocessing framebuffer
+        if (!postProcessor->IsInitialized()) {
+            postProcessor->SetInitialized(true, this->config);
+        }
         postProcessor->BeginRender();
         // draw level
         this->Levels[this->level]->Draw(dt);

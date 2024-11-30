@@ -9,8 +9,8 @@ PostProcessor::PostProcessor(const unsigned int width, const unsigned int height
 							 const unsigned int numSampleMSAA, Shader* hdrShader, const bool useHDR,
 							 const float exposure, const float gamma)
              : width(width), height(height), useMSAA(useMSAA), numSampleMSAA(numSampleMSAA),
-               hdrShader(hdrShader), useHDR(useHDR), exposure(exposure), gamma(gamma) {
-    this->initRenderData();
+               hdrShader(hdrShader), useHDR(useHDR), exposure(exposure), gamma(gamma), initialized(false) {
+	//this->initRenderData();
 }
 
 PostProcessor::~PostProcessor() {
@@ -51,6 +51,28 @@ float PostProcessor::GetGamma() const {
 
 void PostProcessor::SetGamma(const float value) {
 	this->gamma = value;
+}
+
+bool PostProcessor::IsInitialized() const {
+	return this->initialized;
+}
+
+
+void PostProcessor::SetInitialized(const bool value, const CustomStructs::Config config) {
+	this->initialized = value;
+	if (this->initialized) {
+		this->useMSAA       = config.useMSAA;
+		this->numSampleMSAA = config.numSampleMSAA;
+		this->useHDR        = config.useHDR;
+		this->exposure      = config.exposure;
+		/*LoggerManager::LogInfo("---------------------------------");
+		LoggerManager::LogInfo("useMSAA={}", this->useMSAA);
+		LoggerManager::LogInfo("numSampleMSAA={}", this->numSampleMSAA);
+		LoggerManager::LogInfo("useHDR={}", this->useHDR);
+		LoggerManager::LogInfo("exposure={}", this->exposure);
+		LoggerManager::LogInfo("---------------------------------");*/
+		this->initRenderData();
+	}
 }
 
 void PostProcessor::BeginRender() const {

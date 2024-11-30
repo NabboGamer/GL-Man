@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Shader.hpp"
+#include "custom_types.hpp"
 
 class PostProcessor {
 
@@ -21,10 +22,12 @@ public:
     [[nodiscard]] unsigned int GetNumSampleMSAA() const;
     [[nodiscard]] float GetExposure() const;
     [[nodiscard]] float GetGamma() const;
+    [[nodiscard]] bool IsInitialized() const;
     void SetUseMSAA(bool value);
     void SetNumSampleMSAA(unsigned int value);
     void SetExposure(float value);
     void SetGamma(float value);
+    void SetInitialized(bool value, CustomStructs::Config config);
 
     // prepares the postprocessor's framebuffer operations before rendering the game
     void BeginRender() const;
@@ -37,6 +40,7 @@ public:
 
 private:
 
+    bool initialized;
     // options
     bool          useMSAA;
     bool          useHDR;

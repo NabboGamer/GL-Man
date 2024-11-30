@@ -52,7 +52,7 @@ namespace {
 
     float progress = 0.0f;
     int selectable_alias = 0;
-    int selectable_hdr = 0;
+    int selectable_hdr = 1;
     const char* alias_items[] = { "4x", "8x", "16x" };
     const char* hdr_items[] = { "0.25", "0.5", "0.75", "1" };
 
@@ -72,8 +72,8 @@ namespace {
     GLFWcursor* customCursor;
 }
 
-Menu::Menu(GLFWwindow* window, const unsigned int width, const unsigned int height, bool& showGame)
-    : window(window), width(width), height(height), showGame(showGame) {
+Menu::Menu(GLFWwindow* window, const unsigned int width, const unsigned int height, bool& showGame, CustomStructs::Config& config)
+    : window(window), width(width), height(height), showGame(showGame), config(config) {
 }
 
 Menu::~Menu() {
@@ -147,7 +147,7 @@ void Menu::Init() {
 
 }
 
-void Menu::Render(double deltaTime) {
+void Menu::Render(double deltaTime) const {
     //Initializing ImGui Frame
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
@@ -671,6 +671,7 @@ void Menu::Render(double deltaTime) {
                 offActiveAlias = true;
                 onActiveAlias = false;
                 barActiveAlias = false;
+                this->config.useMSAA = false;
             }
 
             if (ImGui::IsItemHovered() && (io->MouseDelta.x != 0.0f || io->MouseDelta.y != 0.0f)) {
@@ -728,6 +729,7 @@ void Menu::Render(double deltaTime) {
                 offActiveAlias = false;
                 barFocus = true;
                 ImGui::ActivateItemByID(ImGui::GetID("##discrete"));
+                this->config.useMSAA = true;
             }
 
             if (ImGui::IsItemHovered() && (io->MouseDelta.x != 0.0f || io->MouseDelta.y != 0.0f)) {
@@ -790,14 +792,22 @@ void Menu::Render(double deltaTime) {
             if (ImGui::SliderInt("##discrete", &selectable_alias, 0, IM_ARRAYSIZE(alias_items) - 1, "", ImGuiSliderFlags_NoInput)) {
                 switch (selectable_alias) {
                 case 0:
+                    this->config.useMSAA = true;
+                    this->config.numSampleMSAA = 4;
                     //Anti-Aliasing 4x
                     break;
                 case 1:
+                    this->config.useMSAA = true;
+                    this->config.numSampleMSAA = 8;
                     //Anti-Aliasing 8x
                     break;
                 case 2:
+                    this->config.useMSAA = true;
+                    this->config.numSampleMSAA = 16;
                     //Anti-Aliasing 16x
                     break;
+				default:
+                    this->config.useMSAA = false;
                 }
             }
 
@@ -999,6 +1009,7 @@ void Menu::Render(double deltaTime) {
                 offActiveHdr = true;
                 onActiveHdr = false;
                 barActiveHdr = false;
+                this->config.useHDR = false;
                 //Disattiva anti-aliasing
             }
 
@@ -1057,6 +1068,7 @@ void Menu::Render(double deltaTime) {
                 offActiveHdr = false;
                 barFocus = true;
                 ImGui::ActivateItemByID(ImGui::GetID("##discrete"));
+                this->config.useHDR = true;
             }
 
             if (ImGui::IsItemHovered() && (io->MouseDelta.x != 0.0f || io->MouseDelta.y != 0.0f)) {
@@ -1119,17 +1131,27 @@ void Menu::Render(double deltaTime) {
             if (ImGui::SliderInt("##discrete", &selectable_hdr, 0, IM_ARRAYSIZE(hdr_items) - 1, "", ImGuiSliderFlags_NoInput)) {
                 switch (selectable_hdr) {
                 case 0:
+                    this->config.useHDR = true;
+                    this->config.exposure= 0.25f;
                     //hdr 0.25
                     break;
                 case 1:
+                    this->config.useHDR = true;
+                    this->config.exposure = 0.50f;
                     //hdr 0.5
                     break;
                 case 2:
+                    this->config.useHDR = true;
+                    this->config.exposure = 0.75f;
                     //hdr 0.75
                     break;
                 case 3:
+                    this->config.useHDR = true;
+                    this->config.exposure = 1.00f;
                     //hdr 1
                     break;
+                default:
+                    this->config.useHDR = false;
                 }
             }
 

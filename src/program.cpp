@@ -14,6 +14,7 @@ extern "C" {
 #include "Menu.hpp"
 #include "ResourceManager.hpp"
 #include "LoggerManager.hpp"
+#include "custom_types.hpp"
 
 // The Width of the screen
 constexpr unsigned int SCREEN_WIDTH = 1920;
@@ -121,10 +122,11 @@ int main() {
 
     // initialize game
     // ---------------
+    auto config = CustomStructs::Config();
     LoggerManager::Init();
-    GLMan = new Game(SCREEN_WIDTH, SCREEN_HEIGHT);
+    GLMan = new Game(SCREEN_WIDTH, SCREEN_HEIGHT, config);
     GLMan->Init();
-    GLManMenu = new Menu(window, SCREEN_WIDTH, SCREEN_HEIGHT, showGame);
+    GLManMenu = new Menu(window, SCREEN_WIDTH, SCREEN_HEIGHT, showGame, config);
     GLManMenu->Init();
 
     // deltaTime variables
@@ -148,6 +150,7 @@ int main() {
             GLManMenu->Render(deltaTime);
         }
         else {
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
             // manage user input
             // -----------------
             GLMan->ProcessInput(deltaTime);
