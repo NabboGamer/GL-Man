@@ -58,8 +58,8 @@ namespace {
 
     //Textures IDs for loading window animation
     std::vector<unsigned int> textureIDs;
-    unsigned int frameWidth;
-    unsigned int frameHeight;
+    float frameWidth;
+    float frameHeight;
     int frameDelay = 350;  //Delay between frames
 
     ImGuiIO* io;
@@ -77,8 +77,8 @@ namespace {
 
 Menu::Menu(GLFWwindow* window, const unsigned int width, const unsigned int height, bool& showGame, CustomStructs::Config& config)
     : window(window), width(width), height(height), showGame(showGame), config(config) {
-    scaleX = width / 1920.0f;
-    scaleY = height / 1080.0f;
+    scaleX = static_cast<float>(width) / 1920.0f;
+    scaleY = static_cast<float>(height) / 1080.0f;
 }
 
 Menu::~Menu() {
@@ -112,8 +112,8 @@ void Menu::Init() {
     textureIDs.push_back(load_2.id);
     textureIDs.push_back(load_1.id);
 
-    frameWidth = load_0.width * scaleX;
-    frameHeight = load_0.height * scaleY;
+    frameWidth = static_cast<float>(load_0.width) * scaleX;
+    frameHeight = static_cast<float>(load_0.height) * scaleY;
 
     //ImGui Initialization
     IMGUI_CHECKVERSION();
@@ -328,8 +328,8 @@ void Menu::Render(double deltaTime) const {
         ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
         progress += 0.01f * ImGui::GetIO().DeltaTime * 3.75f * scaleX;
         constexpr auto progressBarColor = ImVec4(0.0f, 0.0f, 1.0f, 1.0f);
-        ImVec2 loadSize(150.0f * scaleX, 150.0f * scaleY);
-        ImVec2 imageSize(100.0f * scaleX, 100.0f * scaleY);
+        const ImVec2 loadSize(150.0f * scaleX, 150.0f * scaleY);
+        const ImVec2 imageSize(100.0f * scaleX, 100.0f * scaleY);
 
         ImGui::Begin("My name is window, ImGui window", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus);
 
@@ -343,12 +343,12 @@ void Menu::Render(double deltaTime) const {
         ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.988f, 0.812f, 0.0f, 1.0f));
         ImGui::PushFont(myFont);
         const float loadPosX = (300.0f + progress * 1200);
-        float loadPosY = 460.0f;
+        constexpr float loadPosY = 460.0f;
         const auto loadPos = ImVec2(loadPosX * scaleX, loadPosY * scaleY);
-        auto blinkyPos = ImVec2(500.0f * scaleX, 490.0f * scaleY);
-        auto inkyPos = ImVec2(750.0f * scaleX, 490.0f * scaleY);
-        auto clydePos = ImVec2(1000.0f * scaleX, 490.0f * scaleY);
-        auto pinkyPos = ImVec2(1250.0f * scaleX, 490.0f * scaleY);
+        const auto blinkyPos = ImVec2(500.0f * scaleX, 490.0f * scaleY);
+        const auto inkyPos = ImVec2(750.0f * scaleX, 490.0f * scaleY);
+        const auto clydePos = ImVec2(1000.0f * scaleX, 490.0f * scaleY);
+        const auto pinkyPos = ImVec2(1250.0f * scaleX, 490.0f * scaleY);
         static size_t currentFrame = 0;
         static auto lastFrameTime = std::chrono::steady_clock::now();
 
@@ -409,8 +409,8 @@ void Menu::Render(double deltaTime) const {
         ImGui::PopFont();
 
         //Logo
-        ImVec2 imagePos(50.0f * scaleX, 80.0f * scaleY);
-        ImVec2 imageSize(400.0f * scaleX, 200.0f * scaleX);
+        const ImVec2 imagePos(50.0f * scaleX, 80.0f * scaleY);
+        const ImVec2 imageSize(400.0f * scaleX, 200.0f * scaleX);
         ImGui::GetWindowDrawList()->AddImage(prova.id, imagePos, ImVec2(imagePos.x + imageSize.x, imagePos.y + imageSize.y));
 
         //First window
@@ -908,13 +908,13 @@ void Menu::Render(double deltaTime) const {
             else
                 ImGui::GetWindowDrawList()->AddImage(coin2.id, imagePos, ImVec2(imagePos.x + imageSize.x, imagePos.y + imageSize.y));
 
-            ImVec2 imagePos1(1375.0f * scaleX, 675.0f * scaleY);
+            const ImVec2 imagePos1(1375.0f * scaleX, 675.0f * scaleY);
             if (!barActiveAlias)
                 ImGui::GetWindowDrawList()->AddImage(coin.id, imagePos1, ImVec2(imagePos1.x + imageSize.x, imagePos1.y + imageSize.y));
             else
                 ImGui::GetWindowDrawList()->AddImage(coin2.id, imagePos1, ImVec2(imagePos1.x + imageSize.x, imagePos1.y + imageSize.y));
 
-            ImVec2 imagePos2(1535.0f * scaleX, 675.0f * scaleY);
+            const ImVec2 imagePos2(1535.0f * scaleX, 675.0f * scaleY);
             if (!barActiveAlias)
                 ImGui::GetWindowDrawList()->AddImage(coin.id, imagePos2, ImVec2(imagePos2.x + imageSize.x, imagePos2.y + imageSize.y));
             else
@@ -1257,19 +1257,19 @@ void Menu::Render(double deltaTime) const {
             else
                 ImGui::GetWindowDrawList()->AddImage(coin2.id, imagePos, ImVec2(imagePos.x + imageSize.x, imagePos.y + imageSize.y));
 
-            ImVec2 imagePos1(1295.0f * scaleX, 675.0f * scaleY);
+            const ImVec2 imagePos1(1295.0f * scaleX, 675.0f * scaleY);
             if (!barActiveHdr)
                 ImGui::GetWindowDrawList()->AddImage(coin.id, imagePos1, ImVec2(imagePos1.x + imageSize.x, imagePos1.y + imageSize.y));
             else
                 ImGui::GetWindowDrawList()->AddImage(coin2.id, imagePos1, ImVec2(imagePos1.x + imageSize.x, imagePos1.y + imageSize.y));
 
-            ImVec2 imagePos2(1415.0f * scaleX, 675.0f * scaleY);
+            const ImVec2 imagePos2(1415.0f * scaleX, 675.0f * scaleY);
             if (!barActiveHdr)
                 ImGui::GetWindowDrawList()->AddImage(coin.id, imagePos2, ImVec2(imagePos2.x + imageSize.x, imagePos2.y + imageSize.y));
             else
                 ImGui::GetWindowDrawList()->AddImage(coin2.id, imagePos2, ImVec2(imagePos2.x + imageSize.x, imagePos2.y + imageSize.y));
 
-            ImVec2 imagePos3(1535.0f * scaleX, 675.0f * scaleY);
+            const ImVec2 imagePos3(1535.0f * scaleX, 675.0f * scaleY);
             if (!barActiveHdr)
                 ImGui::GetWindowDrawList()->AddImage(coin.id, imagePos3, ImVec2(imagePos3.x + imageSize.x, imagePos3.y + imageSize.y));
             else
