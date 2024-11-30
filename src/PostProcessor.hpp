@@ -33,7 +33,7 @@ public:
     void BeginRender() const;
 
     // should be called after rendering the game, so it stores all the rendered data into a texture object
-    static void EndRender();
+    void EndRender();
 
     // renders the PostProcessor texture quad
     void Render(double deltaTime) const;

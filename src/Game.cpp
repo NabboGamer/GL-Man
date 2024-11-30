@@ -52,6 +52,9 @@ namespace {
 // Initial speed of the player
 namespace {
     constexpr float PLAYER_SPEED = 7.5f;
+    float           scaleX;
+    float           scaleY;
+    float           scaleText;
 }
 
 namespace {
@@ -339,6 +342,10 @@ void Game::Init() {
     postProcessor = new PostProcessor(this->width, this->height, true, 4,
 									  &ResourceManager::GetShader("hdrShader"), false,
 									  0.5f, 2.2f);
+
+    scaleX = static_cast<float>(this->width) / 2048.0f;
+    scaleY = static_cast<float>(this->height) / 1152.0f;
+    scaleText = std::min(scaleX, scaleY);
 }
 
 void Game::ProcessInput(const double dt) {
@@ -542,30 +549,39 @@ void Game::Render(const double dt) const {
         // render text (don't include in postprocessing)
         const float widthFloat = static_cast<float>(this->width);
         const std::string scoreString = std::to_string(this->score);
-        text->RenderText("1UP",        (widthFloat / 2.0f) - (widthFloat /  5.0f), 10, 1.0f);
-        text->RenderText(scoreString,    (widthFloat / 2.0f) - (widthFloat /  5.0f), 50, 1.0f);
-        text->RenderText("HIGH SCORE", (widthFloat / 2.0f) - (widthFloat / 20.0f), 10, 1.0f);
-        text->RenderText(scoreString,    (widthFloat / 2.0f) - (widthFloat / 20.0f), 50, 1.0f);
+        text->RenderText("1UP",        (widthFloat / 2.0f) - (widthFloat /  5.0f), 10*scaleY, 1.0f*scaleText);
+        text->RenderText(scoreString,    (widthFloat / 2.0f) - (widthFloat /  5.0f), 50*scaleY, 1.0f*scaleText);
+        text->RenderText("HIGH SCORE", (widthFloat / 2.0f) - (widthFloat / 20.0f), 10*scaleY, 1.0f*scaleText);
+        text->RenderText(scoreString,    (widthFloat / 2.0f) - (widthFloat / 20.0f), 50*scaleY, 1.0f*scaleText);
         /*std::string exposure = "exposure=" + std::to_string(postProcessor->GetExposure());
         text->RenderText(exposure,    (widthFloat / 2.0f) - (widthFloat / 20.0f), 80, 1.0f);*/
     }
-    /*if (this->State == GAME_MENU)
-    {
-        Text->RenderText("Press ENTER to start", 250.0f, this->Height / 2.0f, 1.0f);
-        Text->RenderText("Press W or S to select level", 245.0f, this->Height / 2.0f + 20.0f, 0.75f);
-    }*/
     if (this->state == GAME_WIN) {
         const float widthFloat = static_cast<float>(this->width);
         const float heightFloat = static_cast<float>(this->height);
-        text->RenderText("You WON!!!",        (widthFloat / 2.0f) - (widthFloat / 20.0f),         (heightFloat / 2.0f) - (heightFloat / 9.0f),         1.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-        text->RenderText("Press ESC to quit", (widthFloat / 2.0f) - (widthFloat / 20.0f) - 70.0f, (heightFloat / 2.0f) - (heightFloat / 9.0f) + 40.0f, 1.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+        text->RenderText("You WON!!!",((widthFloat  / 2.0f) - (widthFloat  / 20.0f)),        
+                                        ((heightFloat / 2.0f) - (heightFloat /  9.0f)),
+										1.0f*scaleText,
+										glm::vec3(0.0f, 1.0f, 0.0f));
+
+        text->RenderText("Press ESC to quit",((widthFloat  / 2.0f) - (widthFloat  / 20.0f) - 70.0f*scaleX),
+                                               ((heightFloat / 2.0f) - (heightFloat /  9.0f) + 40.0f*scaleY),
+                                               1.0f*scaleText, 
+                                               glm::vec3(0.0f, 1.0f, 0.0f));
         stopCurrentSound();
     }
     if (this->state == GAME_DEFEAT) {
         const float widthFloat = static_cast<float>(this->width);
         const float heightFloat = static_cast<float>(this->height);
-        text->RenderText("You LOST!!!",       (widthFloat / 2.0f) - (widthFloat / 20.0f),         (heightFloat / 2.0f) - (heightFloat / 9.0f),         1.0f, glm::vec3(1.0f, 0.0f, 0.0f));
-        text->RenderText("Press ESC to quit", (widthFloat / 2.0f) - (widthFloat / 20.0f) - 60.0f, (heightFloat / 2.0f) - (heightFloat / 9.0f) + 40.0f, 1.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+        text->RenderText("You LOST!!!",((widthFloat  / 2.0f) - (widthFloat  / 20.0f)),
+                                         ((heightFloat / 2.0f) - (heightFloat /  9.0f)),
+                                         1.0f*scaleText,
+                                         glm::vec3(1.0f, 0.0f, 0.0f));
+
+        text->RenderText("Press ESC to quit",((widthFloat  / 2.0f) - (widthFloat  / 20.0f) - 60.0f*scaleX),
+                                               ((heightFloat / 2.0f) - (heightFloat /  9.0f) + 40.0f*scaleY),
+                                               1.0f*scaleText, 
+                                               glm::vec3(1.0f, 0.0f, 0.0f));
         stopCurrentSound();
     }
 }
