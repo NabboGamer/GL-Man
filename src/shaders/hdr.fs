@@ -14,7 +14,7 @@ void main() {
     vec3 result = vec3(1.0) - exp(-hdrColor * exposure);
 
     // Gamma correction
-    result = pow(result, vec3(1.0 / gamma));
+    //result = pow(result, vec3(1.0 / gamma));
 
     FragColor = vec4(result, 1.0);
 }
