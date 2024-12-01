@@ -58,7 +58,8 @@ vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir) {
     // diffuse shading
     float diff = max(dot(normal, lightDir), 0.0);
     // specular shading
-    vec3 reflectDir = reflect(-lightDir, normal);
+    //vec3 reflectDir = reflect(-lightDir, normal);
+    vec3 halfwayDir = normalize(lightDir + viewDir);
 
     float roughness;
     float specularStrength;
@@ -70,7 +71,8 @@ vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir) {
         specularStrength = specularColor.x;
     }
 
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess) * specularStrength;
+    //float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess) * specularStrength;
+    float spec = pow(max(dot(normal, halfwayDir), 0.0), material.shininess) * specularStrength;
     
     vec3 ambient, diffuse, specular;
     // combine results
