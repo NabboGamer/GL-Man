@@ -199,8 +199,7 @@ void Game::Init() {
     ResourceManager::LoadShader("./shaders/bonusSymbol.vs","./shaders/bonusSymbol.fs",nullptr, "bonusSymbolShader");
     ResourceManager::LoadShader("./shaders/pacman.vs",     "./shaders/pacman.fs",     nullptr, "lifeCounterShader");
     ResourceManager::LoadShader("./shaders/hdr.vs",        "./shaders/hdr.fs",        nullptr, "hdrShader");
-    /*ResourceManager::LoadShader("particle.vs", "particle.fs", nullptr, "particle");
-    ResourceManager::LoadShader("post_processing.vs", "post_processing.fs", nullptr, "postprocessing");*/
+    /*ResourceManager::LoadShader("particle.vs", "particle.fs", nullptr, "particle");*/
 
     /// Configure Shaders
     // Insert uniform variable in vertex shader(only global variables, i.e. the same for all shaders)
@@ -213,74 +212,89 @@ void Game::Init() {
     const glm::mat4 view = glm::lookAt(cameraPos, cameraAt, cameraUp);
     const glm::mat4 projection = glm::perspective(glm::radians(35.0f), static_cast<float>(this->width) / static_cast<float>(this->height), 0.1f, 55.0f);
     ResourceManager::GetShader("mazeWallShader").Use().SetMatrix4("view", view);
-    ResourceManager::GetShader("mazeWallShader").Use().SetMatrix4("projection", projection);
+    ResourceManager::GetShader("mazeWallShader").SetMatrix4("projection", projection);
+
     ResourceManager::GetShader("mazeFloorShader").Use().SetMatrix4("view", view);
-    ResourceManager::GetShader("mazeFloorShader").Use().SetMatrix4("projection", projection);
+    ResourceManager::GetShader("mazeFloorShader").SetMatrix4("projection", projection);
+
     ResourceManager::GetShader("dotShader").Use().SetMatrix4("view", view);
-    ResourceManager::GetShader("dotShader").Use().SetMatrix4("projection", projection);
+    ResourceManager::GetShader("dotShader").SetMatrix4("projection", projection);
+
     ResourceManager::GetShader("energizerShader").Use().SetMatrix4("view", view);
-    ResourceManager::GetShader("energizerShader").Use().SetMatrix4("projection", projection);
+    ResourceManager::GetShader("energizerShader").SetMatrix4("projection", projection);
+
     ResourceManager::GetShader("pacmanShader").Use().SetMatrix4("view", view);
-    ResourceManager::GetShader("pacmanShader").Use().SetMatrix4("projection", projection);
+    ResourceManager::GetShader("pacmanShader").SetMatrix4("projection", projection);
+
     ResourceManager::GetShader("ghostShader").Use().SetMatrix4("view", view);
-    ResourceManager::GetShader("ghostShader").Use().SetMatrix4("projection", projection);
+    ResourceManager::GetShader("ghostShader").SetMatrix4("projection", projection);
+
     ResourceManager::GetShader("bonusSymbolShader").Use().SetMatrix4("view", view);
-    ResourceManager::GetShader("bonusSymbolShader").Use().SetMatrix4("projection", projection);
+    ResourceManager::GetShader("bonusSymbolShader").SetMatrix4("projection", projection);
+
     ResourceManager::GetShader("lifeCounterShader").Use().SetMatrix4("view", view);
-    ResourceManager::GetShader("lifeCounterShader").Use().SetMatrix4("projection", projection);
+    ResourceManager::GetShader("lifeCounterShader").SetMatrix4("projection", projection);
+
     ResourceManager::GetShader("hdrShader").Use().SetMatrix4("projection", projection);
     // Insert uniform variable in fragment shader(only global variables, i.e. the same for all shaders)
     // The light is from the same side of the camera but higher, the reflection angle is still greater than 90 degrees
     const glm::vec3 lightDir = glm::normalize(cameraAt - glm::vec3(-17.0, 27.0, 15.0));
     //lightDir.x = -lightDir.x;
     ResourceManager::GetShader("mazeWallShader").Use().SetVector3f("viewPos", cameraPos);
-    ResourceManager::GetShader("mazeWallShader").Use().SetVector3f("dirLight.direction", lightDir);
-    ResourceManager::GetShader("mazeWallShader").Use().SetVector3f("dirLight.ambient", glm::vec3(0.13f, 0.13f, 0.13f));
-    ResourceManager::GetShader("mazeWallShader").Use().SetVector3f("dirLight.diffuse", glm::vec3(0.5f, 0.5f, 0.5f));
-    ResourceManager::GetShader("mazeWallShader").Use().SetVector3f("dirLight.specular", glm::vec3(0.05f, 0.05f, 0.05f));
-    ResourceManager::GetShader("mazeWallShader").Use().SetFloat("material.shininess", 8.0f);
+    ResourceManager::GetShader("mazeWallShader").SetVector3f("dirLight.direction", lightDir);
+    ResourceManager::GetShader("mazeWallShader").SetVector3f("dirLight.ambient", glm::vec3(0.7f, 0.7f, 0.7f));
+    ResourceManager::GetShader("mazeWallShader").SetVector3f("dirLight.diffuse", glm::vec3(0.9f, 0.9f, 0.9f));
+    ResourceManager::GetShader("mazeWallShader").SetVector3f("dirLight.specular", glm::vec3(0.2f, 0.2f, 0.2f));
+    ResourceManager::GetShader("mazeWallShader").SetFloat("material.shininess", 32.0f);
+
     ResourceManager::GetShader("mazeFloorShader").Use().SetVector3f("viewPos", cameraPos);
-    ResourceManager::GetShader("mazeFloorShader").Use().SetVector3f("dirLight.direction", lightDir);
-    ResourceManager::GetShader("mazeFloorShader").Use().SetVector3f("dirLight.ambient", glm::vec3(0.4f, 0.4f, 0.4f));
-    ResourceManager::GetShader("mazeFloorShader").Use().SetVector3f("dirLight.diffuse", glm::vec3(0.5f, 0.5f, 0.5f));
-    ResourceManager::GetShader("mazeFloorShader").Use().SetVector3f("dirLight.specular", glm::vec3(0.2f, 0.2f, 0.2f));
-    ResourceManager::GetShader("mazeFloorShader").Use().SetFloat("material.shininess", 8.0f);
+    ResourceManager::GetShader("mazeFloorShader").SetVector3f("dirLight.direction", lightDir);
+    ResourceManager::GetShader("mazeFloorShader").SetVector3f("dirLight.ambient", glm::vec3(0.7f, 0.7f, 0.7f));
+    ResourceManager::GetShader("mazeFloorShader").SetVector3f("dirLight.diffuse", glm::vec3(0.9f, 0.9f, 0.9f));
+    ResourceManager::GetShader("mazeFloorShader").SetVector3f("dirLight.specular", glm::vec3(0.2f, 0.2f, 0.2f));
+    ResourceManager::GetShader("mazeFloorShader").SetFloat("material.shininess", 32.0f);
+
     ResourceManager::GetShader("dotShader").Use().SetVector3f("viewPos", cameraPos);
-    ResourceManager::GetShader("dotShader").Use().SetVector3f("dirLight.direction", lightDir);
-    ResourceManager::GetShader("dotShader").Use().SetVector3f("dirLight.ambient", glm::vec3(0.07f, 0.07f, 0.07f));
-    ResourceManager::GetShader("dotShader").Use().SetVector3f("dirLight.diffuse", glm::vec3(0.7f, 0.7f, 0.7f));
-    ResourceManager::GetShader("dotShader").Use().SetVector3f("dirLight.specular", glm::vec3(0.2f, 0.2f, 0.2f));
-    ResourceManager::GetShader("dotShader").Use().SetFloat("material.shininess", 32.0f);
+    ResourceManager::GetShader("dotShader").SetVector3f("dirLight.direction", lightDir);
+    ResourceManager::GetShader("dotShader").SetVector3f("dirLight.ambient", glm::vec3(0.07f, 0.07f, 0.07f));
+    ResourceManager::GetShader("dotShader").SetVector3f("dirLight.diffuse", glm::vec3(0.7f, 0.7f, 0.7f));
+    ResourceManager::GetShader("dotShader").SetVector3f("dirLight.specular", glm::vec3(0.2f, 0.2f, 0.2f));
+    ResourceManager::GetShader("dotShader").SetFloat("material.shininess", 32.0f);
+
     ResourceManager::GetShader("energizerShader").Use().SetVector3f("viewPos", cameraPos);
-    ResourceManager::GetShader("energizerShader").Use().SetVector3f("dirLight.direction", lightDir);
-    ResourceManager::GetShader("energizerShader").Use().SetVector3f("dirLight.ambient", glm::vec3(0.07f, 0.07f, 0.07f));
-    ResourceManager::GetShader("energizerShader").Use().SetVector3f("dirLight.diffuse", glm::vec3(0.7f, 0.7f, 0.7f));
-    ResourceManager::GetShader("energizerShader").Use().SetVector3f("dirLight.specular", glm::vec3(0.2f, 0.2f, 0.2f));
-    ResourceManager::GetShader("energizerShader").Use().SetFloat("material.shininess", 32.0f);
+    ResourceManager::GetShader("energizerShader").SetVector3f("dirLight.direction", lightDir);
+    ResourceManager::GetShader("energizerShader").SetVector3f("dirLight.ambient", glm::vec3(0.07f, 0.07f, 0.07f));
+    ResourceManager::GetShader("energizerShader").SetVector3f("dirLight.diffuse", glm::vec3(0.7f, 0.7f, 0.7f));
+    ResourceManager::GetShader("energizerShader").SetVector3f("dirLight.specular", glm::vec3(0.2f, 0.2f, 0.2f));
+    ResourceManager::GetShader("energizerShader").SetFloat("material.shininess", 32.0f);
+
     ResourceManager::GetShader("pacmanShader").Use().SetVector3f("viewPos", cameraPos);
-    ResourceManager::GetShader("pacmanShader").Use().SetVector3f("dirLight.direction", lightDir);
-    ResourceManager::GetShader("pacmanShader").Use().SetVector3f("dirLight.ambient", glm::vec3(0.7f, 0.7f, 0.7f));
-    ResourceManager::GetShader("pacmanShader").Use().SetVector3f("dirLight.diffuse", glm::vec3(0.9f, 0.9f, 0.9f));
-    ResourceManager::GetShader("pacmanShader").Use().SetVector3f("dirLight.specular", glm::vec3(0.2f, 0.2f, 0.2f));
-    ResourceManager::GetShader("pacmanShader").Use().SetFloat("material.shininess", 32.0f);
+    ResourceManager::GetShader("pacmanShader").SetVector3f("dirLight.direction", lightDir);
+    ResourceManager::GetShader("pacmanShader").SetVector3f("dirLight.ambient", glm::vec3(0.7f, 0.7f, 0.7f));
+    ResourceManager::GetShader("pacmanShader").SetVector3f("dirLight.diffuse", glm::vec3(0.9f, 0.9f, 0.9f));
+    ResourceManager::GetShader("pacmanShader").SetVector3f("dirLight.specular", glm::vec3(0.2f, 0.2f, 0.2f));
+    ResourceManager::GetShader("pacmanShader").SetFloat("material.shininess", 32.0f);
+
     ResourceManager::GetShader("ghostShader").Use().SetVector3f("viewPos", cameraPos);
-    ResourceManager::GetShader("ghostShader").Use().SetVector3f("dirLight.direction", lightDir);
-    ResourceManager::GetShader("ghostShader").Use().SetVector3f("dirLight.ambient", glm::vec3(0.7f, 0.7f, 0.7f));
-    ResourceManager::GetShader("ghostShader").Use().SetVector3f("dirLight.diffuse", glm::vec3(0.9f, 0.9f, 0.9f));
-    ResourceManager::GetShader("ghostShader").Use().SetVector3f("dirLight.specular", glm::vec3(0.2f, 0.2f, 0.2f));
-    ResourceManager::GetShader("ghostShader").Use().SetFloat("material.shininess", 32.0f);
+    ResourceManager::GetShader("ghostShader").SetVector3f("dirLight.direction", lightDir);
+    ResourceManager::GetShader("ghostShader").SetVector3f("dirLight.ambient", glm::vec3(0.7f, 0.7f, 0.7f));
+    ResourceManager::GetShader("ghostShader").SetVector3f("dirLight.diffuse", glm::vec3(0.9f, 0.9f, 0.9f));
+    ResourceManager::GetShader("ghostShader").SetVector3f("dirLight.specular", glm::vec3(0.2f, 0.2f, 0.2f));
+    ResourceManager::GetShader("ghostShader").SetFloat("material.shininess", 32.0f);
+
     ResourceManager::GetShader("bonusSymbolShader").Use().SetVector3f("viewPos", cameraPos);
-    ResourceManager::GetShader("bonusSymbolShader").Use().SetVector3f("dirLight.direction", lightDir);
-    ResourceManager::GetShader("bonusSymbolShader").Use().SetVector3f("dirLight.ambient", glm::vec3(0.7f, 0.7f, 0.7f));
-    ResourceManager::GetShader("bonusSymbolShader").Use().SetVector3f("dirLight.diffuse", glm::vec3(0.9f, 0.9f, 0.9f));
-    ResourceManager::GetShader("bonusSymbolShader").Use().SetVector3f("dirLight.specular", glm::vec3(0.2f, 0.2f, 0.2f));
-    ResourceManager::GetShader("bonusSymbolShader").Use().SetFloat("material.shininess", 32.0f);
+    ResourceManager::GetShader("bonusSymbolShader").SetVector3f("dirLight.direction", lightDir);
+    ResourceManager::GetShader("bonusSymbolShader").SetVector3f("dirLight.ambient", glm::vec3(0.7f, 0.7f, 0.7f));
+    ResourceManager::GetShader("bonusSymbolShader").SetVector3f("dirLight.diffuse", glm::vec3(0.9f, 0.9f, 0.9f));
+    ResourceManager::GetShader("bonusSymbolShader").SetVector3f("dirLight.specular", glm::vec3(0.2f, 0.2f, 0.2f));
+    ResourceManager::GetShader("bonusSymbolShader").SetFloat("material.shininess", 32.0f);
+
     ResourceManager::GetShader("lifeCounterShader").Use().SetVector3f("viewPos", cameraPos);
-    ResourceManager::GetShader("lifeCounterShader").Use().SetVector3f("dirLight.direction", lightDir);
-    ResourceManager::GetShader("lifeCounterShader").Use().SetVector3f("dirLight.ambient", glm::vec3(0.7f, 0.7f, 0.7f));
-    ResourceManager::GetShader("lifeCounterShader").Use().SetVector3f("dirLight.diffuse", glm::vec3(0.9f, 0.9f, 0.9f));
-    ResourceManager::GetShader("lifeCounterShader").Use().SetVector3f("dirLight.specular", glm::vec3(0.2f, 0.2f, 0.2f));
-    ResourceManager::GetShader("lifeCounterShader").Use().SetFloat("material.shininess", 32.0f);
+    ResourceManager::GetShader("lifeCounterShader").SetVector3f("dirLight.direction", lightDir);
+    ResourceManager::GetShader("lifeCounterShader").SetVector3f("dirLight.ambient", glm::vec3(0.7f, 0.7f, 0.7f));
+    ResourceManager::GetShader("lifeCounterShader").SetVector3f("dirLight.diffuse", glm::vec3(0.9f, 0.9f, 0.9f));
+    ResourceManager::GetShader("lifeCounterShader").SetVector3f("dirLight.specular", glm::vec3(0.2f, 0.2f, 0.2f));
+    ResourceManager::GetShader("lifeCounterShader").SetFloat("material.shininess", 32.0f);
 
     /// Load Textures
     ResourceManager::LoadTexture(FileSystem::getPath("../res/textures/wall_diffuse_360.png").c_str(), "mazeWallDiffuseTexture", true);
@@ -327,12 +341,11 @@ void Game::Init() {
     pacmanEatGhostSound      = soundEngine->addSoundSourceFromFile(FileSystem::getPath("../res/sounds/13. PAC-MAN - Eating The Ghost.flac").c_str());
     pacmanDeathSound         = soundEngine->addSoundSourceFromFile(FileSystem::getPath("../res/sounds/15. Fail.flac").c_str());
     victorySound             = soundEngine->addSoundSourceFromFile(FileSystem::getPath("../res/sounds/16. Coffee Break Music.flac").c_str());
-
     // Set a default volume for each source
-    pacmanChompSound        ->setDefaultVolume(1.0f);
-    ghostNormalMoveSound    ->setDefaultVolume(1.0f);
+    pacmanChompSound        ->setDefaultVolume(0.8f);
+    ghostNormalMoveSound    ->setDefaultVolume(0.8f);
     pacmanEatFruitSound     ->setDefaultVolume(1.0f);
-    ghostTurnBlueSound      ->setDefaultVolume(1.0f);
+    ghostTurnBlueSound      ->setDefaultVolume(0.8f);
     pacmanEatGhostSound     ->setDefaultVolume(1.0f);
     pacmanDeathSound        ->setDefaultVolume(1.0f);
     pacmanEatsAllGhostsSound->setDefaultVolume(1.0f);
