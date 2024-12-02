@@ -83,7 +83,7 @@ void PostProcessor::BeginRender() const {
 		glBindFramebuffer(GL_FRAMEBUFFER, this->FBOHDR);
 	}
 	else {
-		glBindFramebuffer(GL_FRAMEBUFFER, this->FBO);
+		glBindFramebuffer(GL_FRAMEBUFFER, this->FBOHDR);
 	}
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT); // Clear the selected framebuffer
 }
@@ -94,6 +94,7 @@ void PostProcessor::EndRender() {
 
 void PostProcessor::Render(double deltaTime) const {
 	if (this->useMSAA && this->useHDR) {
+		//LoggerManager::LogInfo("Use MSAA, HDR, Gamma Correction");
 		// 1. Transfer MSAA to HDR texture
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, this->FBOMSAA);
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, this->FBOHDR);
@@ -107,6 +108,7 @@ void PostProcessor::Render(double deltaTime) const {
 		hdrShader->SetInteger("hdrBuffer", 0);
 		hdrShader->SetFloat("exposure", this->exposure);
 		hdrShader->SetFloat("gamma", this->gamma);
+		hdrShader->SetBool("useHDR", true);
 
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, this->CBHDR);
@@ -114,12 +116,14 @@ void PostProcessor::Render(double deltaTime) const {
 		renderQuad();
 	}
 	else if (this->useHDR) {
+		//LoggerManager::LogInfo("Use HDR, Gamma Correction");
 		// Directly render HDR (no MSAA)
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		hdrShader->Use();
 		hdrShader->SetInteger("hdrBuffer", 0);
 		hdrShader->SetFloat("exposure", this->exposure);
 		hdrShader->SetFloat("gamma", this->gamma);
+		hdrShader->SetBool("useHDR", true);
 
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, this->CBHDR);
@@ -127,20 +131,40 @@ void PostProcessor::Render(double deltaTime) const {
 		renderQuad();
 	}
 	else if (this->useMSAA) {
+		//LoggerManager::LogInfo("Use MSAA, Gamma Correction");
 		// MSAA without HDR
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, this->FBOMSAA);
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, this->FBOHDR);
 		glBlitFramebuffer(0, 0, static_cast<GLsizei>(this->width), static_cast<GLsizei>(this->height),
-						  0, 0, static_cast<GLsizei>(this->width), static_cast<GLsizei>(this->height),
-						  GL_COLOR_BUFFER_BIT, GL_NEAREST);
+			0, 0, static_cast<GLsizei>(this->width), static_cast<GLsizei>(this->height),
+			GL_COLOR_BUFFER_BIT, GL_NEAREST);
+
+		// Gamma Correction Post-Process
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		hdrShader->Use();
+		hdrShader->SetInteger("hdrBuffer", 0);
+		hdrShader->SetFloat("exposure", this->exposure);
+		hdrShader->SetFloat("gamma", this->gamma);
+		hdrShader->SetBool("useHDR", false);
+
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, this->CBHDR);
+
+		renderQuad();
 	}
 	else {
-		// No MSAA, No HDR
-		glBindFramebuffer(GL_READ_FRAMEBUFFER, this->FBO);
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-		glBlitFramebuffer(0, 0, static_cast<GLsizei>(this->width), static_cast<GLsizei>(this->height),
-						  0, 0, static_cast<GLsizei>(this->width), static_cast<GLsizei>(this->height),
-						  GL_COLOR_BUFFER_BIT, GL_NEAREST);
+		//LoggerManager::LogInfo("Use Gamma Correction");
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		hdrShader->Use();
+		hdrShader->SetInteger("hdrBuffer", 0);
+		hdrShader->SetFloat("exposure", this->exposure);
+		hdrShader->SetFloat("gamma", this->gamma);
+		hdrShader->SetBool("useHDR", false);
+
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, this->CBHDR);
+
+		renderQuad();
 	}
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);  // Return to default framebuffer
 }

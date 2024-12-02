@@ -184,7 +184,7 @@ void Blinky::init() {
 	const std::vector<float>     blinkyRotations  = { 0.0f };
 	const std::vector<glm::vec3> blinkyScaling    = { glm::vec3(0.25f) };
 
-	ResourceManager::LoadModel("../res/objects/ghosts/blinky/blinky.obj", "blinkyModel");
+	ResourceManager::LoadModel("../res/objects/ghosts/blinky/blinky.obj", "blinkyModel", true);
 	this->gameObject = new GameObjectFromModel(blinkyPositions,
 											   blinkyDirections,
 											   blinkyRotations,

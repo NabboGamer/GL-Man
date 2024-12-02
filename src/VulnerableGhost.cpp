@@ -349,7 +349,7 @@ void VulnerableGhost::init() {
     for (int i = 0; i < 10; i++) {
         std::string string = "vulnerable_ghost_blue";
         std::string completeString = string + std::to_string(i + 1);
-        ResourceManager::LoadModel("../res/objects/ghosts/vulnerable_ghost_blue/" + completeString + "/" + completeString + ".obj", completeString);
+        ResourceManager::LoadModel("../res/objects/ghosts/vulnerable_ghost_blue/" + completeString + "/" + completeString + ".obj", completeString, true);
         this->gameObjectsBlue.push_back(new GameObjectFromModel(vulnerableGhostPositions,
 															    vulnerableGhostDirections,
 															    vulnerableGhostRotations,
@@ -361,7 +361,7 @@ void VulnerableGhost::init() {
     for (int i = 0; i < 10; i++) {
         std::string string = "vulnerable_ghost_white";
         std::string completeString = string + std::to_string(i + 1);
-        ResourceManager::LoadModel("../res/objects/ghosts/vulnerable_ghost_white/" + completeString + "/" + completeString + ".obj", completeString);
+        ResourceManager::LoadModel("../res/objects/ghosts/vulnerable_ghost_white/" + completeString + "/" + completeString + ".obj", completeString, true);
         this->gameObjectsWhite.push_back(new GameObjectFromModel(vulnerableGhostPositions,
                                                                  vulnerableGhostDirections,
                                                                  vulnerableGhostRotations,

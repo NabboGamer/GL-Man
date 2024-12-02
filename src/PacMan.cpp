@@ -67,7 +67,7 @@ void PacMan::init() {
 	for (int i = 0; i < 10; i++){
 		std::string string = "pacman";
 		std::string completeString = string + std::to_string(i + 1);
-		ResourceManager::LoadModel("../res/objects/pacman/" + completeString + "/" + completeString + ".obj", completeString);
+		ResourceManager::LoadModel("../res/objects/pacman/" + completeString + "/" + completeString + ".obj", completeString, true);
 		this->gameObjects.push_back(new GameObjectFromModel(pacmanPositions,
 															pacmanDirections,
 															pacmanRotations,

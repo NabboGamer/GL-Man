@@ -226,7 +226,7 @@ void Inky::init() {
 	const std::vector<float>     inkyRotations  = { 0.0f };
 	const std::vector<glm::vec3> inkyScaling    = { glm::vec3(0.25f) };
 
-	ResourceManager::LoadModel("../res/objects/ghosts/inky/inky.obj", "inkyModel");
+	ResourceManager::LoadModel("../res/objects/ghosts/inky/inky.obj", "inkyModel", true);
 	this->gameObject = new GameObjectFromModel(inkyPositions,
 											   inkyDirections,
 											   inkyRotations,

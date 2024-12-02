@@ -205,7 +205,7 @@ void Pinky::init() {
 	const std::vector<float>     pinkyRotations  = { 0.0f };
 	const std::vector<glm::vec3> pinkyScaling    = { glm::vec3(0.25f) };
 
-	ResourceManager::LoadModel("../res/objects/ghosts/pinky/pinky.obj", "pinkyModel");
+	ResourceManager::LoadModel("../res/objects/ghosts/pinky/pinky.obj", "pinkyModel", true);
 	this->gameObject = new GameObjectFromModel(pinkyPositions,
 											   pinkyDirections,
 											   pinkyRotations,

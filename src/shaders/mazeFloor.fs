@@ -27,7 +27,7 @@ uniform DirLight dirLight;
 uniform Material material;
 
 // Wall color, multiplied by the white texture to apply the tint
-const vec3 wallColor = vec3(0.4, 0.4, 0.4);
+const vec3 wallColor = vec3(0.13, 0.13, 0.13);
 
 // function prototypes
 vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir);

@@ -235,9 +235,9 @@ void Game::Init() {
     //lightDir.x = -lightDir.x;
     ResourceManager::GetShader("mazeWallShader").Use().SetVector3f("viewPos", cameraPos);
     ResourceManager::GetShader("mazeWallShader").Use().SetVector3f("dirLight.direction", lightDir);
-    ResourceManager::GetShader("mazeWallShader").Use().SetVector3f("dirLight.ambient", glm::vec3(0.4f, 0.4f, 0.4f));
+    ResourceManager::GetShader("mazeWallShader").Use().SetVector3f("dirLight.ambient", glm::vec3(0.13f, 0.13f, 0.13f));
     ResourceManager::GetShader("mazeWallShader").Use().SetVector3f("dirLight.diffuse", glm::vec3(0.5f, 0.5f, 0.5f));
-    ResourceManager::GetShader("mazeWallShader").Use().SetVector3f("dirLight.specular", glm::vec3(0.2f, 0.2f, 0.2f));
+    ResourceManager::GetShader("mazeWallShader").Use().SetVector3f("dirLight.specular", glm::vec3(0.05f, 0.05f, 0.05f));
     ResourceManager::GetShader("mazeWallShader").Use().SetFloat("material.shininess", 8.0f);
     ResourceManager::GetShader("mazeFloorShader").Use().SetVector3f("viewPos", cameraPos);
     ResourceManager::GetShader("mazeFloorShader").Use().SetVector3f("dirLight.direction", lightDir);
@@ -247,13 +247,13 @@ void Game::Init() {
     ResourceManager::GetShader("mazeFloorShader").Use().SetFloat("material.shininess", 8.0f);
     ResourceManager::GetShader("dotShader").Use().SetVector3f("viewPos", cameraPos);
     ResourceManager::GetShader("dotShader").Use().SetVector3f("dirLight.direction", lightDir);
-    ResourceManager::GetShader("dotShader").Use().SetVector3f("dirLight.ambient", glm::vec3(0.3f, 0.3f, 0.3f));
+    ResourceManager::GetShader("dotShader").Use().SetVector3f("dirLight.ambient", glm::vec3(0.07f, 0.07f, 0.07f));
     ResourceManager::GetShader("dotShader").Use().SetVector3f("dirLight.diffuse", glm::vec3(0.7f, 0.7f, 0.7f));
     ResourceManager::GetShader("dotShader").Use().SetVector3f("dirLight.specular", glm::vec3(0.2f, 0.2f, 0.2f));
     ResourceManager::GetShader("dotShader").Use().SetFloat("material.shininess", 32.0f);
     ResourceManager::GetShader("energizerShader").Use().SetVector3f("viewPos", cameraPos);
     ResourceManager::GetShader("energizerShader").Use().SetVector3f("dirLight.direction", lightDir);
-    ResourceManager::GetShader("energizerShader").Use().SetVector3f("dirLight.ambient", glm::vec3(0.3f, 0.3f, 0.3f));
+    ResourceManager::GetShader("energizerShader").Use().SetVector3f("dirLight.ambient", glm::vec3(0.07f, 0.07f, 0.07f));
     ResourceManager::GetShader("energizerShader").Use().SetVector3f("dirLight.diffuse", glm::vec3(0.7f, 0.7f, 0.7f));
     ResourceManager::GetShader("energizerShader").Use().SetVector3f("dirLight.specular", glm::vec3(0.2f, 0.2f, 0.2f));
     ResourceManager::GetShader("energizerShader").Use().SetFloat("material.shininess", 32.0f);
@@ -283,17 +283,17 @@ void Game::Init() {
     ResourceManager::GetShader("lifeCounterShader").Use().SetFloat("material.shininess", 32.0f);
 
     /// Load Textures
-    ResourceManager::LoadTexture(FileSystem::getPath("../res/textures/wall_diffuse_360.png").c_str(), "mazeWallDiffuseTexture");
-    ResourceManager::LoadTexture(FileSystem::getPath("../res/textures/wall_specular_360.png").c_str(), "mazeWallSpecularTexture");
-    ResourceManager::LoadTexture(FileSystem::getPath("../res/textures/floor_diffuse_360.png").c_str(), "mazeFloorDiffuseTexture");
-    ResourceManager::LoadTexture(FileSystem::getPath("../res/textures/floor_specular_360.png").c_str(), "mazeFloorSpecularTexture");
+    ResourceManager::LoadTexture(FileSystem::getPath("../res/textures/wall_diffuse_360.png").c_str(), "mazeWallDiffuseTexture", true);
+    ResourceManager::LoadTexture(FileSystem::getPath("../res/textures/wall_specular_360.png").c_str(), "mazeWallSpecularTexture", false);
+    ResourceManager::LoadTexture(FileSystem::getPath("../res/textures/floor_diffuse_360.png").c_str(), "mazeFloorDiffuseTexture", true);
+    ResourceManager::LoadTexture(FileSystem::getPath("../res/textures/floor_specular_360.png").c_str(), "mazeFloorSpecularTexture", false);
 
     /// Load Models
-    ResourceManager::LoadModel("../res/objects/powerup/coin/coin.obj", "dotModel");
-    ResourceManager::LoadModel("../res/objects/powerup/coin/coin.obj", "energizerModel");
-    ResourceManager::LoadModel("../res/objects/powerup/cherries/cherries.obj", "cherriesModel");
-    ResourceManager::LoadModel("../res/objects/powerup/cherries/cherries.obj", "cherriesFruitCounterModel");
-    ResourceManager::LoadModel("../res/objects/pacman/pacman7/pacman7.obj", "lifeCounterPacmanModel");
+    ResourceManager::LoadModel("../res/objects/powerup/coin/coin.obj", "dotModel", false);
+    ResourceManager::LoadModel("../res/objects/powerup/coin/coin.obj", "energizerModel", false);
+    ResourceManager::LoadModel("../res/objects/powerup/cherries/cherries.obj", "cherriesModel", true);
+    ResourceManager::LoadModel("../res/objects/powerup/cherries/cherries.obj", "cherriesFruitCounterModel", true);
+    ResourceManager::LoadModel("../res/objects/pacman/pacman7/pacman7.obj", "lifeCounterPacmanModel", true);
 
     /// Load Levels
     const auto levelOne = new GameLevel();

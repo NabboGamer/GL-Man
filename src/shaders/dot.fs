@@ -44,7 +44,7 @@ void main() {
     vec3 viewDir = normalize(viewPos - FragPos);
     
     // phase 1: directional lighting
-    vec3 result = CalcDirLight(dirLight, norm, viewDir);    
+    vec3 result = CalcDirLight(dirLight, norm, viewDir); 
     
     FragColor = vec4(result, 1.0);
 }
@@ -62,17 +62,10 @@ vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir) {
 
     vec3 ambient, diffuse, specular;
     // combine results
-    if (useTextures) {
-        // Use textures for components
-        ambient = light.ambient * vec3(texture(texture_diffuse1, TexCoords));
-        diffuse = light.diffuse * diff * vec3(texture(texture_diffuse1, TexCoords));
-        specular = light.specular * spec * vec3(texture(texture_specular1, TexCoords));
-    } else {
-        // Use uniform colors for components
-        ambient = light.ambient * ambientColor;
-        diffuse = light.diffuse * diff * diffuseColor;
-        specular = light.specular * spec * specularColor;
-    }
+    // Use uniform colors for components
+    ambient = light.ambient * ambientColor;
+    diffuse = light.diffuse * diff * diffuseColor;
+    specular = light.specular * spec * specularColor;
     
     return (ambient + diffuse + specular);
 }

@@ -28,12 +28,12 @@ public:
     static Shader&    GetShader(std::string name);
 
     // loads (and generates) a texture from file
-    static Texture2D  LoadTexture(const char *file, std::string name);
+    static Texture2D  LoadTexture(const char *file, std::string name, bool useSRGB = false);
     // retrieves a stored texture
     static Texture2D& GetTexture(std::string name);
 
     // load (and generate) a model from file
-    static Model      LoadModel(const std::string& path, std::string name);
+    static Model      LoadModel(const std::string& path, std::string name, bool useSRGB = false);
     // retrieves a stored model
     static Model&     GetModel(std::string name);
 
@@ -46,6 +46,6 @@ private:
     // loads and generates a shader from file
     static Shader    loadShaderFromFile(const char *vShaderFile, const char *fShaderFile, const char *gShaderFile = nullptr);
     // loads a single texture from file
-    static Texture2D loadTextureFromFile(const char* file);
+    static Texture2D loadTextureFromFile(const char* file, bool useSRGB = false);
 
 };

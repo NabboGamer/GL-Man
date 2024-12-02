@@ -226,7 +226,7 @@ void Clyde::init() {
 	const std::vector<float>     clydeRotations  = { 0.0f };
 	const std::vector<glm::vec3> clydeScaling    = { glm::vec3(0.25f) };
 
-	ResourceManager::LoadModel("../res/objects/ghosts/clyde/clyde.obj", "clydeModel");
+	ResourceManager::LoadModel("../res/objects/ghosts/clyde/clyde.obj", "clydeModel", true);
 	this->gameObject = new GameObjectFromModel(clydePositions,
 											   clydeDirections,
 											   clydeRotations,

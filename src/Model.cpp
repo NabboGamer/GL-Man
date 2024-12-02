@@ -3,7 +3,7 @@
 #include "Model.hpp"
 #include "LoggerManager.hpp"
 
-Model::Model(string const& path, bool gamma) : gammaCorrection(gamma), minBounds(FLT_MAX), maxBounds(-FLT_MAX) {
+Model::Model(string const& path, const bool gamma) : gammaCorrection(gamma), minBounds(FLT_MAX), maxBounds(-FLT_MAX) {
     loadModel(path);
 }
 
@@ -54,7 +54,7 @@ void Model::processNode(aiNode* node, const aiScene* scene) {
 
         meshes.push_back(processedMesh);
     }
-    // after we've processed all of the meshes (if any) we then recursively process each of the children nodes
+    // after we've processed all the meshes (if any) we then recursively process each of the children nodes
     for (unsigned int i = 0; i < node->mNumChildren; i++) {
         processNode(node->mChildren[i], scene);
     }
@@ -222,7 +222,11 @@ vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType type,
         }
         if (!skip) {   // if texture hasn't been loaded already, load it
             Texture texture;
-            texture.id = TextureFromFile(str.C_Str(), this->directory);
+            if (this->gammaCorrection) {
+                texture.id = TextureFromFile(str.C_Str(), this->directory, true);
+            } else {
+                texture.id = TextureFromFile(str.C_Str(), this->directory);
+            }
             texture.type = typeName;
             texture.path = str.C_Str();
             textures.push_back(texture);
@@ -232,7 +236,8 @@ vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType type,
     return textures;
 }
 
-unsigned int Model::TextureFromFile(const char* path, const string& directory, bool gamma) {
+unsigned int Model::TextureFromFile(const char* path, const string& directory, const bool gamma) {
+    // Create the complete path
     string filename = string(path);
     filename = directory + '/' + filename;
 
@@ -241,28 +246,91 @@ unsigned int Model::TextureFromFile(const char* path, const string& directory, b
 
     int width, height, nrComponents;
     unsigned char* data = stbi_load(filename.c_str(), &width, &height, &nrComponents, 0);
-    if (data) {
-        GLenum format;
-        if (nrComponents == 1)
-            format = GL_RED;
-        else if (nrComponents == 3)
-            format = GL_RGB;
-        else if (nrComponents == 4)
-            format = GL_RGBA;
+    GLenum dataType = GL_UNSIGNED_BYTE; // Default data type
 
+    if (!data) {
+        // Trying with 16-bit
+        unsigned short* data16 = stbi_load_16(filename.c_str(), &width, &height, &nrComponents, 0);
+        if (data16) {
+            dataType = GL_UNSIGNED_SHORT;
+            data = reinterpret_cast<unsigned char*>(data16);
+        }
+        else {
+            // Attempt with floating-point
+            float* dataFloat = stbi_loadf(filename.c_str(), &width, &height, &nrComponents, 0);
+            if (dataFloat) {
+                dataType = GL_FLOAT;
+                data = reinterpret_cast<unsigned char*>(dataFloat);
+            }
+            else {
+                LoggerManager::LogError("MODEL: Texture failed to load at path: {}", path);
+                return 0;
+            }
+        }
+    }
+
+    if (data) {
+        // Determination of formats
+        GLenum format, internalFormat;
+        if (nrComponents == 1) { // Grayscale images are not affected by sRGB
+            if (dataType == GL_UNSIGNED_BYTE) {
+                internalFormat = GL_R8;
+            }
+            else if (dataType == GL_UNSIGNED_SHORT) {
+                internalFormat = GL_R16;
+            }
+            else if (dataType == GL_FLOAT) {
+                internalFormat = GL_R32F;
+            }
+            format = GL_RED;
+        }
+        else if (nrComponents == 3) {
+            if (dataType == GL_UNSIGNED_BYTE) {
+                internalFormat = gamma ? GL_SRGB8 : GL_RGB8;
+            }
+            else if (dataType == GL_UNSIGNED_SHORT) {
+                internalFormat = GL_RGB16;
+            }
+            else { // Floating-point
+                internalFormat = GL_RGB32F;
+            }
+            format = GL_RGB;
+        }
+        else if (nrComponents == 4) {
+            if (dataType == GL_UNSIGNED_BYTE) {
+                internalFormat = gamma ? GL_SRGB8_ALPHA8 : GL_RGBA8;
+            }
+            else if (dataType == GL_UNSIGNED_SHORT) {
+                internalFormat = GL_RGBA16;
+            }
+            else { // Floating-point
+                internalFormat = GL_RGBA32F;
+            }
+            format = GL_RGBA;
+        }
+        else {
+            LoggerManager::LogError("MODEL: Unsupported texture format ({} channels)", nrComponents);
+            stbi_image_free(data);
+            return 0;
+        }
+
+        // Loading the texture
         glBindTexture(GL_TEXTURE_2D, textureID);
-        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+        glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, dataType, data);
         glGenerateMipmap(GL_TEXTURE_2D);
 
+        // Wrapping and filtering parameters
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
+        // Free up image memory
         stbi_image_free(data);
-    } else {
+    }
+    else {
+        stbi_image_free(data);
         LoggerManager::LogError("MODEL: Texture failed to load at path: {}", path);
-        stbi_image_free(data);
     }
 
     return textureID;
