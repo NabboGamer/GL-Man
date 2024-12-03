@@ -62,6 +62,8 @@ namespace {
     float frameHeight;
     int frameDelay = 350;  //Delay between frames
 
+    int execution = 0;
+   
     ImGuiIO* io;
 
     ImFont* defaultFont;
@@ -149,14 +151,98 @@ void Menu::Init() {
     else {
     	 LoggerManager::LogError("Using default cursor since custom cursor creation failed.");
     }
-
 }
 
-void Menu::Render(double deltaTime) const {
+void Menu::styleOperativeWidget(int page) const {
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 10.0f * scaleX);
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 4.0f * scaleX); 
+    ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.0f, 0.0f, 0.54f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.12f, 0.56f, 1.0f, 1.0f));
+
+    if (page == 1 || page == 3) {
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.988f, 0.812f, 0.0f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.0f, 0.0f, 1.0f, 1.0f));
+    }
+    else if (page == 2) {
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.2f, 0.6f, 1.0f));
+
+        if (!enableWindow)
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.0f, 0.0f, 1.0f, 1.0f));
+        else
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.12f, 0.56f, 1.0f, 1.0f));
+    }
+}
+
+void Menu::styleDecorativeWidget() const {
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 2.0f * scaleX);
+    ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.988f, 0.812f, 0.0f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.2f, 0.6f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.0f, 0.0f, 1.0f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.12f, 0.56f, 1.0f, 1.0f));
+    ImGui::PushItemFlag(ImGuiItemFlags_NoNav, true);
+}
+
+void Menu::colorOperativeWidget(ImVec2 buttonPos, bool& focused, bool& actived, int page) const {
+    ImGui::SetCursorPos(buttonPos);
+    if (page == 1) {
+        if (!focused)
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.2f, 0.6f, 1.0f));
+        else
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 1.0f, 1.0f));
+    }
+    else if (page == 2) {
+        if (!focused)
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.2f, 0.6f, 1.0f));
+        else if (actived)
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.12f, 0.56f, 1.0f, 1.0f));
+        else
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 1.0f, 1.0f));
+    }
+    else if (page == 3) {
+        if (!focused && !actived)
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.2f, 0.6f, 1.0f));
+        else if (actived && !focused)
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.12f, 0.56f, 1.0f, 1.0f));
+        else
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 1.0f, 1.0f));
+    }
+        
+}
+
+void Menu::clearStyle(int page, int colors, int vars) const { 
+    ImGui::PopStyleColor(colors);
+    ImGui::PopStyleVar(vars);
+    if (page == 1 || page == 2)
+        ImGui::PopFont();
+    if(page == 1 || page == 3)
+        ImGui::PopItemFlag();
+}
+
+void Menu::styleWindow(ImVec2 pos, ImVec2 size) const {
+    ImGui::SetNextWindowPos(pos);
+    ImGui::SetNextWindowSize(size);
+    ImGui::PushStyleVar(ImGuiStyleVar_ChildBorderSize, 5.0f * scaleX);
+    ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 15.0f * scaleX);
+    ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.0f, 0.0f, 1.0f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.7f, 0.7f, 0.7f, 0.5f));
+    ImGui::PushFont(myFont);
+}
+
+void Menu::drawDecorativeWidget(ImVec2 pos, const char* label, ImVec2 dim, int type) const {
+    ImGui::SetCursorPos(pos);
+    if (type == 1) {
+        ImGui::Button(label, dim);
+    }
+    else if (type == 2) {
+        ImGui::Text(label);
+
+    }
+}
+
+void Menu::Render(double deltaTime, Game* GLMan) const {
     //Initializing ImGui Frame
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
-
     ImGui::NewFrame();
 
     //Window Dimension
@@ -169,26 +255,16 @@ void Menu::Render(double deltaTime) const {
         ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
         ImGui::Begin("My name is window, ImGui window", (bool*)0, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus);
         ImGui::GetBackgroundDrawList()->AddImage(bg.id, ImVec2(0, 0), ImVec2(static_cast<float>(this->width), static_cast<float>(this->height)));
-
+        ImGui::PushFont(myFont);
+       
         //Logo
         ImGui::SetCursorPos(ImVec2(600.0f*scaleX, 100.0f*scaleY));
         ImGui::Image(prova.id, ImVec2(static_cast<float>(prova.width*scaleX), static_cast<float>(prova.height*scaleY)));
 
         //Start Button
-        ImGui::SetCursorPos(ImVec2(740.0f*scaleX, 500.0f*scaleY));
-        ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 10.0f*scaleX);
-        ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 4.0f*scaleX);
-        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.988f, 0.812f, 0.0f, 1.0f));
-        ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.0f, 0.0f, 0.54f, 1.0f));
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.0f, 0.0f, 1.0f, 1.0f));
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.12f, 0.56f, 1.0f, 1.0f));
-        if (!startFocused)
-            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.2f, 0.6f, 1.0f));
-        else
-            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 1.0f, 1.0f));
-
-        ImGui::PushFont(myFont);
-
+        styleOperativeWidget(1);
+        colorOperativeWidget(ImVec2(740.0f * scaleX, 500.0f * scaleY), startFocused, startFocused, 1);
+        
         if (ImGui::Button("", ImVec2(400*scaleX, 100*scaleY))) {
             showMenu = false;
             showLoading = true;
@@ -204,32 +280,10 @@ void Menu::Render(double deltaTime) const {
             exitFocused = false;
         }
 
-        ImGui::SetCursorPos(ImVec2(760.0f*scaleX, 510.0f*scaleY));
-        ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 2.0f*scaleX);
-        ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.988f, 0.812f, 0.0f, 1.0f));
-        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.2f, 0.6f, 1.0f));
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.0f, 0.0f, 1.0f, 1.0f));
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.12f, 0.56f, 1.0f, 1.0f));
-        ImGui::PushItemFlag(ImGuiItemFlags_NoNav, true);
-        ImGui::Button("start", ImVec2(357*scaleX, 80*scaleY));
-        ImGui::PopStyleColor(10);
-        ImGui::PopStyleVar(3);
-        ImGui::PopItemFlag();
-
         //Settings Button
-        ImGui::SetCursorPos(ImVec2(740.0f*scaleX, 650.0f*scaleY));
-        ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 10.0f*scaleX);
-        ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 4.0f*scaleX);
-        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.988f, 0.812f, 0.0f, 1.0f));
-        ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.0f, 0.0f, 0.54f, 1.0f));
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.0f, 0.0f, 1.0f, 1.0f));
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.12f, 0.56f, 1.0f, 1.0f));
-        if (!settingsFocused)
-            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.2f, 0.6f, 1.0f));
-        else
-            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 1.0f, 1.0f));
+        colorOperativeWidget(ImVec2(740.0f * scaleX, 650.0f * scaleY), settingsFocused, settingsFocused, 1);
 
-        if (ImGui::Button(" ", ImVec2(400*scaleX, 100*scaleY))) {
+        if (ImGui::Button(" ", ImVec2(400 * scaleX, 100 * scaleY))) {
             showMenu = false;
             showSettings = true;
         }
@@ -244,32 +298,8 @@ void Menu::Render(double deltaTime) const {
             exitFocused = false;
         }
 
-        ImGui::PopStyleColor(4);
-        ImGui::PopStyleVar(2);
-        ImGui::SetCursorPos(ImVec2(760.0f*scaleX, 660.0f*scaleY));
-        ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 2.0f*scaleX);
-        ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.988f, 0.812f, 0.0f, 1.0f));
-        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.2f, 0.6f, 1.0f));
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.0f, 0.0f, 1.0f, 1.0f));
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.12f, 0.56f, 1.0f, 1.0f));
-        ImGui::PushItemFlag(ImGuiItemFlags_NoNav, true);
-        ImGui::Button("settings", ImVec2(357*scaleX, 80*scaleY));
-        ImGui::PopStyleColor(5);
-        ImGui::PopStyleVar();
-        ImGui::PopItemFlag();
-
         //Exit Button
-        ImGui::SetCursorPos(ImVec2(740.0f * scaleX, 800.0f * scaleY));
-        ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 10.0f * scaleX);
-        ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 4.0f * scaleX);
-        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.988f, 0.812f, 0.0f, 1.0f));
-        ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.0f, 0.0f, 0.54f, 1.0f));
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.0f, 0.0f, 1.0f, 1.0f));
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.12f, 0.56f, 1.0f, 1.0f));
-        if (!exitFocused)
-            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.2f, 0.6f, 1.0f));
-        else
-            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 1.0f, 1.0f));
+        colorOperativeWidget(ImVec2(740.0f * scaleX, 800.0f * scaleY), exitFocused, exitFocused, 1);
 
         if (ImGui::Button("  ", ImVec2(400 * scaleX, 100 * scaleY))) {
             glfwSetWindowShouldClose(window, true);
@@ -285,30 +315,16 @@ void Menu::Render(double deltaTime) const {
             exitFocused = true;
         }
 
-        ImGui::PopStyleColor(4);
-        ImGui::PopStyleVar(1);
-        ImGui::SetCursorPos(ImVec2(760.0f * scaleX, 810.0f * scaleY));
-        ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 2.0f * scaleX);
-        ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.988f, 0.812f, 0.0f, 1.0f));
-        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.2f, 0.6f, 1.0f));
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.0f, 0.0f, 1.0f, 1.0f));
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.12f, 0.56f, 1.0f, 1.0f));
-        ImGui::PushItemFlag(ImGuiItemFlags_NoNav, true);
-        ImGui::Button("exit", ImVec2(357 * scaleX, 80 * scaleY));
-        ImGui::PopStyleColor(5);
-        ImGui::PopStyleVar(2);
-        ImGui::PopItemFlag();
+        //Decorative Button
+        styleDecorativeWidget();
+        drawDecorativeWidget(ImVec2(760.0f * scaleX, 510.0f * scaleY), "start", ImVec2(357 * scaleX, 80 * scaleY), 1);
+        drawDecorativeWidget(ImVec2(760.0f * scaleX, 660.0f * scaleY), "settings", ImVec2(357 * scaleX, 80 * scaleY), 1);
+        drawDecorativeWidget(ImVec2(760.0f * scaleX, 810.0f * scaleY), "exit", ImVec2(357 * scaleX, 80 * scaleY), 1);
         ImGui::PopFont();
-
-        //Credential Text
-        ImGui::SetCursorPos(ImVec2(40.0f * scaleX, 1000.0f * scaleY));
         ImGui::PushFont(myFont2);
-        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.988f, 0.812f, 0.0f, 1.0f));
-        ImGui::Text("created by: mps & rst");
-        ImGui::SetCursorPos(ImVec2(1800.0f * scaleX, 1000.0f * scaleY));
-        ImGui::Text("v 1.00");
-        ImGui::PopStyleColor();
-        ImGui::PopFont();
+        drawDecorativeWidget(ImVec2(40.0f * scaleX, 1000.0f * scaleY), "created by: mps & rst", ImVec2(0.0f, 0.0f), 2);
+        drawDecorativeWidget(ImVec2(1800.0f * scaleX, 1000.0f * scaleY), "v 1.00", ImVec2(0.0f, 0.0f), 2);
+        clearStyle(1, 12, 3);
 
         if ((ImGui::GetFocusID() == ImGui::GetID("")) && ImGui::IsKeyPressed(ImGuiKey_UpArrow)) {
             ImGui::ClearActiveID();
@@ -326,7 +342,12 @@ void Menu::Render(double deltaTime) const {
     //Loading window
     if (showLoading) {
         ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
-        progress += 0.01f * ImGui::GetIO().DeltaTime * 3.75f * scaleX;
+        if (progress < 0.6f) {
+            progress += 0.01f * ImGui::GetIO().DeltaTime * 4.0f * scaleX;
+        }
+        else
+            progress += 0.01f * ImGui::GetIO().DeltaTime * 8.0f * scaleX;
+
         constexpr auto progressBarColor = ImVec4(0.0f, 0.0f, 1.0f, 1.0f);
         const ImVec2 loadSize(150.0f * scaleX, 150.0f * scaleY);
         const ImVec2 imageSize(100.0f * scaleX, 100.0f * scaleY);
@@ -334,13 +355,10 @@ void Menu::Render(double deltaTime) const {
         ImGui::Begin("My name is window, ImGui window", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus);
 
         // Progress Bar
-        ImGui::SetCursorPos(ImVec2(310 * scaleX, 530 * scaleY));
-        ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 10.0f * scaleX);
-        ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 4.0f * scaleX);
-        ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.0f, 0.0f, 0.54f, 1.0f));
+        styleOperativeWidget(1);
         ImGui::PushStyleColor(ImGuiCol_PlotHistogram, progressBarColor);
+        ImGui::SetCursorPos(ImVec2(310 * scaleX, 530 * scaleY));
         ImGui::ProgressBar(progress, ImVec2(0.0f, 0.0f), "");
-        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.988f, 0.812f, 0.0f, 1.0f));
         ImGui::PushFont(myFont);
         const float loadPosX = (300.0f + progress * 1200);
         constexpr float loadPosY = 460.0f;
@@ -375,21 +393,31 @@ void Menu::Render(double deltaTime) const {
             ImGui::GetWindowDrawList()->AddImage(clyde.id, clydePos, ImVec2(clydePos.x + imageSize.x, clydePos.y + imageSize.y));
 
         //Bar and text
-        ImGui::SetCursorPos(ImVec2(765 * scaleX, 600 * scaleY));
-        ImGui::Text("loading: ");
-        ImGui::SetCursorPos(ImVec2(1000 * scaleX, 588 * scaleY));
+        drawDecorativeWidget(ImVec2(765 * scaleX, 600 * scaleY), "loading: ", ImVec2(0.0f, 0.0f), 2);
         ImGui::PopFont();
         ImGui::PushFont(myFont3);
+         if (progress == 0.99f)
+            progress += 0.01f;
+        else if (progress >= 1.0f)
+            progress = 1.0f;
+        ImGui::SetCursorPos(ImVec2(1000 * scaleX, 588 * scaleY));
         ImGui::Text("% .0f% %", progress * 100.0f); // Show progress as percentage
 
-        if (progress > 1.0f) {
-            ImGui_ImplGlfw_Sleep(1500);
-            showLoading = false;
-            this->showGame = true;
+        if (execution > 30) {
+            if(progress <= 0.5f)
+                ImGui_ImplGlfw_Sleep(500);
+            if (GLMan->ContinueInit() && progress >= 1.0f) {
+                progress = 1.0f;
+                ImGui_ImplGlfw_Sleep(1500);
+                //GLMan->ContinueInit();
+                showLoading = false;
+                this->showGame = true;
+            }
         }
-        ImGui::PopStyleColor(4);
-        ImGui::PopFont();
-        ImGui::PopStyleVar(2);
+        else
+            execution += 1;
+
+        clearStyle(2, 6, 2);
         ImGui::End();
     }
 
@@ -399,13 +427,10 @@ void Menu::Render(double deltaTime) const {
         ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
         ImGui::Begin("My name is window, ImGui window", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus);
         ImGui::GetBackgroundDrawList()->AddImage(bg.id, ImVec2(0, 0), ImVec2(static_cast<float>(this->width), static_cast<float>(this->height)));
-        ImGui::SetCursorPos(ImVec2(40.0f * scaleX, 1020.0f * scaleY));
         ImGui::PushFont(myFont2);
         ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.988f, 0.812f, 0.0f, 1.0f));
-        ImGui::Text("created by: mps & rst");
-        ImGui::SetCursorPos(ImVec2(1800.0f * scaleX, 1020.0f * scaleY));
-        ImGui::Text("v 1.00");
-        ImGui::PopStyleColor();
+        drawDecorativeWidget(ImVec2(40.0f * scaleX, 1020.0f * scaleY), "created by: mps & rst", ImVec2(0.0f, 0.0f), 2);
+        drawDecorativeWidget(ImVec2(1800.0f * scaleX, 1020.0f * scaleY), "v 1.00", ImVec2(0.0f, 0.0f), 2);
         ImGui::PopFont();
 
         //Logo
@@ -414,13 +439,8 @@ void Menu::Render(double deltaTime) const {
         ImGui::GetWindowDrawList()->AddImage(prova.id, imagePos, ImVec2(imagePos.x + imageSize.x, imagePos.y + imageSize.y));
 
         //First window
-        ImGui::SetNextWindowPos(ImVec2(186.0f * scaleX, 350.0f * scaleY));
-        ImGui::SetNextWindowSize(ImVec2(750.0f * scaleX, 650.0f * scaleY));
+        styleWindow(ImVec2(186.0f * scaleX, 350.0f * scaleY), ImVec2(750.0f * scaleX, 650.0f * scaleY));
         ImGui::SetNextWindowFocus();
-        ImGui::PushStyleVar(ImGuiStyleVar_ChildBorderSize, 5.0f * scaleX);
-        ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 15.0f * scaleX);
-        ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.0f, 0.0f, 1.0f, 1.0f));
-        ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.7f, 0.7f, 0.7f, 0.5f));
 
         ImGui::BeginChild("ciao", ImVec2(750, 650), ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
 
@@ -430,29 +450,8 @@ void Menu::Render(double deltaTime) const {
         }
 
         //Anti-aliasing button
-        ImGui::SetCursorPos(ImVec2(175.0f * scaleX, 200.0f * scaleY));
-        ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 10.0f * scaleX);
-        ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 4.0f * scaleX);
-        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.988f, 0.812f, 0.0f, 1.0f));
-        ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.0f, 0.0f, 0.54f, 1.0f));
-
-        if (!enableWindow)
-            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.0f, 0.0f, 1.0f, 1.0f));
-        else
-            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.12f, 0.56f, 1.0f, 1.0f));
-
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.12f, 0.56f, 1.0f, 1.0f));
-        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.2f, 0.6f, 1.0f));
-
-        if (!aliasingFocus) {
-            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.2f, 0.6f, 1.0f));
-        }
-        else if (aliasingActive)
-            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.12f, 0.56f, 1.0f, 1.0f));
-        else
-            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 1.0f, 1.0f));
-
-        ImGui::PushFont(myFont);
+        styleOperativeWidget(2);
+        colorOperativeWidget(ImVec2(175.0f * scaleX, 200.0f * scaleY), aliasingFocus, aliasingActive, 2);
 
         if (ImGui::IsWindowAppearing()) {
             ImGui::ClearActiveID();
@@ -472,11 +471,6 @@ void Menu::Render(double deltaTime) const {
             firstOpen = true;
         }
 
-        if (needToPop) {
-            ImGui::PopItemFlag();
-            needToPop = false;
-        }
-
         if (ImGui::IsItemHovered() && (io->MouseDelta.x != 0.0f || io->MouseDelta.y != 0.0f)) {
             ImGui::SetKeyboardFocusHere(-1);
         }
@@ -489,55 +483,14 @@ void Menu::Render(double deltaTime) const {
             backFocus = false;
         }
 
-        ImGui::SetCursorPos(ImVec2(195.0f * scaleX, 210.0f * scaleY));
-        ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 2.0f * scaleX);
-        ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.988f, 0.812f, 0.0f, 1.0f));
-        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.2f, 0.6f, 1.0f));
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.0f, 0.0f, 1.0f, 1.0f));
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.12f, 0.56f, 1.0f, 1.0f));
-        ImGui::PushItemFlag(ImGuiItemFlags_NoNav, true);
-        ImGui::Button("anti-aliasing", ImVec2(357 * scaleX, 80 * scaleY));
-        ImGui::PopStyleColor(10);
-        ImGui::PopStyleVar(3);
-        ImGui::PopItemFlag();
-
-        //Hdr Button
-        ImGui::SetCursorPos(ImVec2(175.0f * scaleX, 350.0f * scaleY));
-        ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 10.0f * scaleX);
-        ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 4.0f * scaleX);
-        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.988f, 0.812f, 0.0f, 1.0f));
-        ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.0f, 0.0f, 0.54f, 1.0f));
-        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.2f, 0.6f, 1.0f));
-
-        if (!enableWindow)
-            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.0f, 0.0f, 1.0f, 1.0f));
-        else
-            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.12f, 0.56f, 1.0f, 1.0f));
-
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.12f, 0.56f, 1.0f, 1.0f));
-
-        if (!hdrFocus)
-            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.2f, 0.6f, 1.0f));
-        else if (hdrActive)
-            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.12f, 0.56f, 1.0f, 1.0f));
-        else
-            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 1.0f, 1.0f));
-
-        if (enableWindow) {
-            ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-            needToPop = true;
-        }
+        //HDR Button
+        colorOperativeWidget(ImVec2(175.0f * scaleX, 350.0f * scaleY), hdrFocus, hdrActive, 2);
 
         if (ImGui::Button("hd", ImVec2(400 * scaleX, 100 * scaleY))) {
             enableWindow = true;
             aliasingActive = false;
             hdrActive = true;
             firstOpen = true;
-        }
-
-        if (needToPop) {
-            ImGui::PopItemFlag();
-            needToPop = false;
         }
 
         if (ImGui::IsItemHovered() && (io->MouseDelta.x != 0.0f || io->MouseDelta.y != 0.0f)) {
@@ -552,55 +505,12 @@ void Menu::Render(double deltaTime) const {
             backFocus = false;
         }
 
-        ImGui::PopStyleColor(5);
-        ImGui::PopStyleVar(2);
-        ImGui::SetCursorPos(ImVec2(195.0f * scaleX, 360.0f * scaleY));
-        ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 2.0f * scaleX);
-        ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.988f, 0.812f, 0.0f, 1.0f));
-        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.2f, 0.6f, 1.0f));
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.0f, 0.0f, 1.0f, 1.0f));
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.12f, 0.56f, 1.0f, 1.0f));
-        ImGui::PushItemFlag(ImGuiItemFlags_NoNav, true);
-        ImGui::Button("hdr", ImVec2(357 * scaleX, 80 * scaleY));
-        ImGui::PopStyleColor(5);
-        ImGui::PopStyleVar();
-        ImGui::PopItemFlag();
-        ImGui::PopFont();
-
-        //Keyboard configuration
-        if ((ImGui::GetFocusID() == ImGui::GetID("back")) && ImGui::IsKeyPressed(ImGuiKey_UpArrow) && !enableWindow) {
-            ImGui::ClearActiveID();
-            ImGui::SetFocusID(ImGui::GetID("hd"), ImGui::GetCurrentWindow());
-        }
-
-        if ((ImGui::GetFocusID() == ImGui::GetID("hd")) && ImGui::IsKeyPressed(ImGuiKey_DownArrow) && !enableWindow) {
-            ImGui::ClearActiveID();
-            ImGui::SetFocusID(ImGui::GetID("back"), ImGui::GetCurrentWindow());
-        }
-
-        if (ImGui::IsWindowFocused() && ImGui::IsKeyPressed(ImGuiKey_Backspace) && !enableWindow) {
-            showSettings = false;
-            showMenu = true;
-        }
-
-        //Back button
-        ImGui::SetCursorPos(ImVec2(50.0f * scaleX, 50.0f * scaleY));
-        ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 10.0f * scaleX);
-        ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 4.0f * scaleX);
-        ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.0f, 0.0f, 0.54f, 1.0f));
+        //Back Button
         ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.0f, 0.0f, 1.0f, 1.0f));
         ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.12f, 0.56f, 1.0f, 1.0f));
 
-        if (!backFocus) {
-            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.2f, 0.6f, 1.0f));
-        }
-        else
-            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 1.0f, 1.0f));
-
-        if (enableWindow) {
-            ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-            needToPop = true;
-        }
+        colorOperativeWidget(ImVec2(50.0f * scaleX, 50.0f * scaleY), backFocus, backFocus, 1);
+        
 
         if (ImGui::ImageButton("back", back.id, ImVec2(100.0f * scaleX, 50.0f * scaleY))) {
             showSettings = false;
@@ -624,44 +534,46 @@ void Menu::Render(double deltaTime) const {
             needToPop = false;
         }
 
-        ImGui::PopStyleColor(4);
-        ImGui::PopStyleVar(2);
+        //Decorative Button
+        styleDecorativeWidget();
+        ImGui::SetCursorPos(ImVec2(195.0f * scaleX, 210.0f * scaleY));
+        ImGui::Button("anti-aliasing", ImVec2(357 * scaleX, 80 * scaleY));
+        drawDecorativeWidget(ImVec2(195.0f * scaleX, 210.0f * scaleY), "anti-aliasing", ImVec2(357 * scaleX, 80 * scaleY), 1);
+        drawDecorativeWidget(ImVec2(195.0f * scaleX, 360.0f * scaleY), "hdr", ImVec2(357 * scaleX, 80 * scaleY), 1);
+        clearStyle(1, 14, 3);
+
+        //Keyboard configuration
+        if ((ImGui::GetFocusID() == ImGui::GetID("back")) && ImGui::IsKeyPressed(ImGuiKey_UpArrow) && !enableWindow) {
+            ImGui::ClearActiveID();
+            ImGui::SetFocusID(ImGui::GetID("hd"), ImGui::GetCurrentWindow());
+        }
+
+        if ((ImGui::GetFocusID() == ImGui::GetID("hd")) && ImGui::IsKeyPressed(ImGuiKey_DownArrow) && !enableWindow) {
+            ImGui::ClearActiveID();
+            ImGui::SetFocusID(ImGui::GetID("back"), ImGui::GetCurrentWindow());
+        }
+
+        if (ImGui::IsWindowFocused() && ImGui::IsKeyPressed(ImGuiKey_Backspace) && !enableWindow) {
+            showSettings = false;
+            showMenu = true;
+        }
 
         ImGui::EndChild();
-        ImGui::PopStyleVar(2);
-        ImGui::PopStyleColor(2);
+        clearStyle(4, 2, 2);
 
         //Anti-aliasing settings windows
         if (aliasingWindow) {
             //Window style
-            ImGui::SetNextWindowPos(ImVec2(965.0f * scaleX, 350.0f * scaleY));
-            ImGui::SetNextWindowSize(ImVec2(750.0f * scaleX, 650.0f * scaleY));
-            ImGui::PushStyleVar(ImGuiStyleVar_ChildBorderSize, 5.0f * scaleX);
-            ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 15.0f * scaleX);
-            ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.0f, 0.0f, 1.0f, 1.0f));
-            ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.7f, 0.7f, 0.7f, 0.5f));
+            styleWindow(ImVec2(965.0f * scaleX, 350.0f * scaleY), ImVec2(750.0f * scaleX, 650.0f * scaleY));
+
             ImGui::BeginChild("ciao2", ImVec2(750 , 650), ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus);
 
             if (aliasingFocus && enableWindow)
                 ImGui::SetWindowFocus();
 
             //Off button
-            ImGui::SetCursorPos(ImVec2(410.0f * scaleX, 200.0f * scaleY));
-            ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 10.0f * scaleX);
-            ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 4.0f * scaleX);
-            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.988f, 0.812f, 0.0f, 1.0f));
-            ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.0f, 0.0f, 0.54f, 1.0f));
-            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.0f, 0.0f, 1.0f, 1.0f));
-            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.12f, 0.56f, 1.0f, 1.0f));
-
-            if (!offFocus && !offActiveAlias)
-                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.2f, 0.6f, 1.0f));
-            else if (offActiveAlias && !offFocus)
-                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.12f, 0.56f, 1.0f, 1.0f));
-            else
-                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 1.0f, 1.0f));
-
-            ImGui::PushFont(myFont);
+            styleOperativeWidget(3);
+            colorOperativeWidget(ImVec2(410.0f * scaleX, 200.0f * scaleY), offFocus, offActiveAlias, 3);
 
             if (!enableWindow) {
                 ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
@@ -693,43 +605,8 @@ void Menu::Render(double deltaTime) const {
                 backFocusAlias = false;
             }
 
-            if (needToPop) {
-                ImGui::PopItemFlag();
-                needToPop = false;
-            }
-
-            ImGui::SetCursorPos(ImVec2(435.0f * scaleX, 210.0f * scaleY));
-            ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 2.0f * scaleX);
-            ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.988f, 0.812f, 0.0f, 1.0f));
-            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.2f, 0.6f, 1.0f));
-            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.0f, 0.0f, 1.0f, 1.0f));
-            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.12f, 0.56f, 1.0f, 1.0f));
-            ImGui::PushItemFlag(ImGuiItemFlags_NoNav, true);
-            ImGui::Button("off", ImVec2(157 * scaleX, 60 * scaleY));
-            ImGui::PopStyleColor(9);
-            ImGui::PopStyleVar(3);
-            ImGui::PopItemFlag();
-
-            //On button
-            ImGui::SetCursorPos(ImVec2(140.0f * scaleX, 200.0f * scaleY));
-            ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 10.0f * scaleX);
-            ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 4.0f * scaleX);
-            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.988f, 0.812f, 0.0f, 1.0f));
-            ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.0f, 0.0f, 0.54f, 1.0f));
-            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.0f, 0.0f, 1.0f, 1.0f));
-            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.12f, 0.56f, 1.0f, 1.0f));
-
-            if (!onFocus && !onActiveAlias)
-                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.2f, 0.6f, 1.0f));
-            else if (onActiveAlias && !onFocus)
-                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.12f, 0.56f, 1.0f, 1.0f));
-            else
-                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 1.0f, 1.0f));
-
-            if (!enableWindow) {
-                ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-                needToPop = true;
-            }
+            //On Button
+            colorOperativeWidget(ImVec2(140.0f * scaleX, 200.0f * scaleY), onFocus, onActiveAlias, 3);
 
             if (ImGui::Button("si", ImVec2(200 * scaleX, 80 * scaleY))) {
                 onActiveAlias = true;
@@ -751,27 +628,39 @@ void Menu::Render(double deltaTime) const {
                 wasOffAlias = false;
             }
 
+            //Back Button
+            colorOperativeWidget(ImVec2(50.0f * scaleX, 50.0f * scaleY), backFocusAlias, backFocusAlias, 1);
+
+            if (ImGui::ImageButton("backAlias", back.id, ImVec2(70.0f * scaleX, 37.5f * scaleY))) {
+                aliasingActive = false;
+                onFocus = false;
+                offFocus = false;
+                backFocusAlias = false;
+                enableWindow = false;
+            }
+
+            if (ImGui::IsItemHovered() && (io->MouseDelta.x != 0.0f || io->MouseDelta.y != 0.0f)) {
+                ImGui::SetKeyboardFocusHere(-1);
+            }
+
+            if (ImGui::IsItemFocused() || ImGui::IsItemHovered()) {
+                onFocus = false;
+                offFocus = false;
+                backFocusAlias = true;
+            }
+
             if (needToPop) {
                 ImGui::PopItemFlag();
                 needToPop = false;
             }
 
-            //Slider-grab
-            ImGui::PopStyleColor(4);
-            ImGui::PopStyleVar(2);
-            ImGui::SetCursorPos(ImVec2(165.0f * scaleX, 210.0f * scaleY));
-            ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 2.0f * scaleX);
-            ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.988f, 0.812f, 0.0f, 1.0f));
-            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.2f, 0.6f, 1.0f));
-            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.0f, 0.0f, 1.0f, 1.0f));
-            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.12f, 0.56f, 1.0f, 1.0f));
-            ImGui::PushItemFlag(ImGuiItemFlags_NoNav, true);
-            ImGui::Button("on", ImVec2(157 * scaleX, 60 * scaleY));
-            ImGui::PopStyleColor(5);
-            ImGui::PopStyleVar();
-            ImGui::PopItemFlag();
-            ImGui::PopFont();
+            //Decorative Button
+            styleDecorativeWidget();
+            drawDecorativeWidget(ImVec2(435.0f * scaleX, 210.0f * scaleY), "off", ImVec2(157 * scaleX, 60 * scaleY), 1);
+            drawDecorativeWidget(ImVec2(165.0f * scaleX, 210.0f * scaleY), "on", ImVec2(157 * scaleX, 60 * scaleY), 1);
+            clearStyle(2, 10, 3);
 
+            //Slider-grab
             ImGui::SetCursorPos(ImVec2(143.0f * scaleX, 350.0f * scaleY));
             ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(5.0f * scaleX, 10.0f * scaleY));
 
@@ -786,8 +675,6 @@ void Menu::Render(double deltaTime) const {
 
             ImGui::PushStyleColor(ImGuiCol_SliderGrabActive, ImVec4(0.988f, 0.812f, 0.0f, 1.0f));
             ImGui::PushStyleColor(ImGuiCol_FrameBgActive, ImVec4(0.0f, 0.0f, 1.0f, 1.0f));
-
-            ImGui::PushItemFlag(ImGuiItemFlags_NoNav, true);
 
             if (!barFocus) {
                 ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
@@ -833,8 +720,7 @@ void Menu::Render(double deltaTime) const {
                 barFocus = false;
             }
 
-            ImGui::PopStyleVar();
-            ImGui::PopStyleColor(6);
+            clearStyle(4, 6, 1);
 
             if (needToPop) {
                 ImGui::PopItemFlag();
@@ -888,119 +774,46 @@ void Menu::Render(double deltaTime) const {
             //Images and text of slider-grab
             ImVec2 imageSize(80.0f * scaleX, 80.0f * scaleY);
             ImGui::PushFont(myFont3);
+
             if (!barFocus)
                 ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.988f, 0.812f, 0.0f, 0.5f));
             else
                 ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.988f, 0.812f, 0.0f, 1.0f));
 
-            ImGui::SetCursorPos(ImVec2(255.0f * scaleX, 400.0f * scaleY));
-            ImGui::Text("4x");
-
-            ImGui::SetCursorPos(ImVec2(420.0f * scaleX, 400.0f * scaleY));
-            ImGui::Text("8x");
-
-            ImGui::SetCursorPos(ImVec2(585.0f * scaleX, 400.0f * scaleY));
-            ImGui::Text("16x");
+            drawDecorativeWidget(ImVec2(255.0f * scaleX, 400.0f * scaleY), "4x", ImVec2(0.0f, 0.0f), 2);
+            drawDecorativeWidget(ImVec2(420.0f * scaleX, 400.0f * scaleY), "8x", ImVec2(0.0f, 0.0f), 2);
+            drawDecorativeWidget(ImVec2(585.0f * scaleX, 400.0f * scaleY), "16x", ImVec2(0.0f, 0.0f), 2);
 
         	ImVec2 imagePos(1210.0f * scaleX, 675.0f * scaleY);
-            if (!barActiveAlias)
+            ImVec2 imagePos1(1375.0f * scaleX, 675.0f * scaleY);
+            ImVec2 imagePos2(1535.0f * scaleX, 675.0f * scaleY);
+            if (!barActiveAlias) {
                 ImGui::GetWindowDrawList()->AddImage(coin.id, imagePos, ImVec2(imagePos.x + imageSize.x, imagePos.y + imageSize.y));
-            else
-                ImGui::GetWindowDrawList()->AddImage(coin2.id, imagePos, ImVec2(imagePos.x + imageSize.x, imagePos.y + imageSize.y));
-
-            const ImVec2 imagePos1(1375.0f * scaleX, 675.0f * scaleY);
-            if (!barActiveAlias)
                 ImGui::GetWindowDrawList()->AddImage(coin.id, imagePos1, ImVec2(imagePos1.x + imageSize.x, imagePos1.y + imageSize.y));
-            else
-                ImGui::GetWindowDrawList()->AddImage(coin2.id, imagePos1, ImVec2(imagePos1.x + imageSize.x, imagePos1.y + imageSize.y));
-
-            const ImVec2 imagePos2(1535.0f * scaleX, 675.0f * scaleY);
-            if (!barActiveAlias)
                 ImGui::GetWindowDrawList()->AddImage(coin.id, imagePos2, ImVec2(imagePos2.x + imageSize.x, imagePos2.y + imageSize.y));
-            else
+            }
+            else {
+                ImGui::GetWindowDrawList()->AddImage(coin2.id, imagePos, ImVec2(imagePos.x + imageSize.x, imagePos.y + imageSize.y));
+                ImGui::GetWindowDrawList()->AddImage(coin2.id, imagePos1, ImVec2(imagePos1.x + imageSize.x, imagePos1.y + imageSize.y));
                 ImGui::GetWindowDrawList()->AddImage(coin2.id, imagePos2, ImVec2(imagePos2.x + imageSize.x, imagePos2.y + imageSize.y));
-
-            //Back button
-            ImGui::SetCursorPos(ImVec2(50.0f * scaleX, 50.0f * scaleY));
-            ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 10.0f * scaleX);
-            ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 4.0f * scaleX);
-            ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.0f, 0.0f, 0.54f, 1.0f));
-            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.0f, 0.0f, 1.0f, 1.0f));
-            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.12f, 0.56f, 1.0f, 1.0f));
-
-            if (!backFocusAlias) {
-                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.2f, 0.6f, 1.0f));
-            }
-            else
-                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 1.0f, 1.0f));
-
-            if (!enableWindow) {
-                ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-                needToPop = true;
             }
 
-            if (ImGui::ImageButton("backAlias", back.id, ImVec2(70.0f * scaleX, 37.5f * scaleY))) {
-                aliasingActive = false;
-                onFocus = false;
-                offFocus = false;
-                backFocusAlias = false;
-                enableWindow = false;
-            }
-
-            if (ImGui::IsItemHovered() && (io->MouseDelta.x != 0.0f || io->MouseDelta.y != 0.0f)) {
-                ImGui::SetKeyboardFocusHere(-1);
-            }
-
-            if (ImGui::IsItemFocused() || ImGui::IsItemHovered()) {
-                onFocus = false;
-                offFocus = false;
-                backFocusAlias = true;
-            }
-
-            if (needToPop) {
-                ImGui::PopItemFlag();
-                needToPop = false;
-            }
-
-            ImGui::PopFont();
-            ImGui::PopStyleColor(5);
-            ImGui::PopStyleVar(2);
+            clearStyle(2, 2, 2);
             ImGui::EndChild();
-            ImGui::PopStyleVar(2);
         }
-
 
         //Hdr window settings
         if (hdrWindow) {
             //Window style
-            ImGui::SetNextWindowPos(ImVec2(965.0f * scaleX, 350.0f * scaleY));
-            ImGui::SetNextWindowSize(ImVec2(750.0f * scaleX, 650.0f * scaleY));
-            ImGui::PushStyleVar(ImGuiStyleVar_ChildBorderSize, 5.0f * scaleX);
-            ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 15.0f * scaleX);
-            ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.0f, 0.0f, 1.0f, 1.0f));
-            ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.7f, 0.7f, 0.7f, 0.5f));
+            styleWindow(ImVec2(965.0f * scaleX, 350.0f * scaleY), ImVec2(750.0f * scaleX, 650.0f * scaleY));
             ImGui::BeginChild("ciao2", ImVec2(750, 650), ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus);
 
             if (hdrFocus && enableWindow)
                 ImGui::SetWindowFocus();
 
-            //Off button
-            ImGui::SetCursorPos(ImVec2(410.0f * scaleX, 200.0f * scaleY));
-            ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 10.0f * scaleX);
-            ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 4.0f * scaleX);
-            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.988f, 0.812f, 0.0f, 1.0f));
-            ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.0f, 0.0f, 0.54f, 1.0f));
-            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.0f, 0.0f, 1.0f, 1.0f));
-            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.12f, 0.56f, 1.0f, 1.0f));
-
-            if (!offFocus && !offActiveHdr)
-                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.2f, 0.6f, 1.0f));
-            else if (offActiveHdr && !offFocus)
-                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.12f, 0.56f, 1.0f, 1.0f));
-            else
-                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 1.0f, 1.0f));
-
-            ImGui::PushFont(myFont);
+            //Off button 
+            styleOperativeWidget(3);
+            colorOperativeWidget(ImVec2(410.0f * scaleX, 200.0f * scaleY), offFocus, offActiveHdr, 3);
 
             if (!enableWindow) {
                 ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
@@ -1033,43 +846,8 @@ void Menu::Render(double deltaTime) const {
                 wasOffHdr = true;
             }
 
-            if (needToPop) {
-                ImGui::PopItemFlag();
-                needToPop = false;
-            }
-
-            ImGui::SetCursorPos(ImVec2(435.0f * scaleX, 210.0f * scaleY));
-            ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 2.0f * scaleX);
-            ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.988f, 0.812f, 0.0f, 1.0f));
-            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.2f, 0.6f, 1.0f));
-            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.0f, 0.0f, 1.0f, 1.0f));
-            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.12f, 0.56f, 1.0f, 1.0f));
-            ImGui::PushItemFlag(ImGuiItemFlags_NoNav, true);
-            ImGui::Button("off", ImVec2(157 * scaleX, 60 * scaleY));
-            ImGui::PopStyleColor(9);
-            ImGui::PopStyleVar(3);
-            ImGui::PopItemFlag();
-
-            //On button
-            ImGui::SetCursorPos(ImVec2(140.0f * scaleX, 200.0f * scaleY));
-            ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 10.0f * scaleX);
-            ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 4.0f * scaleX);
-            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.988f, 0.812f, 0.0f, 1.0f));
-            ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.0f, 0.0f, 0.54f, 1.0f));
-            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.0f, 0.0f, 1.0f, 1.0f));
-            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.12f, 0.56f, 1.0f, 1.0f));
-
-            if (!onFocus && !onActiveHdr)
-                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.2f, 0.6f, 1.0f));
-            else if (onActiveHdr && !onFocus)
-                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.12f, 0.56f, 1.0f, 1.0f));
-            else
-                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 1.0f, 1.0f));
-
-            if (!enableWindow) {
-                ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-                needToPop = true;
-            }
+            //On Button
+            colorOperativeWidget(ImVec2(140.0f * scaleX, 200.0f * scaleY), onFocus, onActiveHdr, 3);
 
             if (ImGui::Button("si", ImVec2(200 * scaleX, 80 * scaleY))) {
                 onActiveHdr = true;
@@ -1091,25 +869,38 @@ void Menu::Render(double deltaTime) const {
                 wasOffHdr = false;
             }
 
+            //Back Button
+            colorOperativeWidget(ImVec2(50.0f * scaleX, 50.0f * scaleX), backFocusHdr, backFocusHdr, 1);
+
+            if (ImGui::ImageButton("backHdr", back.id, ImVec2(70.0f * scaleX, 37.5f * scaleY))) {
+                backFocusHdr = false;
+                hdrActive = false;
+                onFocus = false;
+                offFocus = false;
+                enableWindow = false;
+
+            }
+
+            if (ImGui::IsItemHovered() && (io->MouseDelta.x != 0.0f || io->MouseDelta.y != 0.0f)) {
+                ImGui::SetKeyboardFocusHere(-1);
+            }
+
+            if (ImGui::IsItemFocused() || ImGui::IsItemHovered()) {
+                onFocus = false;
+                offFocus = false;
+                backFocusHdr = true;
+            }
+
             if (needToPop) {
                 ImGui::PopItemFlag();
                 needToPop = false;
             }
 
-            ImGui::PopStyleColor(4);
-            ImGui::PopStyleVar(2);
-            ImGui::SetCursorPos(ImVec2(165.0f * scaleX, 210.0f * scaleY));
-            ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 2.0f * scaleX);
-            ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.988f, 0.812f, 0.0f, 1.0f));
-            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.2f, 0.6f, 1.0f));
-            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.0f, 0.0f, 1.0f, 1.0f));
-            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.12f, 0.56f, 1.0f, 1.0f));
-            ImGui::PushItemFlag(ImGuiItemFlags_NoNav, true);
-            ImGui::Button("on", ImVec2(157 * scaleX, 60 * scaleY));
-            ImGui::PopStyleColor(5);
-            ImGui::PopStyleVar();
-            ImGui::PopItemFlag();
-            ImGui::PopFont();
+            //Decorative Button
+            styleDecorativeWidget();
+            drawDecorativeWidget(ImVec2(435.0f * scaleX, 210.0f * scaleY), "off", ImVec2(157 * scaleX, 60 * scaleY), 1);
+            drawDecorativeWidget(ImVec2(165.0f * scaleX, 210.0f * scaleY), "on", ImVec2(157 * scaleX, 60 * scaleY), 1);
+            clearStyle(1, 10, 3);
 
             //Slider-grab
             ImGui::SetCursorPos(ImVec2(143.0f * scaleX, 350.0f * scaleY));
@@ -1178,8 +969,7 @@ void Menu::Render(double deltaTime) const {
                 barFocus = false;
             }
 
-            ImGui::PopStyleVar();
-            ImGui::PopStyleColor(6);
+            clearStyle(4, 6, 1);
 
             if (needToPop) {
                 ImGui::PopItemFlag();
@@ -1239,90 +1029,30 @@ void Menu::Render(double deltaTime) const {
             else
                 ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.988f, 0.812f, 0.0f, 1.0f));
 
-            ImGui::SetCursorPos(ImVec2(180.0f * scaleX, 400.0f * scaleY));
-            ImGui::Text("0.25");
-
-            ImGui::SetCursorPos(ImVec2(320.0f * scaleX, 400.0f * scaleY));
-            ImGui::Text("0.5");
-
-            ImGui::SetCursorPos(ImVec2(430.0f * scaleX, 400.0f * scaleY));
-            ImGui::Text("0.75");
-
-            ImGui::SetCursorPos(ImVec2(600.0f * scaleX, 400.0f * scaleY));
-            ImGui::Text("1");
+            drawDecorativeWidget(ImVec2(180.0f * scaleX, 400.0f * scaleY), "0.25", ImVec2(0.0f, 0.0f), 2);
+            drawDecorativeWidget(ImVec2(320.0f * scaleX, 400.0f * scaleY), "0.5", ImVec2(0.0f, 0.0f), 2);
+            drawDecorativeWidget(ImVec2(430.0f * scaleX, 400.0f * scaleY), "0.75", ImVec2(0.0f, 0.0f), 2);
+            drawDecorativeWidget(ImVec2(600.0f * scaleX, 400.0f * scaleY), "1", ImVec2(0.0f, 0.0f), 2);
 
             ImVec2 imagePos(1175.0f * scaleX, 675.0f * scaleY);
-            if (!barActiveHdr)
+            ImVec2 imagePos1(1295.0f * scaleX, 675.0f * scaleY);
+            ImVec2 imagePos2(1415.0f * scaleX, 675.0f * scaleY);
+            ImVec2 imagePos3(1535.0f * scaleX, 675.0f * scaleY);
+            if (!barActiveHdr) {
                 ImGui::GetWindowDrawList()->AddImage(coin.id, imagePos, ImVec2(imagePos.x + imageSize.x, imagePos.y + imageSize.y));
-            else
-                ImGui::GetWindowDrawList()->AddImage(coin2.id, imagePos, ImVec2(imagePos.x + imageSize.x, imagePos.y + imageSize.y));
-
-            const ImVec2 imagePos1(1295.0f * scaleX, 675.0f * scaleY);
-            if (!barActiveHdr)
                 ImGui::GetWindowDrawList()->AddImage(coin.id, imagePos1, ImVec2(imagePos1.x + imageSize.x, imagePos1.y + imageSize.y));
-            else
-                ImGui::GetWindowDrawList()->AddImage(coin2.id, imagePos1, ImVec2(imagePos1.x + imageSize.x, imagePos1.y + imageSize.y));
-
-            const ImVec2 imagePos2(1415.0f * scaleX, 675.0f * scaleY);
-            if (!barActiveHdr)
                 ImGui::GetWindowDrawList()->AddImage(coin.id, imagePos2, ImVec2(imagePos2.x + imageSize.x, imagePos2.y + imageSize.y));
-            else
-                ImGui::GetWindowDrawList()->AddImage(coin2.id, imagePos2, ImVec2(imagePos2.x + imageSize.x, imagePos2.y + imageSize.y));
-
-            const ImVec2 imagePos3(1535.0f * scaleX, 675.0f * scaleY);
-            if (!barActiveHdr)
                 ImGui::GetWindowDrawList()->AddImage(coin.id, imagePos3, ImVec2(imagePos3.x + imageSize.x, imagePos3.y + imageSize.y));
-            else
+            }
+            else {
+                ImGui::GetWindowDrawList()->AddImage(coin2.id, imagePos, ImVec2(imagePos.x + imageSize.x, imagePos.y + imageSize.y));
+                ImGui::GetWindowDrawList()->AddImage(coin2.id, imagePos1, ImVec2(imagePos1.x + imageSize.x, imagePos1.y + imageSize.y));
+                ImGui::GetWindowDrawList()->AddImage(coin2.id, imagePos2, ImVec2(imagePos2.x + imageSize.x, imagePos2.y + imageSize.y));
                 ImGui::GetWindowDrawList()->AddImage(coin2.id, imagePos3, ImVec2(imagePos3.x + imageSize.x, imagePos3.y + imageSize.y));
-
-            //Back button
-            ImGui::SetCursorPos(ImVec2(50.0f * scaleX, 50.0f * scaleX));
-            ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 10.0f * scaleX);
-            ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 4.0f * scaleX);
-            ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.0f, 0.0f, 0.54f, 1.0f));
-            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.0f, 0.0f, 1.0f, 1.0f));
-            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.12f, 0.56f, 1.0f, 1.0f));
-
-            if (!backFocusHdr) {
-                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.2f, 0.6f, 1.0f));
-            }
-            else
-                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 1.0f, 1.0f));
-
-            if (!enableWindow) {
-                ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-                needToPop = true;
             }
 
-            if (ImGui::ImageButton("backHdr", back.id, ImVec2(70.0f * scaleX, 37.5f * scaleY))) {
-                backFocusHdr = false;
-                hdrActive = false;
-                onFocus = false;
-                offFocus = false;
-                enableWindow = false;
-
-            }
-
-            if (ImGui::IsItemHovered() && (io->MouseDelta.x != 0.0f || io->MouseDelta.y != 0.0f)) {
-                ImGui::SetKeyboardFocusHere(-1);
-            }
-
-            if (ImGui::IsItemFocused() || ImGui::IsItemHovered()) {
-                onFocus = false;
-                offFocus = false;
-                backFocusHdr = true;
-            }
-
-            if (needToPop) {
-                ImGui::PopItemFlag();
-                needToPop = false;
-            }
-
-            ImGui::PopFont();
-            ImGui::PopStyleColor(5);
-            ImGui::PopStyleVar(2);
+            clearStyle(2, 2, 2);
             ImGui::EndChild();
-            ImGui::PopStyleVar(2);
         }
 
         ImGui::End();

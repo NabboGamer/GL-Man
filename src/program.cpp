@@ -93,7 +93,7 @@ int main() {
         return -1;
     }
 
-    GLFWwindow* window = glfwCreateWindow(mode->width, mode->width, "GL-Man", monitor, nullptr);
+    GLFWwindow* window = glfwCreateWindow(mode->width, mode->height, "GL-Man", monitor, nullptr);
 
     if (!window) {
         glfwTerminate();
@@ -118,7 +118,11 @@ int main() {
     glViewport(0, 0, mode->width, mode->height);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    //glDepthFunc(GL_LESS);
     glEnable(GL_DEPTH_TEST);
+    //glEnable(GL_STENCIL_TEST);
+    //glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+    //glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 
     // initialize game
     // ---------------
@@ -149,7 +153,7 @@ int main() {
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         if (!showGame) {
-            GLManMenu->Render(deltaTime);
+            GLManMenu->Render(deltaTime, GLMan);
         }
         else {
             glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);

@@ -52,6 +52,7 @@ public:
 
     // initialize game state (load all shaders/textures/levels)
     void Init();
+    bool ContinueInit();
 
     // game loop
     void ProcessInput(double dt);

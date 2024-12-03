@@ -7,30 +7,29 @@ out vec4 FragColor;
 in vec3 FragPos;
 in vec3 Normal;
 in vec2 TexCoords;
+in vec3 viewPos;
+in float shininess;
 
-struct DirLight {
-    vec3 direction;
-	
-    vec3 ambient;
-    vec3 diffuse;
-    vec3 specular;
-};
+in DIR_LIGHT {
+  vec3 direction;
+  vec3 ambient;
+  vec3 diffuse;
+  vec3 specular;
+} light;
 
 struct Material {
     sampler2D diffuse;
     sampler2D specular;
-    float shininess;
 };
 
-uniform vec3 viewPos;
-uniform DirLight dirLight;
+
 uniform Material material;
 
 // Wall color, multiplied by the white texture to apply the tint
 const vec3 wallColor = vec3(0.13, 0.13, 0.13);
 
 // function prototypes
-vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir);
+vec3 CalcDirLight(vec3 normal, vec3 viewDir);
 
 void main() {    
     // properties
@@ -38,13 +37,13 @@ void main() {
     vec3 viewDir = normalize(viewPos - FragPos);
     
     // phase 1: directional lighting
-    vec3 result = CalcDirLight(dirLight, norm, viewDir);    
+    vec3 result = CalcDirLight(norm, viewDir);    
     
     FragColor = vec4(result, 1.0);
 }
 
 // calculates the color when using a directional light.
-vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir) {
+vec3 CalcDirLight(vec3 normal, vec3 viewDir) {
     vec3 lightDir = normalize(-light.direction);
     
     // diffuse shading
@@ -64,7 +63,7 @@ vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir) {
     float specularStrength = 1.0 - roughness;
     
     //float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess) * specularStrength;
-    float spec = pow(max(dot(normal, halfwayDir), 0.0), material.shininess) * specularStrength;
+    float spec = pow(max(dot(normal, halfwayDir), 0.0), shininess) * specularStrength;
 
     // combine results
     vec3 ambient = light.ambient * wallColor * vec3(texture(material.diffuse, TexCoords));

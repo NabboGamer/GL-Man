@@ -47,6 +47,20 @@ namespace {
     TextRenderer*         text;
     PostProcessor*        postProcessor;
 
+    struct SharedParams {
+        glm::mat4 projection;
+        glm::mat4 view;
+        glm::vec3 lightDir;
+        glm::vec3 lightPos;
+        glm::vec3 lightSpecular;
+        float materialShininess;
+    };
+
+    struct OtherParams {
+        glm::vec3 lightAmbient;
+        glm::vec3 lightDiffuse;
+    };
+
 }
 
 // Initial speed of the player
@@ -55,6 +69,7 @@ namespace {
     float           scaleX;
     float           scaleY;
     float           scaleText;
+    int updating = 0;
 }
 
 namespace {
@@ -208,12 +223,83 @@ void Game::Init() {
     this->up         = glm::vec3(   0.0,  1.0,  0.0);
     this->cameraDir  = glm::normalize(cameraPos - cameraAt);
     this->cameraSide = glm::normalize(glm::cross(up, cameraDir));
-    this->cameraUp   = glm::normalize(glm::cross(cameraDir, cameraSide));
-    const glm::mat4 view = glm::lookAt(cameraPos, cameraAt, cameraUp);
-    const glm::mat4 projection = glm::perspective(glm::radians(35.0f), static_cast<float>(this->width) / static_cast<float>(this->height), 0.1f, 55.0f);
-    ResourceManager::GetShader("mazeWallShader").Use().SetMatrix4("view", view);
-    ResourceManager::GetShader("mazeWallShader").SetMatrix4("projection", projection);
+    this->cameraUp = glm::normalize(glm::cross(cameraDir, cameraSide));
+    glm::mat4 view = glm::lookAt(cameraPos, cameraAt, cameraUp);
+    glm::mat4 projection = glm::perspective(glm::radians(35.0f), static_cast<float>(this->width) / static_cast<float>(this->height), 0.1f, 55.0f);
+    const glm::vec3 lightDir = glm::normalize(cameraAt - glm::vec3(-17.0, 27.0, 15.0));
 
+    SharedParams shared;
+    shared.projection = projection;
+    shared.view = view;
+    shared.lightDir = lightDir;
+    shared.lightPos = cameraPos;
+    shared.lightSpecular = glm::vec3(0.2f, 0.2f, 0.2f);
+    shared.materialShininess = 32.0f;
+
+    OtherParams other1, other2;
+    other1.lightAmbient = glm::vec3(0.7f, 0.7f, 0.7f);
+    other1.lightDiffuse = glm::vec3(0.9f, 0.9f, 0.9f);
+
+    other2.lightAmbient = glm::vec3(0.07f, 0.07f, 0.07f);
+    other2.lightDiffuse = glm::vec3(0.7f, 0.7f, 0.7f);
+
+    unsigned int uboShared, uboOther1, uboOther2;
+    glGenBuffers(1, &uboShared);
+    glBindBuffer(GL_UNIFORM_BUFFER, uboShared);
+    glBufferData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4) + 3 * (sizeof(glm::vec3) + 4) + sizeof(float), NULL, GL_STATIC_DRAW);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+    glGenBuffers(1, &uboOther1);
+    glBindBuffer(GL_UNIFORM_BUFFER, uboOther1);
+    glBufferData(GL_UNIFORM_BUFFER, 2 * (sizeof(glm::vec3) + 4), NULL, GL_STATIC_DRAW);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+    glGenBuffers(1, &uboOther2);
+    glBindBuffer(GL_UNIFORM_BUFFER, uboOther2);
+    glBufferData(GL_UNIFORM_BUFFER, 2 * (sizeof(glm::vec3) + 4), NULL, GL_STATIC_DRAW);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+    glUniformBlockBinding(ResourceManager::GetShader("mazeWallShader").id, glGetUniformBlockIndex(ResourceManager::GetShader("mazeWallShader").id, "Shared"), 0);
+    glUniformBlockBinding(ResourceManager::GetShader("mazeFloorShader").id, glGetUniformBlockIndex(ResourceManager::GetShader("mazeFloorShader").id, "Shared"), 0);
+    glUniformBlockBinding(ResourceManager::GetShader("dotShader").id, glGetUniformBlockIndex(ResourceManager::GetShader("dotShader").id, "Shared"), 0);
+    glUniformBlockBinding(ResourceManager::GetShader("energizerShader").id, glGetUniformBlockIndex(ResourceManager::GetShader("energizerShader").id, "Shared"), 0);
+    glUniformBlockBinding(ResourceManager::GetShader("pacmanShader").id, glGetUniformBlockIndex(ResourceManager::GetShader("pacmanShader").id, "Shared"), 0);
+    glUniformBlockBinding(ResourceManager::GetShader("ghostShader").id, glGetUniformBlockIndex(ResourceManager::GetShader("ghostShader").id, "Shared"), 0);
+    glUniformBlockBinding(ResourceManager::GetShader("bonusSymbolShader").id, glGetUniformBlockIndex(ResourceManager::GetShader("bonusSymbolShader").id, "Shared"), 0);
+    glUniformBlockBinding(ResourceManager::GetShader("lifeCounterShader").id, glGetUniformBlockIndex(ResourceManager::GetShader("lifeCounterShader").id, "Shared"), 0);
+    glUniformBlockBinding(ResourceManager::GetShader("mazeWallShader").id, glGetUniformBlockIndex(ResourceManager::GetShader("mazeWallShader").id, "Other"), 1);
+    glUniformBlockBinding(ResourceManager::GetShader("mazeFloorShader").id, glGetUniformBlockIndex(ResourceManager::GetShader("mazeFloorShader").id, "Other"), 1);
+    glUniformBlockBinding(ResourceManager::GetShader("dotShader").id, glGetUniformBlockIndex(ResourceManager::GetShader("dotShader").id, "Other"), 2);
+    glUniformBlockBinding(ResourceManager::GetShader("energizerShader").id, glGetUniformBlockIndex(ResourceManager::GetShader("energizerShader").id, "Other"), 2);
+    glUniformBlockBinding(ResourceManager::GetShader("pacmanShader").id, glGetUniformBlockIndex(ResourceManager::GetShader("pacmanShader").id, "Other"), 1);
+    glUniformBlockBinding(ResourceManager::GetShader("ghostShader").id, glGetUniformBlockIndex(ResourceManager::GetShader("ghostShader").id, "Other"), 1);
+    glUniformBlockBinding(ResourceManager::GetShader("bonusSymbolShader").id, glGetUniformBlockIndex(ResourceManager::GetShader("bonusSymbolShader").id, "Other"), 1);
+    glUniformBlockBinding(ResourceManager::GetShader("lifeCounterShader").id, glGetUniformBlockIndex(ResourceManager::GetShader("lifeCounterShader").id, "Other"), 1);
+
+    glBindBufferBase(GL_UNIFORM_BUFFER, 0, uboShared);
+    glBindBuffer(GL_UNIFORM_BUFFER, uboShared);
+    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), &shared.projection);  // Proiezione
+    glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), &shared.view);
+    glBufferSubData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4), sizeof(glm::vec3) + 4, &shared.lightDir);
+    glBufferSubData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4) + sizeof(glm::vec3) + 4, sizeof(glm::vec3) + 4, &shared.lightPos);
+    glBufferSubData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4) + 2 * (sizeof(glm::vec3) + 4), sizeof(glm::vec3) + 4, &shared.lightSpecular);
+    glBufferSubData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4) + 3 * (sizeof(glm::vec3) + 4), sizeof(float), &shared.materialShininess);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+    glBindBufferBase(GL_UNIFORM_BUFFER, 1, uboOther1);
+    glBindBuffer(GL_UNIFORM_BUFFER, uboOther1);
+    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::vec3) + 4, &other1.lightAmbient);
+    glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::vec3) + 4, sizeof(glm::vec3) + 4, &other1.lightDiffuse);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+    glBindBufferBase(GL_UNIFORM_BUFFER, 2, uboOther2);
+    glBindBuffer(GL_UNIFORM_BUFFER, uboOther2);
+    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::vec3) + 4, &other2.lightAmbient);
+    glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::vec3) + 4, sizeof(glm::vec3) + 4, &other2.lightDiffuse);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+    /*ResourceManager::GetShader("mazeWallShader").Use().SetMatrix4("view", view);
+    ResourceManager::GetShader("mazeWallShader").Use().SetMatrix4("projection", projection);
     ResourceManager::GetShader("mazeFloorShader").Use().SetMatrix4("view", view);
     ResourceManager::GetShader("mazeFloorShader").SetMatrix4("projection", projection);
 
@@ -233,69 +319,59 @@ void Game::Init() {
     ResourceManager::GetShader("bonusSymbolShader").SetMatrix4("projection", projection);
 
     ResourceManager::GetShader("lifeCounterShader").Use().SetMatrix4("view", view);
-    ResourceManager::GetShader("lifeCounterShader").SetMatrix4("projection", projection);
+    ResourceManager::GetShader("lifeCounterShader").SetMatrix4("projection", projection);*/
 
     ResourceManager::GetShader("hdrShader").Use().SetMatrix4("projection", projection);
     // Insert uniform variable in fragment shader(only global variables, i.e. the same for all shaders)
-    // The light is from the same side of the camera but higher, the reflection angle is still greater than 90 degrees
-    const glm::vec3 lightDir = glm::normalize(cameraAt - glm::vec3(-17.0, 27.0, 15.0));
-    //lightDir.x = -lightDir.x;
-    ResourceManager::GetShader("mazeWallShader").Use().SetVector3f("viewPos", cameraPos);
-    ResourceManager::GetShader("mazeWallShader").SetVector3f("dirLight.direction", lightDir);
-    ResourceManager::GetShader("mazeWallShader").SetVector3f("dirLight.ambient", glm::vec3(0.7f, 0.7f, 0.7f));
-    ResourceManager::GetShader("mazeWallShader").SetVector3f("dirLight.diffuse", glm::vec3(0.9f, 0.9f, 0.9f));
-    ResourceManager::GetShader("mazeWallShader").SetVector3f("dirLight.specular", glm::vec3(0.2f, 0.2f, 0.2f));
-    ResourceManager::GetShader("mazeWallShader").SetFloat("material.shininess", 32.0f);
-
-    ResourceManager::GetShader("mazeFloorShader").Use().SetVector3f("viewPos", cameraPos);
-    ResourceManager::GetShader("mazeFloorShader").SetVector3f("dirLight.direction", lightDir);
-    ResourceManager::GetShader("mazeFloorShader").SetVector3f("dirLight.ambient", glm::vec3(0.7f, 0.7f, 0.7f));
-    ResourceManager::GetShader("mazeFloorShader").SetVector3f("dirLight.diffuse", glm::vec3(0.9f, 0.9f, 0.9f));
-    ResourceManager::GetShader("mazeFloorShader").SetVector3f("dirLight.specular", glm::vec3(0.2f, 0.2f, 0.2f));
-    ResourceManager::GetShader("mazeFloorShader").SetFloat("material.shininess", 32.0f);
-
-    ResourceManager::GetShader("dotShader").Use().SetVector3f("viewPos", cameraPos);
-    ResourceManager::GetShader("dotShader").SetVector3f("dirLight.direction", lightDir);
-    ResourceManager::GetShader("dotShader").SetVector3f("dirLight.ambient", glm::vec3(0.07f, 0.07f, 0.07f));
-    ResourceManager::GetShader("dotShader").SetVector3f("dirLight.diffuse", glm::vec3(0.7f, 0.7f, 0.7f));
-    ResourceManager::GetShader("dotShader").SetVector3f("dirLight.specular", glm::vec3(0.2f, 0.2f, 0.2f));
-    ResourceManager::GetShader("dotShader").SetFloat("material.shininess", 32.0f);
-
-    ResourceManager::GetShader("energizerShader").Use().SetVector3f("viewPos", cameraPos);
-    ResourceManager::GetShader("energizerShader").SetVector3f("dirLight.direction", lightDir);
-    ResourceManager::GetShader("energizerShader").SetVector3f("dirLight.ambient", glm::vec3(0.07f, 0.07f, 0.07f));
-    ResourceManager::GetShader("energizerShader").SetVector3f("dirLight.diffuse", glm::vec3(0.7f, 0.7f, 0.7f));
-    ResourceManager::GetShader("energizerShader").SetVector3f("dirLight.specular", glm::vec3(0.2f, 0.2f, 0.2f));
-    ResourceManager::GetShader("energizerShader").SetFloat("material.shininess", 32.0f);
-
-    ResourceManager::GetShader("pacmanShader").Use().SetVector3f("viewPos", cameraPos);
-    ResourceManager::GetShader("pacmanShader").SetVector3f("dirLight.direction", lightDir);
-    ResourceManager::GetShader("pacmanShader").SetVector3f("dirLight.ambient", glm::vec3(0.7f, 0.7f, 0.7f));
-    ResourceManager::GetShader("pacmanShader").SetVector3f("dirLight.diffuse", glm::vec3(0.9f, 0.9f, 0.9f));
-    ResourceManager::GetShader("pacmanShader").SetVector3f("dirLight.specular", glm::vec3(0.2f, 0.2f, 0.2f));
-    ResourceManager::GetShader("pacmanShader").SetFloat("material.shininess", 32.0f);
-
-    ResourceManager::GetShader("ghostShader").Use().SetVector3f("viewPos", cameraPos);
-    ResourceManager::GetShader("ghostShader").SetVector3f("dirLight.direction", lightDir);
-    ResourceManager::GetShader("ghostShader").SetVector3f("dirLight.ambient", glm::vec3(0.7f, 0.7f, 0.7f));
-    ResourceManager::GetShader("ghostShader").SetVector3f("dirLight.diffuse", glm::vec3(0.9f, 0.9f, 0.9f));
-    ResourceManager::GetShader("ghostShader").SetVector3f("dirLight.specular", glm::vec3(0.2f, 0.2f, 0.2f));
-    ResourceManager::GetShader("ghostShader").SetFloat("material.shininess", 32.0f);
-
-    ResourceManager::GetShader("bonusSymbolShader").Use().SetVector3f("viewPos", cameraPos);
-    ResourceManager::GetShader("bonusSymbolShader").SetVector3f("dirLight.direction", lightDir);
-    ResourceManager::GetShader("bonusSymbolShader").SetVector3f("dirLight.ambient", glm::vec3(0.7f, 0.7f, 0.7f));
-    ResourceManager::GetShader("bonusSymbolShader").SetVector3f("dirLight.diffuse", glm::vec3(0.9f, 0.9f, 0.9f));
-    ResourceManager::GetShader("bonusSymbolShader").SetVector3f("dirLight.specular", glm::vec3(0.2f, 0.2f, 0.2f));
-    ResourceManager::GetShader("bonusSymbolShader").SetFloat("material.shininess", 32.0f);
-
-    ResourceManager::GetShader("lifeCounterShader").Use().SetVector3f("viewPos", cameraPos);
-    ResourceManager::GetShader("lifeCounterShader").SetVector3f("dirLight.direction", lightDir);
-    ResourceManager::GetShader("lifeCounterShader").SetVector3f("dirLight.ambient", glm::vec3(0.7f, 0.7f, 0.7f));
-    ResourceManager::GetShader("lifeCounterShader").SetVector3f("dirLight.diffuse", glm::vec3(0.9f, 0.9f, 0.9f));
-    ResourceManager::GetShader("lifeCounterShader").SetVector3f("dirLight.specular", glm::vec3(0.2f, 0.2f, 0.2f));
-    ResourceManager::GetShader("lifeCounterShader").SetFloat("material.shininess", 32.0f);
-
+    //ResourceManager::GetShader("mazeWallShader").Use().SetVector3f("viewPos", cameraPos);
+    //ResourceManager::GetShader("mazeWallShader").Use().SetVector3f("dirLight.direction", glm::normalize(cameraAt - cameraPos));
+    //ResourceManager::GetShader("mazeWallShader").Use().SetVector3f("dirLight.ambient", glm::vec3(0.4f, 0.4f, 0.4f));
+    //ResourceManager::GetShader("mazeWallShader").Use().SetVector3f("dirLight.diffuse", glm::vec3(0.5f, 0.5f, 0.5f));
+    //ResourceManager::GetShader("mazeWallShader").Use().SetVector3f("dirLight.specular", glm::vec3(0.2f, 0.2f, 0.2f));
+    //ResourceManager::GetShader("mazeWallShader").Use().SetFloat("material.shininess", 8.0f);
+    //ResourceManager::GetShader("mazeFloorShader").Use().SetVector3f("viewPos", cameraPos);
+    //ResourceManager::GetShader("mazeFloorShader").Use().SetVector3f("dirLight.direction", glm::normalize(cameraAt - cameraPos));
+    //ResourceManager::GetShader("mazeFloorShader").Use().SetVector3f("dirLight.ambient", glm::vec3(0.4f, 0.4f, 0.4f));
+    //ResourceManager::GetShader("mazeFloorShader").Use().SetVector3f("dirLight.diffuse", glm::vec3(0.5f, 0.5f, 0.5f));
+    //ResourceManager::GetShader("mazeFloorShader").Use().SetVector3f("dirLight.specular", glm::vec3(0.2f, 0.2f, 0.2f));
+    //ResourceManager::GetShader("mazeFloorShader").Use().SetFloat("material.shininess", 8.0f);
+    //ResourceManager::GetShader("dotShader").Use().SetVector3f("viewPos", cameraPos);
+    //ResourceManager::GetShader("dotShader").Use().SetVector3f("dirLight.direction", glm::normalize(cameraAt - cameraPos));
+    //ResourceManager::GetShader("dotShader").Use().SetVector3f("dirLight.ambient", glm::vec3(0.3f, 0.3f, 0.3f));
+    //ResourceManager::GetShader("dotShader").Use().SetVector3f("dirLight.diffuse", glm::vec3(0.7f, 0.7f, 0.7f));
+    //ResourceManager::GetShader("dotShader").Use().SetVector3f("dirLight.specular", glm::vec3(0.2f, 0.2f, 0.2f));
+    //ResourceManager::GetShader("dotShader").Use().SetFloat("material.shininess", 32.0f);
+    //ResourceManager::GetShader("energizerShader").Use().SetVector3f("viewPos", cameraPos);
+    //ResourceManager::GetShader("energizerShader").Use().SetVector3f("dirLight.direction", glm::normalize(cameraAt - cameraPos));
+    //ResourceManager::GetShader("energizerShader").Use().SetVector3f("dirLight.ambient", glm::vec3(0.3f, 0.3f, 0.3f));
+    //ResourceManager::GetShader("energizerShader").Use().SetVector3f("dirLight.diffuse", glm::vec3(0.7f, 0.7f, 0.7f));
+    //ResourceManager::GetShader("energizerShader").Use().SetVector3f("dirLight.specular", glm::vec3(0.2f, 0.2f, 0.2f));
+    //ResourceManager::GetShader("energizerShader").Use().SetFloat("material.shininess", 32.0f);
+    //ResourceManager::GetShader("pacmanShader").Use().SetVector3f("viewPos", cameraPos);
+    //ResourceManager::GetShader("pacmanShader").Use().SetVector3f("dirLight.direction", glm::normalize(cameraAt - cameraPos));
+    //ResourceManager::GetShader("pacmanShader").Use().SetVector3f("dirLight.ambient", glm::vec3(0.7f, 0.7f, 0.7f));
+    //ResourceManager::GetShader("pacmanShader").Use().SetVector3f("dirLight.diffuse", glm::vec3(0.9f, 0.9f, 0.9f));
+    //ResourceManager::GetShader("pacmanShader").Use().SetVector3f("dirLight.specular", glm::vec3(0.2f, 0.2f, 0.2f));
+    //ResourceManager::GetShader("pacmanShader").Use().SetFloat("material.shininess", 32.0f);
+    //ResourceManager::GetShader("ghostShader").Use().SetVector3f("viewPos", cameraPos);
+    //ResourceManager::GetShader("ghostShader").Use().SetVector3f("dirLight.direction", glm::normalize(cameraAt - cameraPos));
+    //ResourceManager::GetShader("ghostShader").Use().SetVector3f("dirLight.ambient", glm::vec3(0.7f, 0.7f, 0.7f));
+    //ResourceManager::GetShader("ghostShader").Use().SetVector3f("dirLight.diffuse", glm::vec3(0.9f, 0.9f, 0.9f));
+    //ResourceManager::GetShader("ghostShader").Use().SetVector3f("dirLight.specular", glm::vec3(0.2f, 0.2f, 0.2f));
+    //ResourceManager::GetShader("ghostShader").Use().SetFloat("material.shininess", 32.0f);
+    //ResourceManager::GetShader("bonusSymbolShader").Use().SetVector3f("viewPos", cameraPos);
+    //ResourceManager::GetShader("bonusSymbolShader").Use().SetVector3f("dirLight.direction", glm::normalize(cameraAt - cameraPos));
+    //ResourceManager::GetShader("bonusSymbolShader").Use().SetVector3f("dirLight.ambient", glm::vec3(0.7f, 0.7f, 0.7f));
+    //ResourceManager::GetShader("bonusSymbolShader").Use().SetVector3f("dirLight.diffuse", glm::vec3(0.9f, 0.9f, 0.9f));
+    //ResourceManager::GetShader("bonusSymbolShader").Use().SetVector3f("dirLight.specular", glm::vec3(0.2f, 0.2f, 0.2f));
+    //ResourceManager::GetShader("bonusSymbolShader").Use().SetFloat("material.shininess", 32.0f);
+    //ResourceManager::GetShader("lifeCounterShader").Use().SetVector3f("viewPos", cameraPos);
+    //ResourceManager::GetShader("lifeCounterShader").Use().SetVector3f("dirLight.direction", glm::normalize(cameraAt - cameraPos));
+   // ResourceManager::GetShader("lifeCounterShader").Use().SetVector3f("dirLight.ambient", glm::vec3(0.7f, 0.7f, 0.7f));
+   // ResourceManager::GetShader("lifeCounterShader").Use().SetVector3f("dirLight.diffuse", glm::vec3(0.9f, 0.9f, 0.9f));
+   // ResourceManager::GetShader("lifeCounterShader").Use().SetVector3f("dirLight.specular", glm::vec3(0.2f, 0.2f, 0.2f));
+   // ResourceManager::GetShader("lifeCounterShader").Use().SetFloat("material.shininess", 32.0f);
+ 
     /// Load Textures
     ResourceManager::LoadTexture(FileSystem::getPath("../res/textures/wall_diffuse_360.png").c_str(), "mazeWallDiffuseTexture", true);
     ResourceManager::LoadTexture(FileSystem::getPath("../res/textures/wall_specular_360.png").c_str(), "mazeWallSpecularTexture", false);
@@ -314,54 +390,83 @@ void Game::Init() {
     levelOne->Load(FileSystem::getPath("../res/levels/one.lvl").c_str());
     this->Levels.push_back(levelOne);
     this->level = 0;
+}
 
+bool Game::ContinueInit() {
     /// Configure Game Objects
-    pacman = new PacMan();
     const auto levelMatrixDim = this->Levels[this->level]->levelMatrixDim;
-    blinky = new Blinky(levelMatrixDim);
-    clyde = new Clyde(levelMatrixDim);
-    inky = new Inky(levelMatrixDim);
-    pinky = new Pinky(levelMatrixDim);
-    vulnerableGhost = new VulnerableGhost(blinky, clyde, inky, pinky, levelMatrixDim);
+    if (updating == 0) {
+        pacman = new PacMan();
+        updating += 1;
+        return false;
+    }
+    else if (updating == 1) {
+        blinky = new Blinky(levelMatrixDim);
+        updating += 1;
+        return false;
+    }
+    else if (updating == 2) {
+        clyde = new Clyde(levelMatrixDim);
+        updating += 1;
+        return false;
+    }
+    else if (updating == 3) {
+        inky = new Inky(levelMatrixDim);
+        updating += 1;
+        return false;
+    }
+    else if (updating == 4) {
+        pinky = new Pinky(levelMatrixDim);
+        updating += 1;
+        return false;
+    }
+    else if (updating == 5) {
+        vulnerableGhost = new VulnerableGhost(blinky, clyde, inky, pinky, levelMatrixDim);
+        updating += 1;
+        return false;
+    }
+    else if (updating == 6) {
+        /// Load and Configure Music Tracks
+        soundEngine = createIrrKlangDevice();
+        // Play a short, irrelevant sound at the start of the game to force IrrKlang to initialize.
+        // This trick prepare the audio engine and eliminates the delay when a significant sound is first played.
+        soundEngine->play2D(FileSystem::getPath("../res/sounds/17. Silence.flac").c_str(),
+            false,
+            false,
+            true)->stop();
+        // Preload audio tracks
+        pacmanChompSound = soundEngine->addSoundSourceFromFile(FileSystem::getPath("../res/sounds/03. PAC-MAN - Eating The Pac-dots.flac").c_str());
+        pacmanEatsAllGhostsSound = soundEngine->addSoundSourceFromFile(FileSystem::getPath("../res/sounds/05. PAC-MAN - All the ghosts have been eaten.flac").c_str());
+        ghostNormalMoveSound = soundEngine->addSoundSourceFromFile(FileSystem::getPath("../res/sounds/06. Ghost - Normal Move.flac").c_str());
+        pacmanEatFruitSound = soundEngine->addSoundSourceFromFile(FileSystem::getPath("../res/sounds/11. PAC-MAN - Eating The Fruit.flac").c_str());
+        ghostTurnBlueSound = soundEngine->addSoundSourceFromFile(FileSystem::getPath("../res/sounds/12. Ghost - Turn to Blue.flac").c_str());
+        pacmanEatGhostSound = soundEngine->addSoundSourceFromFile(FileSystem::getPath("../res/sounds/13. PAC-MAN - Eating The Ghost.flac").c_str());
+        pacmanDeathSound = soundEngine->addSoundSourceFromFile(FileSystem::getPath("../res/sounds/15. Fail.flac").c_str());
+        victorySound = soundEngine->addSoundSourceFromFile(FileSystem::getPath("../res/sounds/16. Coffee Break Music.flac").c_str());
+        // Set a default volume for each source
+        pacmanChompSound->setDefaultVolume(0.8f);
+        ghostNormalMoveSound->setDefaultVolume(0.8f);
+        pacmanEatFruitSound->setDefaultVolume(1.0f);
+        ghostTurnBlueSound->setDefaultVolume(0.8f);
+        pacmanEatGhostSound->setDefaultVolume(1.0f);
+        pacmanDeathSound->setDefaultVolume(1.0f);
+        pacmanEatsAllGhostsSound->setDefaultVolume(1.0f);
+        victorySound->setDefaultVolume(1.0f);
+        text = new TextRenderer(this->width, this->height);
+        text->Load(FileSystem::getPath("../res/fonts/eight_bit_dragon.ttf"), 32);
+        postProcessor = new PostProcessor(this->width, this->height, true, 4,
+            &ResourceManager::GetShader("hdrShader"), false,
+            0.5f, 2.2f);
 
-    /// Load and Configure Music Tracks
-    soundEngine = createIrrKlangDevice();
-    // Play a short, irrelevant sound at the start of the game to force IrrKlang to initialize.
-    // This trick prepare the audio engine and eliminates the delay when a significant sound is first played.
-    soundEngine->play2D(FileSystem::getPath("../res/sounds/17. Silence.flac").c_str(),
-                        false, 
-                        false, 
-                        true)->stop();
-    // Preload audio tracks
-    pacmanChompSound         = soundEngine->addSoundSourceFromFile(FileSystem::getPath("../res/sounds/03. PAC-MAN - Eating The Pac-dots.flac").c_str());
-    pacmanEatsAllGhostsSound = soundEngine->addSoundSourceFromFile(FileSystem::getPath("../res/sounds/05. PAC-MAN - All the ghosts have been eaten.flac").c_str());
-    ghostNormalMoveSound     = soundEngine->addSoundSourceFromFile(FileSystem::getPath("../res/sounds/06. Ghost - Normal Move.flac").c_str());
-    pacmanEatFruitSound      = soundEngine->addSoundSourceFromFile(FileSystem::getPath("../res/sounds/11. PAC-MAN - Eating The Fruit.flac").c_str());
-    ghostTurnBlueSound       = soundEngine->addSoundSourceFromFile(FileSystem::getPath("../res/sounds/12. Ghost - Turn to Blue.flac").c_str());
-    pacmanEatGhostSound      = soundEngine->addSoundSourceFromFile(FileSystem::getPath("../res/sounds/13. PAC-MAN - Eating The Ghost.flac").c_str());
-    pacmanDeathSound         = soundEngine->addSoundSourceFromFile(FileSystem::getPath("../res/sounds/15. Fail.flac").c_str());
-    victorySound             = soundEngine->addSoundSourceFromFile(FileSystem::getPath("../res/sounds/16. Coffee Break Music.flac").c_str());
-    // Set a default volume for each source
-    pacmanChompSound        ->setDefaultVolume(0.8f);
-    ghostNormalMoveSound    ->setDefaultVolume(0.8f);
-    pacmanEatFruitSound     ->setDefaultVolume(1.0f);
-    ghostTurnBlueSound      ->setDefaultVolume(0.8f);
-    pacmanEatGhostSound     ->setDefaultVolume(1.0f);
-    pacmanDeathSound        ->setDefaultVolume(1.0f);
-    pacmanEatsAllGhostsSound->setDefaultVolume(1.0f);
-    victorySound            ->setDefaultVolume(1.0f);
-
-    /// Configure render-specific objects
-    text = new TextRenderer(this->width, this->height);
-    text->Load(FileSystem::getPath("../res/fonts/eight_bit_dragon.ttf"), 32);
-
-    postProcessor = new PostProcessor(this->width, this->height, true, 4,
-									  &ResourceManager::GetShader("hdrShader"), false,
-									  0.5f, 2.2f);
-
-    scaleX = static_cast<float>(this->width) / 2048.0f;
-    scaleY = static_cast<float>(this->height) / 1152.0f;
-    scaleText = std::min(scaleX, scaleY);
+        scaleX = static_cast<float>(this->width) / 2048.0f;
+        scaleY = static_cast<float>(this->height) / 1152.0f;
+        scaleText = std::min(scaleX, scaleY);
+       
+        updating += 1;
+        return false;
+    }
+    else
+        return true;
 }
 
 void Game::ProcessInput(const double dt) {
