@@ -144,7 +144,7 @@ void Menu::Init() {
     ImGui_ImplOpenGL3_Init("#version 330");
 
     //Create custom cursor
-    customCursor = this->createCustomCursor("../res/textures/custom_cursor.png", 16, 16); // Adjust hotspot as needed
+    customCursor = this->createCustomCursor(FileSystem::getPath("../res/textures/custom_cursor.png").c_str(), 16, 16); // Adjust hotspot as needed
     if (customCursor) {
         glfwSetCursor(window, customCursor);
     }
