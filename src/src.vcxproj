@@ -212,6 +212,8 @@
     <None Include="shaders\mazeWall.vs" />
     <None Include="shaders\pacman.fs" />
     <None Include="shaders\pacman.vs" />
+    <None Include="shaders\stencil.fs" />
+    <None Include="shaders\stencil.vs" />
     <None Include="shaders\text.fs" />
     <None Include="shaders\text.vs" />
   </ItemGroup>

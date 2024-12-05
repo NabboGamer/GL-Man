@@ -28,6 +28,7 @@ public:
     std::pair<size_t, size_t> levelMatrixDim;
 
     GameObjectBase*         bonusSymbol;
+    GameObjectBase*         bonusSymbolStencil;
     GameObjectBase*         fruitCounter;
     GameObjectBase*         lifeCounter;
 

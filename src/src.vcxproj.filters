@@ -238,5 +238,11 @@
     <None Include="shaders\hdr.vs">
       <Filter>Resource Files\Shaders</Filter>
     </None>
+    <None Include="shaders\stencil.fs">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="shaders\stencil.vs">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

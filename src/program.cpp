@@ -118,11 +118,13 @@ int main() {
     glViewport(0, 0, mode->width, mode->height);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    //glDepthFunc(GL_LESS);
+    
+    glEnable(GL_STENCIL_TEST);
+    glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+    glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+    
     glEnable(GL_DEPTH_TEST);
-    //glEnable(GL_STENCIL_TEST);
-    //glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
-    //glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+    glDepthFunc(GL_LESS);
 
     // initialize game
     // ---------------
@@ -151,7 +153,12 @@ int main() {
         //LoggerManager::LogInfo("FPS: {}", fps);
 
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+        glStencilMask(0x00);
+        
+        glEnable(GL_CULL_FACE);
+        glCullFace(GL_BACK);
+
         if (!showGame) {
             GLManMenu->Render(deltaTime, GLMan);
         }

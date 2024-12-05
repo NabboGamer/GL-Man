@@ -9,6 +9,7 @@
 #include "LoggerManager.hpp"
 
 static std::vector<float> cube_mesh = {
+    
     // Front face (z = +0.5)
     -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,  // bottom-left
      0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  0.0f,  // bottom-right
@@ -18,28 +19,28 @@ static std::vector<float> cube_mesh = {
     -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,  // bottom-left
 
     // Back face (z = -0.5)
-    -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,  // bottom-left
-     0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  0.0f,  // bottom-right
-     0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f,  // top-right
-     0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f,  // top-right
-    -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  1.0f,  // top-left
-    -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,  // bottom-left
+    -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,  // bottom-left
+     0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  0.0f,  // bottom-right
+     0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f,  // top-right
+     0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f,  // top-right
+    -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  1.0f,  // top-left
+    -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,  // bottom-left
 
     // Left face (x = -0.5)
-    -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  1.0f, // top-right
-    -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f, // top-left
-    -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  0.0f, // bottom-left
-    -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  0.0f, // bottom-left
-    -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  0.0f, // bottom-right
-    -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  1.0f,  // top-right
+    -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  1.0f, // top-right
+    -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f, // top-left
+    -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  0.0f, // bottom-left
+    -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  0.0f, // bottom-left
+    -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  0.0f, // bottom-right
+    -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  1.0f,  // top-right
 
     // Right face (x = +0.5)
-    0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  1.0f, // top-right
-    0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f, // top-left
-    0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f, // bottom-left
-    0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f, // bottom-left
-    0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f, // bottom-right
-    0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  1.0f,  // top-right
+    0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  1.0f, // top-right
+    0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f, // top-left
+    0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f, // bottom-left
+    0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f, // bottom-left
+    0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f, // bottom-right
+    0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  1.0f,  // top-right
 
     // Bottom face (y = -0.5)
     -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f,  // top-left
@@ -50,68 +51,17 @@ static std::vector<float> cube_mesh = {
     -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f,  // top-left
 
     // Top face (y = +0.5)
-    -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f,  // top-left
-     0.5f,  0.5f, -0.5f,  0.0f,  1.0f,   0.0f,  1.0f,  1.0f,  // top-right
+    -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,   0.0f,  0.0f,  1.0f,  // top-left
+    -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,   0.0f,  1.0f,  1.0f,  // top-right
      0.5f,  0.5f,  0.5f,  0.0f,  1.0f,   0.0f,  1.0f,  0.0f,  // bottom-right
      0.5f,  0.5f,  0.5f,  0.0f,  1.0f,   0.0f,  1.0f,  0.0f,  // bottom-right
-    -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,   0.0f,  0.0f,  0.0f,  // bottom-left
+     0.5f,  0.5f, -0.5f,  0.0f,  1.0f,   0.0f,  0.0f,  0.0f,  // bottom-left
     -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,   0.0f,  0.0f,  1.0f   // top-left
-};
+    };
 
 const float L = 1.0f;  // Depth along  x
 const float W = 0.1f;  // Height along y
 const float H = 1.0f;  // Length along z
-
-static std::vector<float> parallelepiped_mesh = {
-    // Front face (z = +H/2)
-    -L / 2, -W / 2,  H / 2,   0.0f,  0.0f,  1.0f,   0.0f,  0.0f,  // bottom-left
-     L / 2, -W / 2,  H / 2,   0.0f,  0.0f,  1.0f,   1.0f,  0.0f,  // bottom-right
-     L / 2,  W / 2,  H / 2,   0.0f,  0.0f,  1.0f,   1.0f,  1.0f,  // top-right
-     L / 2,  W / 2,  H / 2,   0.0f,  0.0f,  1.0f,   1.0f,  1.0f,  // top-right
-    -L / 2,  W / 2,  H / 2,   0.0f,  0.0f,  1.0f,   0.0f,  1.0f,  // top-left
-    -L / 2, -W / 2,  H / 2,   0.0f,  0.0f,  1.0f,   0.0f,  0.0f,  // bottom-left
-
-    // Back face (z = -H/2)
-    -L / 2, -W / 2, -H / 2,   0.0f,  0.0f, -1.0f,   0.0f,  0.0f,  // bottom-left
-     L / 2, -W / 2, -H / 2,   0.0f,  0.0f, -1.0f,   1.0f,  0.0f,  // bottom-right
-     L / 2,  W / 2, -H / 2,   0.0f,  0.0f, -1.0f,   1.0f,  1.0f,  // top-right
-     L / 2,  W / 2, -H / 2,   0.0f,  0.0f, -1.0f,   1.0f,  1.0f,  // top-right
-    -L / 2,  W / 2, -H / 2,   0.0f,  0.0f, -1.0f,   0.0f,  1.0f,  // top-left
-    -L / 2, -W / 2, -H / 2,   0.0f,  0.0f, -1.0f,   0.0f,  0.0f,  // bottom-left
-
-    // Left face (x = -L/2)
-    -L / 2,  W / 2,  H / 2,  -1.0f,  0.0f,  0.0f,   1.0f,  1.0f,  // top-right
-    -L / 2,  W / 2, -H / 2,  -1.0f,  0.0f,  0.0f,   0.0f,  1.0f,  // top-left
-    -L / 2, -W / 2, -H / 2,  -1.0f,  0.0f,  0.0f,   0.0f,  0.0f,  // bottom-left
-    -L / 2, -W / 2, -H / 2,  -1.0f,  0.0f,  0.0f,   0.0f,  0.0f,  // bottom-left
-    -L / 2, -W / 2,  H / 2,  -1.0f,  0.0f,  0.0f,   1.0f,  0.0f,  // bottom-right
-    -L / 2,  W / 2,  H / 2,  -1.0f,  0.0f,  0.0f,   1.0f,  1.0f,  // top-right
-
-    // Right face (x = +L/2)
-     L / 2,  W / 2,  H / 2,   1.0f,  0.0f,  0.0f,   1.0f,  1.0f,  // top-right
-     L / 2,  W / 2, -H / 2,   1.0f,  0.0f,  0.0f,   0.0f,  1.0f,  // top-left
-     L / 2, -W / 2, -H / 2,   1.0f,  0.0f,  0.0f,   0.0f,  0.0f,  // bottom-left
-     L / 2, -W / 2, -H / 2,   1.0f,  0.0f,  0.0f,   0.0f,  0.0f,  // bottom-left
-     L / 2, -W / 2,  H / 2,   1.0f,  0.0f,  0.0f,   1.0f,  0.0f,  // bottom-right
-     L / 2,  W / 2,  H / 2,   1.0f,  0.0f,  0.0f,   1.0f,  1.0f,  // top-right
-
-     // Bottom face (y = -W/2)
-     -L / 2, -W / 2, -H / 2,   0.0f, -1.0f,  0.0f,   0.0f,  1.0f,  // top-left
-      L / 2, -W / 2, -H / 2,   0.0f, -1.0f,  0.0f,   1.0f,  1.0f,  // top-right
-      L / 2, -W / 2,  H / 2,   0.0f, -1.0f,  0.0f,   1.0f,  0.0f,  // bottom-right
-      L / 2, -W / 2,  H / 2,   0.0f, -1.0f,  0.0f,   1.0f,  0.0f,  // bottom-right
-     -L / 2, -W / 2,  H / 2,   0.0f, -1.0f,  0.0f,   0.0f,  0.0f,  // bottom-left
-     -L / 2, -W / 2, -H / 2,   0.0f, -1.0f,  0.0f,   0.0f,  1.0f,  // top-left
-
-     // Top face (y = +W/2)
-     -L / 2,  W / 2, -H / 2,   0.0f,  1.0f,  0.0f,   0.0f,  1.0f,  // top-left
-      L / 2,  W / 2, -H / 2,   0.0f,  1.0f,  0.0f,   1.0f,  1.0f,  // top-right
-      L / 2,  W / 2,  H / 2,    0.0f,  1.0f,  0.0f,  1.0f,  0.0f,  // bottom-right
-      L / 2,  W / 2,  H / 2,    0.0f,  1.0f,  0.0f,  1.0f,  0.0f,  // bottom-right
-     -L / 2,  W / 2,  H / 2,    0.0f,  1.0f,  0.0f,  0.0f,  0.0f,  // bottom-left
-     -L / 2,  W / 2, -H / 2,   0.0f,  1.0f,  0.0f,   0.0f,  1.0f   // top-left
-};
-
 
 GameLevel::~GameLevel() {
     /*delete mazeWall;
@@ -155,6 +105,20 @@ void GameLevel::Draw(const double deltaTime) {
     if (this->mazeFloor->GetNumInstances() > 0) {
         this->mazeFloor->Draw();
     }
+
+    if (this->shouldSpawnBonusSymbol(deltaTime)) {
+        glStencilFunc(GL_ALWAYS, 1, 0xFF);
+        glStencilMask(0xFF);
+        this->bonusSymbol->Draw();
+        glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+        glStencilMask(0x00);
+        //glDisable(GL_DEPTH_TEST);
+        this->bonusSymbolStencil->Draw();
+        glStencilMask(0xFF);
+        glStencilFunc(GL_ALWAYS, 0, 0xFF);
+        //glEnable(GL_DEPTH_TEST);
+    }
+
     if (this->mazeWall->GetNumInstances() > 0) {
         this->mazeWall->Draw();
     }
@@ -180,9 +144,7 @@ void GameLevel::Draw(const double deltaTime) {
             this->energizer->Draw();
         }
     }
-    if (this->shouldSpawnBonusSymbol(deltaTime)) {
-        this->bonusSymbol->Draw();
-    }
+
     if (this->playerTakeBonusSymbol) {
         this->fruitCounter->Draw();
     }
@@ -225,6 +187,7 @@ void GameLevel::SetSymbolActive(const int value) {
 
 void GameLevel::SetBonusSymbolPosition(const glm::vec3 newBonusSymbolPosition) const {
     this->bonusSymbol->positions[0] = newBonusSymbolPosition;
+    this->bonusSymbolStencil->positions[0] = newBonusSymbolPosition;
 }
 
 bool GameLevel::IsCompleted() const {
@@ -295,13 +258,13 @@ void GameLevel::init(std::vector<std::vector<unsigned int>> wallData) {
     size_t numInstancesMazeFloor = this->mazeFloorPositions.size();
     std::vector<glm::vec3> mazeFloorDirections(numInstancesMazeFloor, glm::vec3(0.0f, 0.0f, 1.0f));
     std::vector<float>     mazeFloorRotations(numInstancesMazeFloor, 0.0f);
-    std::vector<glm::vec3> mazeFloorScaling(numInstancesMazeFloor, glm::vec3(1.0f));
+    std::vector<glm::vec3> mazeFloorScaling(numInstancesMazeFloor, glm::vec3(L, W, H));
     this->mazeFloor = new GameObjectCustom(this->mazeFloorPositions,
                                            mazeFloorDirections,
                                            mazeFloorRotations,
                                            mazeFloorScaling,
                                            &ResourceManager::GetShader("mazeFloorShader"),
-                                           parallelepiped_mesh,
+                                           cube_mesh,
                                            &ResourceManager::GetTexture("mazeFloorDiffuseTexture"),
                                            &ResourceManager::GetTexture("mazeFloorSpecularTexture"));
 
@@ -326,7 +289,7 @@ void GameLevel::init(std::vector<std::vector<unsigned int>> wallData) {
                                               energizerScaling,
                                               &ResourceManager::GetShader("energizerShader"),
                                               &ResourceManager::GetModel("energizerModel"));
-
+    
     size_t numInstancesBonusSymbol = 1;
 	std::vector<glm::vec3> bonusSymbolPositions(numInstancesBonusSymbol, glm::vec3(13.0f, 0.0f, 14.0f));
 	std::vector<glm::vec3> bonusSymbolDirections(numInstancesBonusSymbol, glm::vec3(0.0f, 0.0f, 1.0f));
@@ -338,6 +301,18 @@ void GameLevel::init(std::vector<std::vector<unsigned int>> wallData) {
                                                 bonusSymbolScaling,
                                                 &ResourceManager::GetShader("bonusSymbolShader"),
                                                 &ResourceManager::GetModel("cherriesModel"));
+
+    size_t numInstancesBonusSymbolStencil = 1;
+    std::vector<glm::vec3> bonusSymbolPositionsStencil(numInstancesBonusSymbolStencil, glm::vec3(13.0f, 0.0f, 14.0f));
+    std::vector<glm::vec3> bonusSymbolDirectionsStencil(numInstancesBonusSymbolStencil, glm::vec3(0.0f, 0.0f, 1.0f));
+    std::vector<float>     bonusSymbolRotationsStencil(numInstancesBonusSymbolStencil, 90.0f);
+    std::vector<glm::vec3> bonusSymbolScalingStencil(numInstancesBonusSymbolStencil, glm::vec3(1.05f));
+    this->bonusSymbolStencil = new GameObjectFromModel(bonusSymbolPositionsStencil,
+                                                bonusSymbolDirectionsStencil,
+                                                bonusSymbolRotationsStencil,
+                                                bonusSymbolScalingStencil,
+                                                &ResourceManager::GetShader("stencilShader"),
+                                                &ResourceManager::GetModel("cherriesModelStencil"));
 
     size_t numInstancesFruitCounter = 1;
     std::vector<glm::vec3> fruitCounterPositions(numInstancesFruitCounter, glm::vec3(-2.5f, 0.0f, 26.5f));

@@ -212,6 +212,7 @@ void Game::Init() {
     ResourceManager::LoadShader("./shaders/bonusSymbol.vs","./shaders/bonusSymbol.fs",nullptr, "bonusSymbolShader");
     ResourceManager::LoadShader("./shaders/pacman.vs",     "./shaders/pacman.fs",     nullptr, "lifeCounterShader");
     ResourceManager::LoadShader("./shaders/hdr.vs",        "./shaders/hdr.fs",        nullptr, "hdrShader");
+    ResourceManager::LoadShader("./shaders/stencil.vs",    "./shaders/stencil.fs",    nullptr, "stencilShader");
     /*ResourceManager::LoadShader("particle.vs", "particle.fs", nullptr, "particle");*/
 
     /// Configure Shaders
@@ -297,7 +298,11 @@ void Game::Init() {
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
     ResourceManager::GetShader("hdrShader").Use().SetMatrix4("projection", projection);
- 
+
+    ResourceManager::GetShader("stencilShader").Use().SetMatrix4("projection", projection);
+    ResourceManager::GetShader("stencilShader").Use().SetMatrix4("view", view);
+    ResourceManager::GetShader("stencilShader").Use().SetVector3f("color", glm::vec3(0.988f, 0.812f, 0.0f));
+
     /// Load Textures
     ResourceManager::LoadTexture(FileSystem::getPath("../res/textures/wall_diffuse_360.png").c_str(), "mazeWallDiffuseTexture", true);
     ResourceManager::LoadTexture(FileSystem::getPath("../res/textures/wall_specular_360.png").c_str(), "mazeWallSpecularTexture", false);
@@ -308,6 +313,7 @@ void Game::Init() {
     ResourceManager::LoadModel("../res/objects/powerup/coin/coin.obj", "dotModel", false);
     ResourceManager::LoadModel("../res/objects/powerup/coin/coin.obj", "energizerModel", false);
     ResourceManager::LoadModel("../res/objects/powerup/cherries/cherries.obj", "cherriesModel", true);
+    ResourceManager::LoadModel("../res/objects/powerup/cherries/cherries.obj", "cherriesModelStencil", false);
     ResourceManager::LoadModel("../res/objects/powerup/cherries/cherries.obj", "cherriesFruitCounterModel", true);
     ResourceManager::LoadModel("../res/objects/pacman/pacman7/pacman7.obj", "lifeCounterPacmanModel", true);
 
@@ -557,6 +563,9 @@ void Game::Update(const double dt) {
 }
 
 void Game::Render(const double dt) const {
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+    glStencilMask(0x00);
     if (this->state == GAME_ACTIVE || this->state == GAME_WIN || this->state == GAME_DEFEAT) {
         // begin rendering to postprocessing framebuffer
         if (!postProcessor->IsInitialized()) {
