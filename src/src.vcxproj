@@ -70,6 +70,14 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>$(SolutionDir)bin\GL-Man</OutDir>
+    <TargetName>GL-Man</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>$(SolutionDir)bin\GL-Man</OutDir>
+    <TargetName>GL-Man</TargetName>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -115,6 +123,15 @@
       <AdditionalLibraryDirectories>$(SolutionDir)\src\dependencies\lib</AdditionalLibraryDirectories>
       <AdditionalDependencies>opengl32.lib;user32.lib;gdi32.lib;shell32.lib;glfw3.lib;assimp.lib;irrKlang.lib;freetype.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy /Y /Q "$(ProjectDir)dependencies\lib\*.dll" "$(SolutionDir)bin\GL-Man"
+xcopy /Y /Q "$(ProjectDir)shaders\*" "$(SolutionDir)bin\GL-Man\shaders\"
+del "$(OutDir)*.pdb"
+del "$(OutDir)*.lib"
+del "$(OutDir)*.exp"
+
+</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -137,6 +154,15 @@
       <AdditionalLibraryDirectories>$(SolutionDir)\src\dependencies\lib</AdditionalLibraryDirectories>
       <AdditionalDependencies>opengl32.lib;user32.lib;gdi32.lib;shell32.lib;glfw3.lib;assimp.lib;irrKlang.lib;freetype.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy /Y /Q "$(ProjectDir)dependencies\lib\*.dll" "$(SolutionDir)bin\GL-Man"
+xcopy /Y /Q "$(ProjectDir)shaders\*" "$(SolutionDir)bin\GL-Man\shaders\"
+del "$(OutDir)*.pdb"
+del "$(OutDir)*.lib"
+del "$(OutDir)*.exp"
+
+</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Blinky.cpp" />
@@ -190,6 +216,7 @@
     <ClInclude Include="PacMan.hpp" />
     <ClInclude Include="Pinky.hpp" />
     <ClInclude Include="PostProcessor.hpp" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="ResourceManager.hpp" />
     <ClInclude Include="Shader.hpp" />
     <ClInclude Include="TextRenderer.hpp" />
@@ -216,6 +243,12 @@
     <None Include="shaders\stencil.vs" />
     <None Include="shaders\text.fs" />
     <None Include="shaders\text.vs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="src.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\res\textures\logo.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
