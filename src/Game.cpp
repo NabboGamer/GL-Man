@@ -304,18 +304,18 @@ void Game::Init() {
     ResourceManager::GetShader("stencilShader").Use().SetVector3f("color", glm::vec3(0.988f, 0.812f, 0.0f));
 
     /// Load Textures
-    ResourceManager::LoadTexture(FileSystem::getPath("../res/textures/wall_diffuse_360.png").c_str(), "mazeWallDiffuseTexture", true);
-    ResourceManager::LoadTexture(FileSystem::getPath("../res/textures/wall_specular_360.png").c_str(), "mazeWallSpecularTexture", false);
-    ResourceManager::LoadTexture(FileSystem::getPath("../res/textures/floor_diffuse_360.png").c_str(), "mazeFloorDiffuseTexture", true);
+    ResourceManager::LoadTexture(FileSystem::getPath("../res/textures/wall_diffuse_360.png").c_str(),   "mazeWallDiffuseTexture",   true);
+    ResourceManager::LoadTexture(FileSystem::getPath("../res/textures/wall_specular_360.png").c_str(),  "mazeWallSpecularTexture",  false);
+    ResourceManager::LoadTexture(FileSystem::getPath("../res/textures/floor_diffuse_360.png").c_str(),  "mazeFloorDiffuseTexture",  true);
     ResourceManager::LoadTexture(FileSystem::getPath("../res/textures/floor_specular_360.png").c_str(), "mazeFloorSpecularTexture", false);
 
     /// Load Models
-    ResourceManager::LoadModel("../res/objects/powerup/coin/coin.obj", "dotModel", false);
-    ResourceManager::LoadModel("../res/objects/powerup/coin/coin.obj", "energizerModel", false);
-    ResourceManager::LoadModel("../res/objects/powerup/cherries/cherries.obj", "cherriesModel", true);
-    ResourceManager::LoadModel("../res/objects/powerup/cherries/cherries.obj", "cherriesModelStencil", false);
+    ResourceManager::LoadModel("../res/objects/powerup/coin/coin.obj",         "dotModel",                  false);
+    ResourceManager::LoadModel("../res/objects/powerup/coin/coin.obj",         "energizerModel",            false);
+    ResourceManager::LoadModel("../res/objects/powerup/cherries/cherries.obj", "cherriesModel",             true);
+    ResourceManager::LoadModel("../res/objects/powerup/cherries/cherries.obj", "cherriesModelStencil",      false);
     ResourceManager::LoadModel("../res/objects/powerup/cherries/cherries.obj", "cherriesFruitCounterModel", true);
-    ResourceManager::LoadModel("../res/objects/pacman/pacman7/pacman7.obj", "lifeCounterPacmanModel", true);
+    ResourceManager::LoadModel("../res/objects/pacman/pacman7/pacman7.obj",    "lifeCounterPacmanModel",    true);
 
     /// Load Levels
     const auto levelOne = new GameLevel();

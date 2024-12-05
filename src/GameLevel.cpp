@@ -59,9 +59,9 @@ static std::vector<float> cube_mesh = {
     -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,   0.0f,  0.0f,  1.0f   // top-left
     };
 
-const float L = 1.0f;  // Depth along  x
-const float W = 0.1f;  // Height along y
-const float H = 1.0f;  // Length along z
+constexpr float L = 1.0f;  // Depth along  x
+constexpr float W = 0.1f;  // Height along y
+constexpr float H = 1.0f;  // Length along z
 
 GameLevel::~GameLevel() {
     /*delete mazeWall;
@@ -308,11 +308,11 @@ void GameLevel::init(std::vector<std::vector<unsigned int>> wallData) {
     std::vector<float>     bonusSymbolRotationsStencil(numInstancesBonusSymbolStencil, 90.0f);
     std::vector<glm::vec3> bonusSymbolScalingStencil(numInstancesBonusSymbolStencil, glm::vec3(1.05f));
     this->bonusSymbolStencil = new GameObjectFromModel(bonusSymbolPositionsStencil,
-                                                bonusSymbolDirectionsStencil,
-                                                bonusSymbolRotationsStencil,
-                                                bonusSymbolScalingStencil,
-                                                &ResourceManager::GetShader("stencilShader"),
-                                                &ResourceManager::GetModel("cherriesModelStencil"));
+                                                       bonusSymbolDirectionsStencil,
+                                                       bonusSymbolRotationsStencil,
+                                                       bonusSymbolScalingStencil,
+                                                       &ResourceManager::GetShader("stencilShader"),
+                                                       &ResourceManager::GetModel("cherriesModelStencil"));
 
     size_t numInstancesFruitCounter = 1;
     std::vector<glm::vec3> fruitCounterPositions(numInstancesFruitCounter, glm::vec3(-2.5f, 0.0f, 26.5f));
