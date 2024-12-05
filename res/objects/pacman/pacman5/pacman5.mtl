@@ -1,0 +1,14 @@
+# Blender 4.2.2 LTS MTL File: 'pacman5.blend'
+# www.blender.org
+
+newmtl Materiale.002
+Ns 235.225006
+Ka 1.000000 1.000000 1.000000
+Kd 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ni 2.200000
+d 1.000000
+illum 2
+map_Kd diffuse_texture.png
+map_Ks specular_texture.png
+map_Ka ambient_texture.png

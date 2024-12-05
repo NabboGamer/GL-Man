@@ -1,6 +1,9 @@
-#include "Model.hpp"
+#include <windows.h>
 
-Model::Model(string const& path, bool gamma) : gammaCorrection(gamma) {
+#include "Model.hpp"
+#include "LoggerManager.hpp"
+
+Model::Model(string const& path, const bool gamma) : gammaCorrection(gamma), minBounds(FLT_MAX), maxBounds(-FLT_MAX) {
     loadModel(path);
 }
 
@@ -20,7 +23,7 @@ void Model::loadModel(string const& path) {
     const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
     // check for errors
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
-        cout << "ERROR::ASSIMP:: " << importer.GetErrorString() << endl;
+        LoggerManager::LogError("ASSIMP {}", importer.GetErrorString());
         return;
     }
     // retrieve the directory path of the filepath
@@ -36,9 +39,22 @@ void Model::processNode(aiNode* node, const aiScene* scene) {
         // the node object only contains indices to index the actual objects in the scene. 
         // the scene contains all the data, node is just to keep stuff organized (like relations between nodes).
         aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-        meshes.push_back(processMesh(mesh, scene));
+        Mesh processedMesh = processMesh(mesh, scene);
+
+        // Aggiornamento globale della bounding box con i vertici della mesh
+        for (const auto& vertex : processedMesh.vertices) {
+            this->minBounds.x = std::min(this->minBounds.x, vertex.Position.x);
+            this->minBounds.y = std::min(this->minBounds.y, vertex.Position.y);
+            this->minBounds.z = std::min(this->minBounds.z, vertex.Position.z);
+
+            this->maxBounds.x = std::max(this->maxBounds.x, vertex.Position.x);
+            this->maxBounds.y = std::max(this->maxBounds.y, vertex.Position.y);
+            this->maxBounds.z = std::max(this->maxBounds.z, vertex.Position.z);
+        }
+
+        meshes.push_back(processedMesh);
     }
-    // after we've processed all of the meshes (if any) we then recursively process each of the children nodes
+    // after we've processed all the meshes (if any) we then recursively process each of the children nodes
     for (unsigned int i = 0; i < node->mNumChildren; i++) {
         processNode(node->mChildren[i], scene);
     }
@@ -53,7 +69,10 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene) {
     // walk through each of the mesh's vertices
     for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
         Vertex vertex;
-        glm::vec3 vector; // we declare a placeholder vector since assimp uses its own vector class that doesn't directly convert to glm's vec3 class so we transfer the data to this placeholder glm::vec3 first.
+        // we declare a placeholder vector since assimp uses its own 
+        // vector class that doesn't directly convert to glm's vec3 
+        // class so we transfer the data to this placeholder glm::vec3 first.
+        glm::vec3 vector; 
         // positions
         vector.x = mesh->mVertices[i].x;
         vector.y = mesh->mVertices[i].y;
@@ -106,21 +125,85 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene) {
     // specular: texture_specularN
     // normal: texture_normalN
 
-    // 1. diffuse maps
-    vector<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
-    textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
-    // 2. specular maps
-    vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
-    textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
-    // 3. normal maps
-    std::vector<Texture> normalMaps = loadMaterialTextures(material, aiTextureType_HEIGHT, "texture_normal");
-    textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
-    // 4. height maps
-    std::vector<Texture> heightMaps = loadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height");
-    textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
+    aiString materialName;
+    aiReturn ret;
+    ret = material->Get(AI_MATKEY_NAME, materialName);
+    
+    LoggerManager::LogDebug("Mesh Material: {}", materialName.C_Str());
+    aiColor3D color;
+    glm::vec3 vecColor;
+    if (AI_SUCCESS == material->Get(AI_MATKEY_COLOR_AMBIENT, color))
+        vecColor = glm::vec3(color.r, color.g, color.b);
+        LoggerManager::LogDebug("Ka=({},{},{})", vecColor.x ,vecColor.y ,vecColor.z);
+    if (AI_SUCCESS == material->Get(AI_MATKEY_COLOR_DIFFUSE, color))
+        vecColor = glm::vec3(color.r, color.g, color.b);
+        LoggerManager::LogDebug("Kd=({},{},{})", vecColor.x, vecColor.y, vecColor.z);
+    if (AI_SUCCESS == material->Get(AI_MATKEY_COLOR_SPECULAR, color))
+        vecColor = glm::vec3(color.r, color.g, color.b);
+        LoggerManager::LogDebug("Ks=({},{},{})", vecColor.x, vecColor.y, vecColor.z);
+
+    glm::vec3 ambientColor(1.0f), diffuseColor(1.0f), specularColor(1.0f);
+    bool hasAmbientTexture = false;
+    bool hasDiffuseTexture = false;
+    bool hasSpecularTexture = false;
+
+    if (material->GetTextureCount(aiTextureType_AMBIENT) > 0) {
+        // 1. ambient maps
+        std::vector<Texture> ambientMaps = loadMaterialTextures(material, aiTextureType_AMBIENT, "texture_ambient");
+        textures.insert(textures.end(), ambientMaps.begin(), ambientMaps.end());
+        hasAmbientTexture = true;
+    }
+    else {
+        aiColor3D color;
+        if (AI_SUCCESS == material->Get(AI_MATKEY_COLOR_AMBIENT, color)) {
+            ambientColor = glm::vec3(color.r, color.g, color.b);
+        }
+        else {
+            ambientColor = glm::vec3(0.5);
+        }
+    }
+
+    if (material->GetTextureCount(aiTextureType_DIFFUSE) > 0) {
+        // 2. diffuse maps
+        vector<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
+        textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
+        hasDiffuseTexture = true;
+    }
+    else {
+        aiColor3D color;
+        if (AI_SUCCESS == material->Get(AI_MATKEY_COLOR_DIFFUSE, color)) {
+            diffuseColor = glm::vec3(color.r, color.g, color.b);
+        }
+        else {
+            diffuseColor = glm::vec3(0.5);
+        }
+            
+    }
+
+    if (material->GetTextureCount(aiTextureType_SPECULAR) > 0) {
+        // 3. specular maps
+        vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
+        textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
+        hasSpecularTexture = true;
+    }
+    else {
+        aiColor3D color;
+        if (AI_SUCCESS == material->Get(AI_MATKEY_COLOR_SPECULAR, color)) {
+            specularColor = glm::vec3(color.r, color.g, color.b);
+        }
+        else {
+            specularColor = glm::vec3(0.5);
+        }
+            
+    }
+
+    LoggerManager::LogDebug("hasAmbientTexture={}",(hasAmbientTexture==true)?"true":"false");
+    LoggerManager::LogDebug("hasDiffuseTexture={}",(hasDiffuseTexture ==true)?"true":"false");
+    LoggerManager::LogDebug("hasSpecularTexture={}",(hasSpecularTexture ==true)?"true":"false");
+    LoggerManager::LogDebug("");
 
     // return a mesh object created from the extracted mesh data
-    return Mesh(vertices, indices, textures);
+    return Mesh(vertices, indices, textures, ambientColor, diffuseColor, specularColor, hasAmbientTexture, hasDiffuseTexture, hasSpecularTexture);
 }
 
 vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType type, string typeName) {
@@ -139,7 +222,11 @@ vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType type,
         }
         if (!skip) {   // if texture hasn't been loaded already, load it
             Texture texture;
-            texture.id = TextureFromFile(str.C_Str(), this->directory);
+            if (this->gammaCorrection) {
+                texture.id = TextureFromFile(str.C_Str(), this->directory, true);
+            } else {
+                texture.id = TextureFromFile(str.C_Str(), this->directory);
+            }
             texture.type = typeName;
             texture.path = str.C_Str();
             textures.push_back(texture);
@@ -149,7 +236,8 @@ vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType type,
     return textures;
 }
 
-unsigned int Model::TextureFromFile(const char* path, const string& directory, bool gamma) {
+unsigned int Model::TextureFromFile(const char* path, const string& directory, const bool gamma) {
+    // Create the complete path
     string filename = string(path);
     filename = directory + '/' + filename;
 
@@ -158,29 +246,96 @@ unsigned int Model::TextureFromFile(const char* path, const string& directory, b
 
     int width, height, nrComponents;
     unsigned char* data = stbi_load(filename.c_str(), &width, &height, &nrComponents, 0);
-    if (data) {
-        GLenum format;
-        if (nrComponents == 1)
-            format = GL_RED;
-        else if (nrComponents == 3)
-            format = GL_RGB;
-        else if (nrComponents == 4)
-            format = GL_RGBA;
+    GLenum dataType = GL_UNSIGNED_BYTE; // Default data type
 
+    if (!data) {
+        // Trying with 16-bit
+        unsigned short* data16 = stbi_load_16(filename.c_str(), &width, &height, &nrComponents, 0);
+        if (data16) {
+            dataType = GL_UNSIGNED_SHORT;
+            data = reinterpret_cast<unsigned char*>(data16);
+        }
+        else {
+            // Attempt with floating-point
+            float* dataFloat = stbi_loadf(filename.c_str(), &width, &height, &nrComponents, 0);
+            if (dataFloat) {
+                dataType = GL_FLOAT;
+                data = reinterpret_cast<unsigned char*>(dataFloat);
+            }
+            else {
+                LoggerManager::LogError("MODEL: Texture failed to load at path: {}", path);
+                return 0;
+            }
+        }
+    }
+
+    if (data) {
+        // Determination of formats
+        GLenum format, internalFormat;
+        if (nrComponents == 1) { // Grayscale images are not affected by sRGB
+            if (dataType == GL_UNSIGNED_BYTE) {
+                internalFormat = GL_R8;
+            }
+            else if (dataType == GL_UNSIGNED_SHORT) {
+                internalFormat = GL_R16;
+            }
+            else if (dataType == GL_FLOAT) {
+                internalFormat = GL_R32F;
+            }
+            format = GL_RED;
+        }
+        else if (nrComponents == 3) {
+            if (dataType == GL_UNSIGNED_BYTE) {
+                internalFormat = gamma ? GL_SRGB8 : GL_RGB8;
+            }
+            else if (dataType == GL_UNSIGNED_SHORT) {
+                internalFormat = GL_RGB16;
+            }
+            else { // Floating-point
+                internalFormat = GL_RGB32F;
+            }
+            format = GL_RGB;
+        }
+        else if (nrComponents == 4) {
+            if (dataType == GL_UNSIGNED_BYTE) {
+                internalFormat = gamma ? GL_SRGB8_ALPHA8 : GL_RGBA8;
+            }
+            else if (dataType == GL_UNSIGNED_SHORT) {
+                internalFormat = GL_RGBA16;
+            }
+            else { // Floating-point
+                internalFormat = GL_RGBA32F;
+            }
+            format = GL_RGBA;
+        }
+        else {
+            LoggerManager::LogError("MODEL: Unsupported texture format ({} channels)", nrComponents);
+            stbi_image_free(data);
+            return 0;
+        }
+
+        // Loading the texture
         glBindTexture(GL_TEXTURE_2D, textureID);
-        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+        glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, dataType, data);
         glGenerateMipmap(GL_TEXTURE_2D);
 
+        // Wrapping and filtering parameters
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
+        // Free up image memory
         stbi_image_free(data);
-    } else {
-        std::cout << "Texture failed to load at path: " << path << std::endl;
+    }
+    else {
         stbi_image_free(data);
+        LoggerManager::LogError("MODEL: Texture failed to load at path: {}", path);
     }
 
     return textureID;
+}
+
+std::pair<glm::vec3, glm::vec3> Model::GetBoundingBox() const {
+    return { this->minBounds, this->maxBounds };
 }

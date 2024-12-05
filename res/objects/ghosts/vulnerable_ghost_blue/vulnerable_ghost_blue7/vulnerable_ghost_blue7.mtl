@@ -1,0 +1,14 @@
+# Blender 4.2.2 LTS MTL File: 'vulnerable_ghost_blue1.blend'
+# www.blender.org
+
+newmtl Materiale
+Ns 159.999985
+Ka 1.000000 1.000000 1.000000
+Kd 1.000000 1.000000 1.000000
+Ks 0.300000 0.300000 0.300000
+Ni 1.400000
+d 1.000000
+illum 1
+map_Kd diffuse_texture.png
+map_Ks specular_texture.png
+map_Ka ambient_texture.png

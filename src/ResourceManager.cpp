@@ -1,9 +1,10 @@
-#include <iostream>
 #include <sstream>
 #include <fstream>
+#include <windows.h>
 
 #include "ResourceManager.hpp"
 #include "Filesystem.hpp"
+#include "LoggerManager.hpp"
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
@@ -22,8 +23,8 @@ Shader& ResourceManager::GetShader(std::string name) {
     return Shaders[name];
 }
 
-Texture2D ResourceManager::LoadTexture(const char *file, std::string name) {
-    Textures[name] = loadTextureFromFile(file);
+Texture2D ResourceManager::LoadTexture(const char *file, std::string name, const bool useSRGB) {
+    Textures[name] = loadTextureFromFile(file, useSRGB);
     return Textures[name];
 }
 
@@ -31,8 +32,8 @@ Texture2D& ResourceManager::GetTexture(std::string name) {
     return Textures[name];
 }
 
-Model ResourceManager::LoadModel(const std::string& path, std::string name) {
-    Models[name] = Model(FileSystem::getPath(path));
+Model ResourceManager::LoadModel(const std::string& path, std::string name, const bool useSRGB) {
+    Models[name] = Model(FileSystem::getPath(path), useSRGB);
     return Models[name];
 }
 
@@ -77,7 +78,7 @@ Shader ResourceManager::loadShaderFromFile(const char *vShaderFile, const char *
             geometryCode = gShaderStream.str();
         }
     } catch (std::exception e) {
-        std::cout << "ERROR::RESOURCEMANAGER: Failed to read shader files" << std::endl;
+        LoggerManager::LogError("RESOURCEMANAGER: Failed to read shader files");
     }
     const char *vShaderCode = vertexCode.c_str();
     const char *fShaderCode = fragmentCode.c_str();
@@ -88,7 +89,7 @@ Shader ResourceManager::loadShaderFromFile(const char *vShaderFile, const char *
     return shader;
 }
 
-Texture2D ResourceManager::loadTextureFromFile(const char* file) {
+Texture2D ResourceManager::loadTextureFromFile(const char* file, const bool useSRGB) {
     // Create the texture object
     Texture2D texture;
 
@@ -112,7 +113,7 @@ Texture2D ResourceManager::loadTextureFromFile(const char* file) {
             }
             else {
                 // If all loading fail, report the error and exit
-                std::cerr << "ERROR::RESOURCEMANAGER: Failed to load image file: " << file << std::endl;
+                LoggerManager::LogError("RESOURCEMANAGER: Failed to load image file: {}", file);
                 return texture;
             }
         }
@@ -120,7 +121,7 @@ Texture2D ResourceManager::loadTextureFromFile(const char* file) {
 
 
     // Set formats based on `nrChannels` and `dataType`
-    if (nrChannels == 1) {
+    if (nrChannels == 1) { // Grayscale images are not affected by sRGB
         if (dataType == GL_UNSIGNED_BYTE) {
             texture.internalFormat = GL_R8;
         }
@@ -134,7 +135,7 @@ Texture2D ResourceManager::loadTextureFromFile(const char* file) {
     }
     else if (nrChannels == 3) {
         if (dataType == GL_UNSIGNED_BYTE) {
-            texture.internalFormat = GL_RGB8;
+            texture.internalFormat = useSRGB ? GL_SRGB8 : GL_RGB8;
         }
         else if (dataType == GL_UNSIGNED_SHORT) {
             texture.internalFormat = GL_RGB16;
@@ -146,7 +147,7 @@ Texture2D ResourceManager::loadTextureFromFile(const char* file) {
     }
     else if (nrChannels == 4) {
         if (dataType == GL_UNSIGNED_BYTE) {
-            texture.internalFormat = GL_RGBA8;
+            texture.internalFormat = useSRGB ? GL_SRGB8_ALPHA8 : GL_RGBA8;
         }
         else if (dataType == GL_UNSIGNED_SHORT) {
             texture.internalFormat = GL_RGBA16;
@@ -157,7 +158,7 @@ Texture2D ResourceManager::loadTextureFromFile(const char* file) {
         texture.imageFormat = GL_RGBA;
     }
     else {
-        std::cerr << "ERROR::RESOURCEMANAGER: Unsupported image format: " << nrChannels << " channels." << std::endl;
+        LoggerManager::LogError("RESOURCEMANAGER: Unsupported image format: {} channels", nrChannels);
         stbi_image_free(data);
         return texture;
     }

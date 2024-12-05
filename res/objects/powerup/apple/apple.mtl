@@ -2,12 +2,14 @@
 # www.blender.org
 
 newmtl Apple_Baked
+Ns 302.500000
 Ka 1.000000 1.000000 1.000000
-Ks 0.651376 0.651376 0.651376
-Ke 0.000000 0.000000 0.000000
-Ni 1.100000
+Kd 1.000000 1.000000 1.000000
+Ks 0.300000 0.300000 0.300000
+Ni 1.200000
 d 1.000000
 illum 2
-map_Kd apple_diffuse.png
-map_Ns apple_roughness.png
-map_Bump -bm 1.500000 apple_normal.png
+map_Kd diffuse_texture.png
+map_Ks specular_texture.png
+map_Ka ambient_texture.png
+map_Bump -bm 1.500000 C:/Users/tancr/Desktop/resources/textures/apple/apple_normal.png

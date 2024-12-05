@@ -17,11 +17,16 @@ public:
                         Shader* shader, Model* model);
     ~GameObjectFromModel();
 
-    // Override del metodo Draw
+    // Override of the Draw method
     void Draw() override;
+
+    // Override of the GetBoundingBox method
+    std::pair<glm::vec3, glm::vec3> GetBoundingBox() const override;
+    std::pair<glm::vec3, glm::vec3> GetTransformedBoundingBox(size_t instanceIndex) const override;
 
 private:
     unsigned int  instanceVBO;
+    glm::vec3 centerOffset;
 
     void initRenderData();
 

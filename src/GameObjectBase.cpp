@@ -1,30 +1,43 @@
-#include <iostream>
 #include <cstdlib>
+#include <windows.h>
 
 #include "GameObjectBase.hpp"
+#include "LoggerManager.hpp"
 
 
 GameObjectBase::GameObjectBase(std::vector<glm::vec3> positions, std::vector<glm::vec3> directions, 
                                std::vector<float> rotations, std::vector<glm::vec3> scaling, Shader* shader)
               : positions(positions), directions(directions), rotations(rotations), scaling(scaling), shader(shader) {
-    validityCheck();
+    this->validityCheck();
 }
 
 GameObjectBase::~GameObjectBase() {
     //delete shader;
 }
 
+size_t GameObjectBase::GetNumInstances() const {
+    return this->numInstances;
+}
+
+void GameObjectBase::SetNumInstances(const size_t newNumInstances) {
+    this->numInstances = newNumInstances;
+}
+
+void GameObjectBase::UpdateNumInstance() {
+    this->validityCheck();
+    const size_t actualNumInstance = this->positions.size();
+    this->SetNumInstances(actualNumInstance);
+}
+
 void GameObjectBase::validityCheck() {
-    if (this->positions.size() == this->directions.size() &&
+    if (this->positions.size()  == this->directions.size() &&
         this->directions.size() == this->rotations.size() &&
-        this->rotations.size() == this->scaling.size()) {
+        this->rotations.size()  == this->scaling.size()) {
         this->numInstances = this->positions.size();
     } else {
-        // Set text color to red
-        std::cerr << "\033[31m";
-        std::cerr << "ERROR::GameObjectBase:: The sizes of the initialization vectors passed to the constructor are inconsistent!" << std::endl;
-        // Reset text color to default
-        std::cerr << "\033[0m";
-        exit(1);
+        LoggerManager::LogFatal("The sizes of the vectors are inconsistent!");
+        exit(-1);
     }
 }
+
+

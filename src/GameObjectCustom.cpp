@@ -1,14 +1,25 @@
+#include <windows.h>
+
 #include "GameObjectCustom.hpp"
+#include "Utility.hpp"
 
 GameObjectCustom::GameObjectCustom(std::vector<glm::vec3> positions, std::vector<glm::vec3> directions,
                                    std::vector<float> rotations, std::vector<glm::vec3> scaling,
                                    Shader* shader, std::vector<float>& mesh, 
                                    Texture2D* diffuseTexture, Texture2D* specularTexture)
 	            : GameObjectBase(positions, directions, rotations, scaling, shader), 
-                  mesh(mesh), diffuseTexture(diffuseTexture), specularTexture(specularTexture) {
-	this->initRenderData();
-    this->calculatePmin();
-    this->calculatePmax();
+                  mesh(mesh), diffuseTexture(diffuseTexture), specularTexture(specularTexture), 
+                  minBounds(FLT_MAX), maxBounds(-FLT_MAX) {
+
+    this->calculateBoundingBox();
+
+    // Calculate the original bounding box
+    auto [minBounds, maxBounds] = this->GetBoundingBox();
+
+    // Calculate the offset to center pmin at the origin
+    this->centerOffset = -minBounds;
+
+    this->initRenderData();
 }
 
 GameObjectCustom::~GameObjectCustom() {
@@ -50,21 +61,22 @@ void GameObjectCustom::initRenderData() {
 
 void GameObjectCustom::Draw() {
     this->shader->Use();
+
     std::vector<glm::mat4> modelMatrices(this->numInstances, glm::mat4(1.0f));
     for (size_t i = 0; i < this->numInstances; i++) {
         glm::mat4 model = glm::mat4(1.0f);
 
-        // Translation to exactly position the pmin vertex at the origin
-        model = glm::translate(model, -this->pMin);
-
         model = glm::translate(model, this->positions[i]);
+
+        model = glm::scale(model, this->scaling[i]);
+
+        // Apply offset to center pmin at origin
+        model = glm::translate(model, this->centerOffset);
+
+        model = glm::rotate(model, glm::radians(this->rotations[i]), glm::vec3(0.0f, 1.0f, 0.0f));
 
         float angle = glm::atan(this->directions[i].x, this->directions[i].z);
         model = glm::rotate(model, angle, glm::vec3(0.0f, 1.0f, 0.0f));
-
-        model = glm::rotate(model, this->rotations[i], glm::vec3(0.0f, 1.0f, 0.0f));
-
-        model = glm::scale(model, this->scaling[i]);
 
         modelMatrices[i] = model;
     }
@@ -82,51 +94,58 @@ void GameObjectCustom::Draw() {
     glActiveTexture(GL_TEXTURE1);
     this->specularTexture->Bind();
 
-    this->shader->SetFloat("material.shininess", 1.0f);
+    //this->shader->SetFloat("material.shininess", 1.0f);
 
     glBindVertexArray(this->VAO);
     if (this->numInstances > 1) {
-        glDrawArraysInstanced(GL_TRIANGLES, 0, static_cast<GLsizei>(this->vertexCount), this->numInstances);
+        GLsizei vertexCount = static_cast<GLsizei>(this->vertexCount);
+        GLsizei numInstances = static_cast<GLsizei>(this->numInstances);
+        glDrawArraysInstanced(GL_TRIANGLES, 0, vertexCount, numInstances);
     } else {
-        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(this->vertexCount));
+        GLsizei vertexCount = static_cast<GLsizei>(this->vertexCount);
+        glDrawArrays(GL_TRIANGLES, 0, vertexCount);
     }
     glBindVertexArray(0);
 }
 
-void GameObjectCustom::calculatePmin() {
-    glm::vec3 exactPmin(this->mesh[0], this->mesh[1], this->mesh[2]);
+void GameObjectCustom::calculateBoundingBox() {
 
-    for (size_t i = 0; i < this->mesh.size(); i += 8) { // Each vertex has 8 values ​​(xyz + normals + uv)
-        float x = this->mesh[i];
-        float y = this->mesh[i + 1];
-        float z = this->mesh[i + 2];
+    // Itera sui vertici, saltando 8 valori alla volta per passare da un vertice all'altro
+    for (size_t i = 0; i < this->mesh.size(); i += 8) {
+        glm::vec3 vertex(this->mesh[i], this->mesh[i + 1], this->mesh[i + 2]);
 
-        // If we find a vertex with a smaller y value, we select it as the new pmin
-        if (y < exactPmin.y ||
-            (y == exactPmin.y && x < exactPmin.x) ||
-            (y == exactPmin.y && x == exactPmin.x && z < exactPmin.z)) {
-            exactPmin = glm::vec3(x, y, z);
-        }
+        // Aggiorna il minimo e massimo per ogni coordinata
+        this->minBounds.x = std::min(this->minBounds.x, vertex.x);
+        this->minBounds.y = std::min(this->minBounds.y, vertex.y);
+        this->minBounds.z = std::min(this->minBounds.z, vertex.z);
+
+        this->maxBounds.x = std::max(this->maxBounds.x, vertex.x);
+        this->maxBounds.y = std::max(this->maxBounds.y, vertex.y);
+        this->maxBounds.z = std::max(this->maxBounds.z, vertex.z);
     }
 
-    this->pMin = exactPmin;
 }
 
-void GameObjectCustom::calculatePmax() {
-    glm::vec3 exactPmax(this->mesh[0], this->mesh[1], this->mesh[2]);
+std::pair<glm::vec3, glm::vec3> GameObjectCustom::GetBoundingBox() const {
+    return { this->minBounds, this->maxBounds };
+}
 
-    for (size_t i = 0; i < this->mesh.size(); i += 8) { // Each vertex has 8 values ​​(xyz + normals + uv)
-        float x = this->mesh[i];
-        float y = this->mesh[i + 1];
-        float z = this->mesh[i + 2];
+std::pair<glm::vec3, glm::vec3> GameObjectCustom::GetTransformedBoundingBox(size_t instanceIndex) const {
+    auto [minBounds, maxBounds] = this->GetBoundingBox();
 
-        // If we find a vertex with a higher y value, we select it as the new pmax
-        if (y > exactPmax.y ||
-            (y == exactPmax.y && x > exactPmax.x) ||
-            (y == exactPmax.y && x == exactPmax.x && z > exactPmax.z)) {
-            exactPmax = glm::vec3(x, y, z);
-        }
-    }
+    glm::mat4 model = glm::mat4(1.0f);
+    model = glm::translate(model, this->positions[instanceIndex]);
+    model = glm::scale(model, this->scaling[instanceIndex]);
+    model = glm::translate(model, this->centerOffset);
+    model = glm::rotate(model, glm::radians(this->rotations[instanceIndex]), glm::vec3(0.0f, 1.0f, 0.0f));
+    float angle = glm::atan(this->directions[instanceIndex].x, this->directions[instanceIndex].z);
+    model = glm::rotate(model, angle, glm::vec3(0.0f, 1.0f, 0.0f));
 
-    this->pMax = exactPmax;
+    glm::vec3 transformedMin = glm::vec3(model * glm::vec4(minBounds, 1.0f));
+    glm::vec3 transformedMax = glm::vec3(model * glm::vec4(maxBounds, 1.0f));
+
+    glm::vec3 finalMin = glm::min(transformedMin, transformedMax);
+    glm::vec3 finalMax = glm::max(transformedMin, transformedMax);
+
+    return { Utility::ApproximateVec3ToSixDecimals(finalMin), Utility::ApproximateVec3ToSixDecimals(finalMax) };
 }

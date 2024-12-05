@@ -3,11 +3,12 @@
 
 newmtl Materiale
 Ns 250.000000
-Ka 0.120000 0.120000 0.120000
-Ks 0.500000 0.500000 0.500000
-Ke 0.000000 0.000000 0.000000
-Ni 1.500000
+Ka 1.000000 1.000000 1.000000
+Kd 1.000000 1.000000 1.000000
+Ks 0.300000 0.300000 0.300000
+Ni 1.600000
 d 1.000000
-illum 3
-map_Kd strawberry_base_color.jpg
-map_Bump -bm 1.000000 strawberry_normal.png
+illum 2
+map_Kd diffuse_texture.png
+map_Ks specular_texture.png
+map_Ka ambient_texture.png

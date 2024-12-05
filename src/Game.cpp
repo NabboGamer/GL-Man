@@ -1,579 +1,894 @@
+﻿#include <windows.h>
 #include <algorithm>
 #include <sstream>
-#include <iostream>
-
-//#include <irrklang/irrKlang.h>
-//using namespace irrklang;
+#include <irrKlang.h>
+using namespace irrklang;
 
 #include "Game.hpp"
+#include "custom_types.hpp"
 #include "FileSystem.hpp"
 #include "ResourceManager.hpp"
+#include "LoggerManager.hpp"
 #include "GameObjectBase.hpp"
 #include "GameObjectCustom.hpp"
 #include "GameObjectFromModel.hpp"
+#include "PacMan.hpp"
+#include "Blinky.hpp"
+#include "Clyde.hpp"
+#include "Inky.hpp"
+#include "Pinky.hpp"
+#include "Utility.hpp"
+#include "VulnerableGhost.hpp"
 //#include "particle_generator.h"
-//#include "post_processor.h"
-//#include "text_renderer.h"
+#include "TextRenderer.hpp"
+#include "PostProcessor.hpp"
 
 
 // Game-related State data
-GameObjectBase*       player;
-//ParticleGenerator *Particles;
-//PostProcessor     *Effects;
-//ISoundEngine      *SoundEngine = createIrrKlangDevice();
-//TextRenderer      *Text;
+namespace {
+    PacMan*               pacman;
+    Blinky*               blinky;
+    Clyde*                clyde;
+    Inky*                 inky;
+    Pinky*                pinky;
+    VulnerableGhost*      vulnerableGhost;
+    //ParticleGenerator*  Particles;
+    ISoundEngine*         soundEngine;
+    ISoundSource*         pacmanChompSound;
+    ISoundSource*         pacmanDeathSound;
+    ISoundSource*         pacmanEatFruitSound;
+    ISoundSource*         pacmanEatGhostSound;
+    ISoundSource*         ghostNormalMoveSound;
+    ISoundSource*         ghostTurnBlueSound;
+    ISoundSource*         pacmanEatsAllGhostsSound;
+    ISoundSource*         victorySound;
+	ISoundSource*         currentPlayingSound;
+    ISound*               currentSoundInstance = nullptr;
+    TextRenderer*         text;
+    PostProcessor*        postProcessor;
+}
 
-Game::Game(unsigned int width, unsigned int height) : state(GAME_ACTIVE), keys(), keysProcessed(), width(width), height(height) { }
+namespace {
+    constexpr float PLAYER_SPEED = 7.5f;
+    float           scaleX;
+    float           scaleY;
+    float           scaleText;
+    int             updating = 0;
+
+    struct SharedParams {
+        glm::mat4 projection;
+        glm::mat4 view;
+        glm::vec3 lightDir;
+        glm::vec3 lightPos;
+        glm::vec3 lightSpecular;
+        float materialShininess;
+    };
+
+    struct OtherParams {
+        glm::vec3 lightAmbient;
+        glm::vec3 lightDiffuse;
+    };
+}
+
+namespace {
+
+    // Function to detect OBB - OBB collision in XZ plane
+    bool checkCollision(const CustomTypes::obb& obb1, const CustomTypes::obb& obb2) {
+        const glm::vec3 box1_min = obb1.first;
+        const glm::vec3 box1_max = obb1.second;
+        const glm::vec3 box2_min = obb2.first;
+        const glm::vec3 box2_max = obb2.second;
+
+        // Check only on X and Z axes
+        const bool overlapX = box1_max.x >= box2_min.x && box1_min.x <= box2_max.x;
+        const bool overlapZ = box1_max.z >= box2_min.z && box1_min.z <= box2_max.z;
+
+        return overlapX && overlapZ;
+    }
+
+    // Function to resolve collision in XZ plane
+    glm::vec3 resolveCollision(const CustomTypes::obb& playerObb, const CustomTypes::obb& wallObb, PermittedDirections& permittedDirections) {
+        const glm::vec3 playerMin = playerObb.first;
+        const glm::vec3 playerMax = playerObb.second;
+        const glm::vec3 wallMin   = wallObb.first;
+        const glm::vec3 wallMax   = wallObb.second;
+
+        // Calculating overlaps
+        const float overlapX = std::min(playerMax.x, wallMax.x) - std::max(playerMin.x, wallMin.x);
+        const float overlapZ = std::min(playerMax.z, wallMax.z) - std::max(playerMin.z, wallMin.z);
+
+        // Tolerance for comparison
+        constexpr float epsilon = 0.001f;
+
+        // Resets all values ​​to true so that only one direction is blocked at a time
+        permittedDirections = PermittedDirections();
+
+        // Determine the axis with the least penetration
+        if (std::abs(overlapX - overlapZ) < epsilon) {
+
+            // Special case Nearly equal overlaps
+            if (playerMax.x < wallMax.x) {
+                permittedDirections.DIRECTION_UP = false;
+                return { -overlapX, 0.0f, 0.0f };
+            }
+            else {
+                permittedDirections.DIRECTION_DOWN = false;
+                return { overlapX, 0.0f, 0.0f };
+            }
+
+        }
+        else if (overlapX < overlapZ) {
+
+            if (playerMax.x < wallMax.x) {
+                permittedDirections.DIRECTION_UP = false;
+                return { -overlapX, 0.0f, 0.0f };
+            }
+            else {
+                permittedDirections.DIRECTION_DOWN = false;
+                return { overlapX, 0.0f, 0.0f };
+            }
+
+        }
+        else {
+
+            if (playerMax.z < wallMax.z) {
+                permittedDirections.DIRECTION_RIGHT = false;
+                return { 0.0f, 0.0f, -overlapZ };
+            }
+            else {
+                permittedDirections.DIRECTION_LEFT = false;
+                return { 0.0f, 0.0f, overlapZ };
+            }
+
+        }
+    }
+
+    // Function to play sounds in loop, with diversity control compared to the current sound
+    void playSoundIfChanged(ISoundSource* newSound, const bool loop = false) {
+        if (currentPlayingSound != newSound) {
+            // Stop the current sound
+            if (currentSoundInstance) {
+                currentSoundInstance->stop();
+                currentSoundInstance = nullptr;
+            }
+            // Start the new sound
+            currentSoundInstance = soundEngine->play2D(newSound, loop, false, true);
+            if (currentSoundInstance) {
+                currentSoundInstance->setIsPaused(false); // Make sure it starts
+            }
+            currentPlayingSound = newSound; // Update the current sound
+        }
+    }
+
+    // Function to stop the current sound
+    void stopCurrentSound() {
+        if (currentSoundInstance) {
+            currentSoundInstance->stop();
+            currentSoundInstance = nullptr;
+        }
+        //currentPlayingSound->drop();
+    }
+
+    // Function to calculate points
+    int calculatePoints(const int ghostCounter) {
+        return 200 * (1 << (ghostCounter - 1)); // 200, 400, 800, 1600
+    }
+
+}
+
+Game::Game(const unsigned int width, const unsigned int height, CustomStructs::Config& config)
+    : state(GAME_ACTIVE), keys(), keysProcessed(), width(width),
+      height(height), level(0), lives(3), score(0), cameraPos(),
+      cameraAt(), up(),cameraDir(),cameraSide(),cameraUp(), config(config) { }
 
 Game::~Game() {
-    delete player;
-    /*delete Ball;
-    delete Particles;
-    delete Effects;
-    delete Text;
-    SoundEngine->drop();*/
+    delete pacman;
+    delete blinky;
+    delete clyde;
+    delete inky;
+    delete pinky;
+    delete vulnerableGhost;
+    /*delete Particles;
+    delete Effects;*/
+    /*pacmanChompSound->drop();
+    pacmanDeathSound->drop();
+    pacmanEatFruitSound->drop();
+    pacmanEatGhostSound->drop();
+    ghostNormalMoveSound->drop();
+    ghostTurnBlueSound->drop();*/
+    //soundEngine->drop();
+    delete text;
+    delete postProcessor;
 }
 
 void Game::Init() {
     /// Load Shaders
-    ResourceManager::LoadShader("shaders/mazeWall.vs", "shaders/mazeWall.fs", nullptr, "mazeWallShader");
-    ResourceManager::LoadShader("shaders/mazeFloor.vs", "shaders/mazeFloor.fs", nullptr, "mazeFloorShader");
-    ResourceManager::LoadShader("shaders/dot.vs", "shaders/dot.fs", nullptr, "dotShader");
-    /*ResourceManager::LoadShader("particle.vs", "particle.fs", nullptr, "particle");
-    ResourceManager::LoadShader("post_processing.vs", "post_processing.fs", nullptr, "postprocessing");*/
+    ResourceManager::LoadShader("./shaders/mazeWall.vs",   "./shaders/mazeWall.fs",   nullptr, "mazeWallShader");
+    ResourceManager::LoadShader("./shaders/mazeFloor.vs",  "./shaders/mazeFloor.fs",  nullptr, "mazeFloorShader");
+    ResourceManager::LoadShader("./shaders/dot.vs",        "./shaders/dot.fs",        nullptr, "dotShader");
+    ResourceManager::LoadShader("./shaders/dot.vs",        "./shaders/dot.fs",        nullptr, "energizerShader");
+    ResourceManager::LoadShader("./shaders/pacman.vs",     "./shaders/pacman.fs",     nullptr, "pacmanShader");
+    ResourceManager::LoadShader("./shaders/ghost.vs",      "./shaders/ghost.fs",      nullptr, "ghostShader");
+    ResourceManager::LoadShader("./shaders/bonusSymbol.vs","./shaders/bonusSymbol.fs",nullptr, "bonusSymbolShader");
+    ResourceManager::LoadShader("./shaders/pacman.vs",     "./shaders/pacman.fs",     nullptr, "lifeCounterShader");
+    ResourceManager::LoadShader("./shaders/hdr.vs",        "./shaders/hdr.fs",        nullptr, "hdrShader");
+    ResourceManager::LoadShader("./shaders/stencil.vs",    "./shaders/stencil.fs",    nullptr, "stencilShader");
+    /*ResourceManager::LoadShader("particle.vs", "particle.fs", nullptr, "particle");*/
 
     /// Configure Shaders
     // Insert uniform variable in vertex shader(only global variables, i.e. the same for all shaders)
-    cameraPos = glm::vec3( -17.0, 22.5, 15.0);
-    cameraAt  = glm::vec3(  10.0,  1.0, 15.0);
-    up        = glm::vec3(   0.0,  1.0,  0.0);
-    cameraDir = glm::normalize(cameraPos - cameraAt);
-    cameraSide = glm::normalize(glm::cross(up, cameraDir));
-    cameraUp = glm::normalize(glm::cross(cameraDir, cameraSide));
+    this->cameraPos  = glm::vec3( -17.0, 22.5, 15.0);
+    this->cameraAt   = glm::vec3(  10.0,  1.0, 15.0);
+    this->up         = glm::vec3(   0.0,  1.0,  0.0);
+    this->cameraDir  = glm::normalize(cameraPos - cameraAt);
+    this->cameraSide = glm::normalize(glm::cross(up, cameraDir));
+    this->cameraUp = glm::normalize(glm::cross(cameraDir, cameraSide));
     glm::mat4 view = glm::lookAt(cameraPos, cameraAt, cameraUp);
     glm::mat4 projection = glm::perspective(glm::radians(35.0f), static_cast<float>(this->width) / static_cast<float>(this->height), 0.1f, 55.0f);
-    ResourceManager::GetShader("mazeWallShader").Use().SetMatrix4("view", view);
-    ResourceManager::GetShader("mazeWallShader").Use().SetMatrix4("projection", projection);
-    ResourceManager::GetShader("mazeFloorShader").Use().SetMatrix4("view", view);
-    ResourceManager::GetShader("mazeFloorShader").Use().SetMatrix4("projection", projection);
-    ResourceManager::GetShader("dotShader").Use().SetMatrix4("view", view);
-    ResourceManager::GetShader("dotShader").Use().SetMatrix4("projection", projection);
-    // Insert uniform variable in fragment shader(only global variables, i.e. the same for all shaders)
-    ResourceManager::GetShader("mazeWallShader").Use().SetVector3f("viewPos", cameraPos);
-    ResourceManager::GetShader("mazeWallShader").Use().SetVector3f("dirLight.direction", glm::normalize(cameraAt - cameraPos));
-    ResourceManager::GetShader("mazeWallShader").Use().SetVector3f("dirLight.ambient", glm::vec3(0.5f, 0.5f, 0.5f));
-    ResourceManager::GetShader("mazeWallShader").Use().SetVector3f("dirLight.diffuse", glm::vec3(0.6f, 0.6f, 0.6f));
-    ResourceManager::GetShader("mazeWallShader").Use().SetVector3f("dirLight.specular", glm::vec3(0.5f, 0.5f, 0.5f));
-    ResourceManager::GetShader("mazeFloorShader").Use().SetVector3f("viewPos", cameraPos);
-    ResourceManager::GetShader("mazeFloorShader").Use().SetVector3f("dirLight.direction", glm::normalize(cameraAt - cameraPos));
-    ResourceManager::GetShader("mazeFloorShader").Use().SetVector3f("dirLight.ambient", glm::vec3(0.5f, 0.5f, 0.5f));
-    ResourceManager::GetShader("mazeFloorShader").Use().SetVector3f("dirLight.diffuse", glm::vec3(0.6f, 0.6f, 0.6f));
-    ResourceManager::GetShader("mazeFloorShader").Use().SetVector3f("dirLight.specular", glm::vec3(0.5f, 0.5f, 0.5f));
-    ResourceManager::GetShader("dotShader").Use().SetVector3f("viewPos", cameraPos);
-    ResourceManager::GetShader("dotShader").Use().SetVector3f("dirLight.direction", glm::normalize(cameraAt - cameraPos));
-    ResourceManager::GetShader("dotShader").Use().SetVector3f("dirLight.ambient", glm::vec3(0.5f, 0.5f, 0.5f));
-    ResourceManager::GetShader("dotShader").Use().SetVector3f("dirLight.diffuse", glm::vec3(0.6f, 0.6f, 0.6f));
-    ResourceManager::GetShader("dotShader").Use().SetVector3f("dirLight.specular", glm::vec3(0.5f, 0.5f, 0.5f));
+    const glm::vec3 lightDir = glm::normalize(cameraAt - glm::vec3(-17.0, 27.0, 15.0));
 
+    SharedParams shared;
+    shared.projection = projection;
+    shared.view = view;
+    shared.lightDir = lightDir;
+    shared.lightPos = glm::vec3(-17.0, 27.0, 15.0);
+    shared.lightSpecular = glm::vec3(0.2f, 0.2f, 0.2f);
+    shared.materialShininess = 32.0f;
+
+    OtherParams other1, other2;
+    other1.lightAmbient = glm::vec3(0.7f, 0.7f, 0.7f);
+    other1.lightDiffuse = glm::vec3(0.9f, 0.9f, 0.9f);
+
+    other2.lightAmbient = glm::vec3(0.07f, 0.07f, 0.07f);
+    other2.lightDiffuse = glm::vec3(0.7f, 0.7f, 0.7f);
+
+    unsigned int uboShared, uboOther1, uboOther2;
+    glGenBuffers(1, &uboShared);
+    glBindBuffer(GL_UNIFORM_BUFFER, uboShared);
+    glBufferData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4) + 3 * (sizeof(glm::vec3) + 4) + sizeof(float), nullptr, GL_STATIC_DRAW);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+    glGenBuffers(1, &uboOther1);
+    glBindBuffer(GL_UNIFORM_BUFFER, uboOther1);
+    glBufferData(GL_UNIFORM_BUFFER, 2 * (sizeof(glm::vec3) + 4), nullptr, GL_STATIC_DRAW);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+    glGenBuffers(1, &uboOther2);
+    glBindBuffer(GL_UNIFORM_BUFFER, uboOther2);
+    glBufferData(GL_UNIFORM_BUFFER, 2 * (sizeof(glm::vec3) + 4), nullptr, GL_STATIC_DRAW);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+    glUniformBlockBinding(ResourceManager::GetShader("mazeWallShader").id,    glGetUniformBlockIndex(ResourceManager::GetShader("mazeWallShader").id,    "Shared"), 0);
+    glUniformBlockBinding(ResourceManager::GetShader("mazeFloorShader").id,   glGetUniformBlockIndex(ResourceManager::GetShader("mazeFloorShader").id,   "Shared"), 0);
+    glUniformBlockBinding(ResourceManager::GetShader("dotShader").id,         glGetUniformBlockIndex(ResourceManager::GetShader("dotShader").id,         "Shared"), 0);
+    glUniformBlockBinding(ResourceManager::GetShader("energizerShader").id,   glGetUniformBlockIndex(ResourceManager::GetShader("energizerShader").id,   "Shared"), 0);
+    glUniformBlockBinding(ResourceManager::GetShader("pacmanShader").id,      glGetUniformBlockIndex(ResourceManager::GetShader("pacmanShader").id,      "Shared"), 0);
+    glUniformBlockBinding(ResourceManager::GetShader("ghostShader").id,       glGetUniformBlockIndex(ResourceManager::GetShader("ghostShader").id,       "Shared"), 0);
+    glUniformBlockBinding(ResourceManager::GetShader("bonusSymbolShader").id, glGetUniformBlockIndex(ResourceManager::GetShader("bonusSymbolShader").id, "Shared"), 0);
+    glUniformBlockBinding(ResourceManager::GetShader("lifeCounterShader").id, glGetUniformBlockIndex(ResourceManager::GetShader("lifeCounterShader").id, "Shared"), 0);
+    glUniformBlockBinding(ResourceManager::GetShader("mazeWallShader").id,    glGetUniformBlockIndex(ResourceManager::GetShader("mazeWallShader").id,    "Other"), 1);
+    glUniformBlockBinding(ResourceManager::GetShader("mazeFloorShader").id,   glGetUniformBlockIndex(ResourceManager::GetShader("mazeFloorShader").id,   "Other"), 1);
+    glUniformBlockBinding(ResourceManager::GetShader("pacmanShader").id,      glGetUniformBlockIndex(ResourceManager::GetShader("pacmanShader").id,      "Other"), 1);
+    glUniformBlockBinding(ResourceManager::GetShader("ghostShader").id,       glGetUniformBlockIndex(ResourceManager::GetShader("ghostShader").id,       "Other"), 1);
+    glUniformBlockBinding(ResourceManager::GetShader("bonusSymbolShader").id, glGetUniformBlockIndex(ResourceManager::GetShader("bonusSymbolShader").id, "Other"), 1);
+    glUniformBlockBinding(ResourceManager::GetShader("lifeCounterShader").id, glGetUniformBlockIndex(ResourceManager::GetShader("lifeCounterShader").id, "Other"), 1);
+    glUniformBlockBinding(ResourceManager::GetShader("dotShader").id,         glGetUniformBlockIndex(ResourceManager::GetShader("dotShader").id,         "Other"), 2);
+    glUniformBlockBinding(ResourceManager::GetShader("energizerShader").id,   glGetUniformBlockIndex(ResourceManager::GetShader("energizerShader").id,   "Other"), 2);
+
+    glBindBufferBase(GL_UNIFORM_BUFFER, 0, uboShared);
+    glBindBuffer(GL_UNIFORM_BUFFER, uboShared);
+    glBufferSubData(GL_UNIFORM_BUFFER, 0,                                               sizeof(glm::mat4),   &shared.projection);
+    glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4),                               sizeof(glm::mat4),   &shared.view);
+    glBufferSubData(GL_UNIFORM_BUFFER, 2*sizeof(glm::mat4),                             sizeof(glm::vec3)+4, &shared.lightDir);
+    glBufferSubData(GL_UNIFORM_BUFFER, 2*sizeof(glm::mat4) + sizeof(glm::vec3)+4,       sizeof(glm::vec3)+4, &shared.lightPos);
+    glBufferSubData(GL_UNIFORM_BUFFER, 2*sizeof(glm::mat4) + 2*(sizeof(glm::vec3)+4),   sizeof(glm::vec3)+4, &shared.lightSpecular);
+    glBufferSubData(GL_UNIFORM_BUFFER, 2*sizeof(glm::mat4) + 3*(sizeof(glm::vec3)+4),   sizeof(float),       &shared.materialShininess);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+    glBindBufferBase(GL_UNIFORM_BUFFER, 1, uboOther1);
+    glBindBuffer(GL_UNIFORM_BUFFER, uboOther1);
+    glBufferSubData(GL_UNIFORM_BUFFER, 0,                     sizeof(glm::vec3)+4, &other1.lightAmbient);
+    glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::vec3)+4,   sizeof(glm::vec3)+4, &other1.lightDiffuse);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+    glBindBufferBase(GL_UNIFORM_BUFFER, 2, uboOther2);
+    glBindBuffer(GL_UNIFORM_BUFFER, uboOther2);
+    glBufferSubData(GL_UNIFORM_BUFFER, 0,                     sizeof(glm::vec3)+4, &other2.lightAmbient);
+    glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::vec3)+4,   sizeof(glm::vec3)+4, &other2.lightDiffuse);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+    ResourceManager::GetShader("hdrShader").Use().SetMatrix4("projection", projection);
+
+    ResourceManager::GetShader("stencilShader").Use().SetMatrix4("projection", projection);
+    ResourceManager::GetShader("stencilShader").Use().SetMatrix4("view", view);
+    ResourceManager::GetShader("stencilShader").Use().SetVector3f("color", glm::vec3(0.988f, 0.812f, 0.0f));
 
     /// Load Textures
-    ResourceManager::LoadTexture(FileSystem::getPath("../res/textures/wall_diffuse_1k.png").c_str(), "mazeWallDiffuseTexture");
-    ResourceManager::LoadTexture(FileSystem::getPath("../res/textures/wall_specular_1k.png").c_str(), "mazeWallSpecularTexture");
-    ResourceManager::LoadTexture(FileSystem::getPath("../res/textures/floor_diffuse_1k.png").c_str(), "mazeFloorDiffuseTexture");
-    ResourceManager::LoadTexture(FileSystem::getPath("../res/textures/floor_specular_1k.png").c_str(), "mazeFloorSpecularTexture");
-    ResourceManager::LoadTexture(FileSystem::getPath("../res/textures/dot_diffuse_4k.jpeg").c_str(), "dotDiffuseTexture");
-    ResourceManager::LoadTexture(FileSystem::getPath("../res/textures/dot_specular_4k.jpeg").c_str(), "dotSpecularTexture");
+    ResourceManager::LoadTexture(FileSystem::getPath("../res/textures/wall_diffuse_360.png").c_str(),   "mazeWallDiffuseTexture",   true);
+    ResourceManager::LoadTexture(FileSystem::getPath("../res/textures/wall_specular_360.png").c_str(),  "mazeWallSpecularTexture",  false);
+    ResourceManager::LoadTexture(FileSystem::getPath("../res/textures/floor_diffuse_360.png").c_str(),  "mazeFloorDiffuseTexture",  true);
+    ResourceManager::LoadTexture(FileSystem::getPath("../res/textures/floor_specular_360.png").c_str(), "mazeFloorSpecularTexture", false);
+
+    /// Load Models
+    ResourceManager::LoadModel("../res/objects/powerup/coin/coin.obj",         "dotModel",                  false);
+    ResourceManager::LoadModel("../res/objects/powerup/coin/coin.obj",         "energizerModel",            false);
+    ResourceManager::LoadModel("../res/objects/powerup/cherries/cherries.obj", "cherriesModel",             true);
+    ResourceManager::LoadModel("../res/objects/powerup/cherries/cherries.obj", "cherriesModelStencil",      false);
+    ResourceManager::LoadModel("../res/objects/powerup/cherries/cherries.obj", "cherriesFruitCounterModel", true);
+    ResourceManager::LoadModel("../res/objects/pacman/pacman7/pacman7.obj",    "lifeCounterPacmanModel",    true);
 
     /// Load Levels
-    GameLevel levelOne;
-    levelOne.Load(FileSystem::getPath("../res/levels/one.lvl").c_str());
+    const auto levelOne = new GameLevel();
+    levelOne->Load(FileSystem::getPath("../res/levels/one.lvl").c_str());
     this->Levels.push_back(levelOne);
     this->level = 0;
-
-    /// Configure Game Objects
-    /*std::vector<glm::vec3> playerPositions = { glm::vec3(0.0, 0.0, 0.0),
-                                                 glm::vec3(2.0, 0.0, 0.0),
-                                                 glm::vec3(0.0, 0.0, 2.0) };
-    std::vector<glm::vec3> playerDirections = { glm::vec3(0.0, 0.0, 1.0),
-                                                glm::vec3(1.0, 0.0, 0.0),
-                                                glm::vec3(0.0, 0.0, 1.0) };
-    std::vector<float> playerRotations = { 0.0f, 0.0f, 0.0f };
-    std::vector<glm::vec3> playerScaling = { glm::vec3(1.0, 1.0, 1.0),
-                                             glm::vec3(1.0, 1.0, 1.0),
-                                             glm::vec3(1.0, 1.0, 1.0) };
-
-    player = new GameObjectCustom(playerPositions,
-                                  playerDirections,
-                                  playerRotations,
-                                  playerScaling,
-                                  &ResourceManager::GetShader("mazeWallShader"), 
-                                  cube_mesh, 
-                                  &ResourceManager::GetTexture("mazeWallDiffuseTexture"),
-                                  &ResourceManager::GetTexture("mazeWallSpecularTexture"));*/
-
-    /*std::vector<glm::vec3> playerPositions =  { glm::vec3(0.0, 0.0, 0.0),
-                                                glm::vec3(2.0, 0.0, 0.0), 
-                                                glm::vec3(0.0, 0.0, 2.0)};
-    std::vector<glm::vec3> playerDirections = { glm::vec3(0.0, 0.0, 1.0),
-                                                glm::vec3(1.0, 0.0, 0.0), 
-                                                glm::vec3(0.0, 0.0, 1.0)};
-    std::vector<float> playerRotations = { 0.0f, -90.0f, 0.0f };
-    std::vector<glm::vec3> playerScaling = { glm::vec3(0.010f), glm::vec3(0.010f), glm::vec3(0.010f) };
-
-    ResourceManager::GetShader("playerShader").Use();
-    ResourceManager::LoadModel("../res/objects/asteroid/asteroid.obj", "playerModel");
-    player = new GameObjectFromModel(playerPositions,
-                                     playerDirections,
-                                     playerRotations,
-                                     playerScaling, 
-                                     &ResourceManager::GetShader("playerShader"),
-                                     &ResourceManager::GetModel("playerModel"));*/
-    // audio
-    //SoundEngine->play2D(FileSystem::getPath("resources/audio/breakout.mp3").c_str(), true);
 }
 
-//void Game::Update(float dt) {
-//    // update objects
-//    Ball->Move(dt, this->Width);
-//    // check for collisions
-//    this->DoCollisions();
-//    // update particles
-//    Particles->Update(dt, *Ball, 2, glm::vec2(Ball->Radius / 2.0f));
-//    // update PowerUps
-//    this->UpdatePowerUps(dt);
-//    // reduce shake time
-//    if (ShakeTime > 0.0f)
-//    {
-//        ShakeTime -= dt;
-//        if (ShakeTime <= 0.0f)
-//            Effects->Shake = false;
-//    }
-//    // check loss condition
-//    if (Ball->Position.y >= this->Height) // did ball reach bottom edge?
-//    {
-//        --this->Lives;
-//        // did the player lose all his lives? : game over
-//        if (this->Lives == 0)
-//        {
-//            this->ResetLevel();
-//            this->State = GAME_MENU;
-//        }
-//        this->ResetPlayer();
-//    }
-//    // check win condition
-//    if (this->State == GAME_ACTIVE && this->Levels[this->Level].IsCompleted())
-//    {
-//        this->ResetLevel();
-//        this->ResetPlayer();
-//        Effects->Chaos = true;
-//        this->State = GAME_WIN;
-//    }
-//}
+bool Game::ContinueInit() const {
+    /// Configure Game Objects
+    const auto levelMatrixDim = this->Levels[this->level]->levelMatrixDim;
+    if (updating == 0) {
+        pacman = new PacMan();
+        updating += 1;
+        return false;
+    }
+    else if (updating == 1) {
+        blinky = new Blinky(levelMatrixDim);
+        updating += 1;
+        return false;
+    }
+    else if (updating == 2) {
+        clyde = new Clyde(levelMatrixDim);
+        updating += 1;
+        return false;
+    }
+    else if (updating == 3) {
+        inky = new Inky(levelMatrixDim);
+        updating += 1;
+        return false;
+    }
+    else if (updating == 4) {
+        pinky = new Pinky(levelMatrixDim);
+        updating += 1;
+        return false;
+    }
+    else if (updating == 5) {
+        vulnerableGhost = new VulnerableGhost(blinky, clyde, inky, pinky, levelMatrixDim);
+        updating += 1;
+        return false;
+    }
+    else if (updating == 6) {
+        /// Load and Configure Music Tracks
+        soundEngine = createIrrKlangDevice();
+        // Play a short, irrelevant sound at the start of the game to force IrrKlang to initialize.
+        // This trick prepare the audio engine and eliminates the delay when a significant sound is first played.
+        soundEngine->play2D(FileSystem::getPath("../res/sounds/17. Silence.flac").c_str(),
+                            false,
+                            false,
+                            true)->stop();
+        // Preload audio tracks
+        pacmanChompSound         = soundEngine->addSoundSourceFromFile(FileSystem::getPath("../res/sounds/03. PAC-MAN - Eating The Pac-dots.flac").c_str());
+        pacmanEatsAllGhostsSound = soundEngine->addSoundSourceFromFile(FileSystem::getPath("../res/sounds/05. PAC-MAN - All the ghosts have been eaten.flac").c_str());
+        ghostNormalMoveSound     = soundEngine->addSoundSourceFromFile(FileSystem::getPath("../res/sounds/06. Ghost - Normal Move.flac").c_str());
+        pacmanEatFruitSound      = soundEngine->addSoundSourceFromFile(FileSystem::getPath("../res/sounds/11. PAC-MAN - Eating The Fruit.flac").c_str());
+        ghostTurnBlueSound       = soundEngine->addSoundSourceFromFile(FileSystem::getPath("../res/sounds/12. Ghost - Turn to Blue.flac").c_str());
+        pacmanEatGhostSound      = soundEngine->addSoundSourceFromFile(FileSystem::getPath("../res/sounds/13. PAC-MAN - Eating The Ghost.flac").c_str());
+        pacmanDeathSound         = soundEngine->addSoundSourceFromFile(FileSystem::getPath("../res/sounds/15. Fail.flac").c_str());
+        victorySound             = soundEngine->addSoundSourceFromFile(FileSystem::getPath("../res/sounds/16. Coffee Break Music.flac").c_str());
+        // Set a default volume for each source
+        pacmanChompSound        ->setDefaultVolume(0.8f);
+        ghostNormalMoveSound    ->setDefaultVolume(0.8f);
+        pacmanEatFruitSound     ->setDefaultVolume(1.0f);
+        ghostTurnBlueSound      ->setDefaultVolume(0.8f);
+        pacmanEatGhostSound     ->setDefaultVolume(1.0f);
+        pacmanDeathSound        ->setDefaultVolume(1.0f);
+        pacmanEatsAllGhostsSound->setDefaultVolume(1.0f);
+        victorySound            ->setDefaultVolume(1.0f);
 
+        /// Configure render-specific objects
+        text = new TextRenderer(this->width, this->height);
+        text->Load(FileSystem::getPath("../res/fonts/eight_bit_dragon.ttf"), 32);
+        postProcessor = new PostProcessor(this->width, this->height, true, 4,
+                                          &ResourceManager::GetShader("hdrShader"), false,
+                                          0.5f, 2.2f);
 
-//void Game::ProcessInput(float dt)
-//{
-//    if (this->State == GAME_MENU)
-//    {
-//        if (this->Keys[GLFW_KEY_ENTER] && !this->KeysProcessed[GLFW_KEY_ENTER])
-//        {
-//            this->State = GAME_ACTIVE;
-//            this->KeysProcessed[GLFW_KEY_ENTER] = true;
-//        }
-//        if (this->Keys[GLFW_KEY_W] && !this->KeysProcessed[GLFW_KEY_W])
-//        {
-//            this->Level = (this->Level + 1) % 4;
-//            this->KeysProcessed[GLFW_KEY_W] = true;
-//        }
-//        if (this->Keys[GLFW_KEY_S] && !this->KeysProcessed[GLFW_KEY_S])
-//        {
-//            if (this->Level > 0)
-//                --this->Level;
-//            else
-//                this->Level = 3;
-//            //this->Level = (this->Level - 1) % 4;
-//            this->KeysProcessed[GLFW_KEY_S] = true;
-//        }
-//    }
-//    if (this->State == GAME_WIN)
-//    {
-//        if (this->Keys[GLFW_KEY_ENTER])
-//        {
-//            this->KeysProcessed[GLFW_KEY_ENTER] = true;
-//            Effects->Chaos = false;
-//            this->State = GAME_MENU;
-//        }
-//    }
-//    if (this->State == GAME_ACTIVE)
-//    {
-//        float velocity = PLAYER_VELOCITY * dt;
-//        // move playerboard
-//        if (this->Keys[GLFW_KEY_A])
-//        {
-//            if (Player->Position.x >= 0.0f)
-//            {
-//                Player->Position.x -= velocity;
-//                if (Ball->Stuck)
-//                    Ball->Position.x -= velocity;
-//            }
-//        }
-//        if (this->Keys[GLFW_KEY_D])
-//        {
-//            if (Player->Position.x <= this->Width - Player->Size.x)
-//            {
-//                Player->Position.x += velocity;
-//                if (Ball->Stuck)
-//                    Ball->Position.x += velocity;
-//            }
-//        }
-//        if (this->Keys[GLFW_KEY_SPACE])
-//            Ball->Stuck = false;
-//    }
-//}
+        scaleX = static_cast<float>(this->width)  / 2048.0f;
+        scaleY = static_cast<float>(this->height) / 1152.0f;
+        scaleText = std::min(scaleX, scaleY);
+       
+        updating += 1;
+        return false;
+    }
+    else {
+        return true;
+    }
+       
+}
 
-void Game::Render() {
-    if (this->state == GAME_ACTIVE || this->state == GAME_WIN) {
+void Game::ProcessInput(const double dt) {
+    const auto player = pacman->gameObjects[pacman->GetCurrentModelIndex()];
+    //TODO:Capire e risolvere il fatto che Pac-Man alle volte (solo dopo una collisione) ha delle direzioni bloccate quando in realta non lo sono(Bug Fix #2)
+    if (this->state == GAME_ACTIVE) {
+
+        const float speed = PLAYER_SPEED * static_cast<float>(dt);
+        // Priority: UP > DOWN > RIGHT > LEFT
+        // move player model
+        if (this->keys[GLFW_KEY_UP] && permittedDirections.DIRECTION_UP) {
+            permittedDirections = PermittedDirections();
+            player->directions[0] = glm::vec3(1.0f, 0.0f, 0.0f);
+            player->positions[0] += speed * player->directions[0];
+        }
+        else if (this->keys[GLFW_KEY_DOWN] && permittedDirections.DIRECTION_DOWN) {
+            permittedDirections = PermittedDirections();
+            player->directions[0] = glm::vec3(-1.0f, 0.0f, 0.0f);
+            player->positions[0] += speed * player->directions[0];
+        }
+        else if (this->keys[GLFW_KEY_RIGHT] && permittedDirections.DIRECTION_RIGHT) {
+            const auto playerObb = player->GetTransformedBoundingBox(0);
+            const glm::vec3 pMax = playerObb.second;
+            const auto levelMatrixDim = this->Levels[this->level]->levelMatrixDim;
+            const size_t columnDim = levelMatrixDim.second;
+
+            permittedDirections = PermittedDirections();
+            player->directions[0] = glm::vec3(0.0f, 0.0f, 1.0f);
+            if (pMax.z >= static_cast<float>(columnDim)) {
+                player->positions[0] = glm::vec3(player->positions[0].x, player->positions[0].y, 0.0f);
+            }
+            else {
+                player->positions[0] += speed * player->directions[0];
+            }
+        }
+        else if (this->keys[GLFW_KEY_LEFT] && permittedDirections.DIRECTION_LEFT) {
+            const auto playerObb = player->GetTransformedBoundingBox(0);
+            const glm::vec3 pMin = playerObb.first;
+            const auto levelMatrixDim = this->Levels[this->level]->levelMatrixDim;
+            const size_t columnDim = levelMatrixDim.second;
+
+            permittedDirections = PermittedDirections();
+            player->directions[0] = glm::vec3(0.0f, 0.0f, -1.0f);
+            if (pMin.z <= 0.0f) {
+                player->positions[0] = glm::vec3(player->positions[0].x, player->positions[0].y, static_cast<float>(columnDim)-1.0f);
+            }
+            else {
+                player->positions[0] += speed * player->directions[0];
+            }
+        }
+
+        /*if (this->keys[GLFW_KEY_Q]) {
+            if (postProcessor->GetExposure() > 0.0f) {
+                postProcessor->SetExposure(postProcessor->GetExposure() - 0.001f);
+            }
+            else {
+                postProcessor->SetExposure(0.0f);
+            }
+            //std::cout << "Exposure: "<< exposure << std::endl;
+
+        }
+        else if (this->keys[GLFW_KEY_E]) {
+            postProcessor->SetExposure(postProcessor->GetExposure() + 0.001f);
+            //std::cout << "Exposure: " << exposure << std::endl;
+        }*/
+        /*LoggerManager::LogInfo("----------------------------");
+        LoggerManager::LogInfo("DIRECTION_UP:{}", permittedDirections.DIRECTION_UP);
+        LoggerManager::LogInfo("DIRECTION_DOWN:{}", permittedDirections.DIRECTION_DOWN);
+        LoggerManager::LogInfo("DIRECTION_LEFT:{}", permittedDirections.DIRECTION_LEFT);
+        LoggerManager::LogInfo("DIRECTION_RIGHT:{}", permittedDirections.DIRECTION_RIGHT);
+        LoggerManager::LogInfo("----------------------------");*/
+    }
+}
+
+void Game::Update(const double dt) {
+
+    if (this->state == GAME_ACTIVE) {
+        // update objects
+        if (pacman->IsInvulnerable()) {
+            this->spawnProctectionTimeAccumulator += dt;
+            if (this->spawnProctectionTimeAccumulator >= this->SPAWN_PROTECTION_TIME_LIMIT) {
+                pacman->SetInvulnerable(false);
+                this->spawnProctectionTimeAccumulator = 0.0f;
+            }
+        }
+
+        const auto mazeWall = this->Levels[this->level]->mazeWall;
+        if (vulnerableGhost->IsActive()) {
+            vulnerableGhost->Move(dt, mazeWall);
+        }
+        else {
+            if (blinky->IsAlive()) {
+                blinky->Move(dt, mazeWall);
+            }
+            else if (blinky->ShouldRespawn(dt)) {
+                blinky->ResetGameObjectProperties();
+                blinky->SetAlive(true);
+                blinky->Move(dt, mazeWall);
+                vulnerableGhost->AddAnInstance(blinky->gameObject->positions[0],
+                                               blinky->gameObject->directions[0],
+                                               blinky->gameObject->rotations[0],
+                                               blinky->gameObject->scaling[0]);
+            }
+
+            if (clyde->IsAlive()) {
+                clyde->Move(dt, mazeWall);
+            }
+            else if (clyde->ShouldRespawn(dt)) {
+                clyde->ResetGameObjectProperties();
+                clyde->SetAlive(true);
+                clyde->Move(dt, mazeWall);
+                vulnerableGhost->AddAnInstance(clyde->gameObject->positions[0],
+                                               clyde->gameObject->directions[0],
+                                               clyde->gameObject->rotations[0],
+                                               clyde->gameObject->scaling[0]);
+            }
+
+            if (inky->IsAlive()) {
+                inky->Move(dt, mazeWall);
+            }
+            else if (inky->ShouldRespawn(dt)) {
+                inky->ResetGameObjectProperties();
+                inky->SetAlive(true);
+                inky->Move(dt, mazeWall);
+                vulnerableGhost->AddAnInstance(inky->gameObject->positions[0],
+                                               inky->gameObject->directions[0],
+                                               inky->gameObject->rotations[0],
+                                               inky->gameObject->scaling[0]);
+            }
+
+            if (pinky->IsAlive()) {
+                pinky->Move(dt, mazeWall);
+            }
+            else if (pinky->ShouldRespawn(dt)) {
+                pinky->ResetGameObjectProperties();
+                pinky->SetAlive(true);
+                pinky->Move(dt, mazeWall);
+                vulnerableGhost->AddAnInstance(pinky->gameObject->positions[0],
+                                               pinky->gameObject->directions[0],
+                                               pinky->gameObject->rotations[0],
+                                               pinky->gameObject->scaling[0]);
+            }
+
+        }
+        // check for collisions
+        this->DoCollisions(dt);
+        //    // update particles
+        //    Particles->Update(dt, *Ball, 2, glm::vec2(Ball->Radius / 2.0f));
+    }
+    
+    // check win condition
+    if (this->state == GAME_ACTIVE && this->Levels[this->level]->IsCompleted()) {
+        /*this->ResetLevel();
+        this->ResetPlayer();*/
+        this->state = GAME_WIN;
+        soundEngine->play2D(victorySound, false);
+    }
+}
+
+void Game::Render(const double dt) const {
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+    glStencilMask(0x00);
+    if (this->state == GAME_ACTIVE || this->state == GAME_WIN || this->state == GAME_DEFEAT) {
         // begin rendering to postprocessing framebuffer
-        //Effects->BeginRender();
-        //    // draw background
-        //    Renderer->DrawSprite(ResourceManager::GetTexture("background"), glm::vec2(0.0f, 0.0f), glm::vec2(this->Width, this->Height), 0.0f);
-        //    // draw level
-        this->Levels[this->level].Draw();
-            // draw player
-        //player->Draw();
-        //    // draw PowerUps
-        //    for (PowerUp &powerUp : this->PowerUps)
-        //        if (!powerUp.Destroyed)
-        //            powerUp.Draw(*Renderer);
+        if (!postProcessor->IsInitialized()) {
+            postProcessor->SetInitialized(true, this->config);
+        }
+        postProcessor->BeginRender();
+        // draw level
+        this->Levels[this->level]->Draw(dt);
+        // draw player
+        pacman->Draw(dt);
+        if (vulnerableGhost->IsActive()) {
+            vulnerableGhost->Draw(dt);
+
+            if (vulnerableGhost->GetCurrentGameObject()->GetNumInstances() > 0) {
+                playSoundIfChanged(ghostTurnBlueSound, true);
+            } else {
+                stopCurrentSound();
+            }
+            
+        } else {
+            if (blinky->IsAlive()) blinky->Draw(dt);
+            if (clyde->IsAlive())  clyde ->Draw(dt);
+            if (inky->IsAlive())   inky  ->Draw(dt);
+            if (pinky->IsAlive())  pinky ->Draw(dt);
+
+            if (blinky->IsAlive() || clyde->IsAlive() || inky->IsAlive() || pinky->IsAlive()) {
+                playSoundIfChanged(ghostNormalMoveSound, true);
+            }
+            else {
+                stopCurrentSound();
+            }
+        }
+        
         //    // draw particles	
         //    Particles->Draw();
-        //    // draw ball
-        //    Ball->Draw(*Renderer);            
-        //// end rendering to postprocessing framebuffer
-        //Effects->EndRender();
-        //// render postprocessing quad
-        //Effects->Render(glfwGetTime());
-        //// render text (don't include in postprocessing)
-        //std::stringstream ss; ss << this->Lives;
-        //Text->RenderText("Lives:" + ss.str(), 5.0f, 5.0f, 1.0f);
+
+        // end rendering to postprocessing framebuffer
+        postProcessor->Render(dt);
+        postProcessor->EndRender();
+
+        // render text (don't include in postprocessing)
+        const float widthFloat = static_cast<float>(this->width);
+        const std::string scoreString = std::to_string(this->score);
+        text->RenderText("1UP",        (widthFloat / 2.0f) - (widthFloat /  5.0f), 10*scaleY, 1.0f*scaleText);
+        text->RenderText(scoreString,    (widthFloat / 2.0f) - (widthFloat /  5.0f), 50*scaleY, 1.0f*scaleText);
+        text->RenderText("HIGH SCORE", (widthFloat / 2.0f) - (widthFloat / 20.0f), 10*scaleY, 1.0f*scaleText);
+        text->RenderText(scoreString,    (widthFloat / 2.0f) - (widthFloat / 20.0f), 50*scaleY, 1.0f*scaleText);
+        /*std::string exposure = "exposure=" + std::to_string(postProcessor->GetExposure());
+        text->RenderText(exposure,    (widthFloat / 2.0f) - (widthFloat / 20.0f), 80, 1.0f);*/
     }
-    /*if (this->State == GAME_MENU)
-    {
-        Text->RenderText("Press ENTER to start", 250.0f, this->Height / 2.0f, 1.0f);
-        Text->RenderText("Press W or S to select level", 245.0f, this->Height / 2.0f + 20.0f, 0.75f);
+    if (this->state == GAME_WIN) {
+        const float widthFloat = static_cast<float>(this->width);
+        const float heightFloat = static_cast<float>(this->height);
+        text->RenderText("You WON!!!",((widthFloat  / 2.0f) - (widthFloat  / 20.0f)),        
+                                        ((heightFloat / 2.0f) - (heightFloat /  9.0f)),
+										1.0f*scaleText,
+										glm::vec3(0.0f, 1.0f, 0.0f));
+
+        text->RenderText("Press ESC to quit",((widthFloat  / 2.0f) - (widthFloat  / 20.0f) - 70.0f*scaleX),
+                                               ((heightFloat / 2.0f) - (heightFloat /  9.0f) + 40.0f*scaleY),
+                                               1.0f*scaleText, 
+                                               glm::vec3(0.0f, 1.0f, 0.0f));
+        stopCurrentSound();
     }
-    if (this->State == GAME_WIN)
-    {
-        Text->RenderText("You WON!!!", 320.0f, this->Height / 2.0f - 20.0f, 1.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-        Text->RenderText("Press ENTER to retry or ESC to quit", 130.0f, this->Height / 2.0f, 1.0f, glm::vec3(1.0f, 1.0f, 0.0f));
-    }*/
+    if (this->state == GAME_DEFEAT) {
+        const float widthFloat = static_cast<float>(this->width);
+        const float heightFloat = static_cast<float>(this->height);
+        text->RenderText("You LOST!!!",((widthFloat  / 2.0f) - (widthFloat  / 20.0f)),
+                                         ((heightFloat / 2.0f) - (heightFloat /  9.0f)),
+                                         1.0f*scaleText,
+                                         glm::vec3(1.0f, 0.0f, 0.0f));
+
+        text->RenderText("Press ESC to quit",((widthFloat  / 2.0f) - (widthFloat  / 20.0f) - 60.0f*scaleX),
+                                               ((heightFloat / 2.0f) - (heightFloat /  9.0f) + 40.0f*scaleY),
+                                               1.0f*scaleText, 
+                                               glm::vec3(1.0f, 0.0f, 0.0f));
+        stopCurrentSound();
+    }
 }
 
-
-//void Game::ResetLevel()
-//{
-//    if (this->Level == 0)
-//        this->Levels[0].Load("levels/one.lvl", this->Width, this->Height / 2);
-//    else if (this->Level == 1)
-//        this->Levels[1].Load("levels/two.lvl", this->Width, this->Height / 2);
-//    else if (this->Level == 2)
-//        this->Levels[2].Load("levels/three.lvl", this->Width, this->Height / 2);
-//    else if (this->Level == 3)
-//        this->Levels[3].Load("levels/four.lvl", this->Width, this->Height / 2);
-//
-//    this->Lives = 3;
-//}
-
-//void Game::ResetPlayer()
-//{
-//    // reset player/ball stats
-//    Player->Size = PLAYER_SIZE;
-//    Player->Position = glm::vec2(this->Width / 2.0f - PLAYER_SIZE.x / 2.0f, this->Height - PLAYER_SIZE.y);
-//    Ball->Reset(Player->Position + glm::vec2(PLAYER_SIZE.x / 2.0f - BALL_RADIUS, -(BALL_RADIUS * 2.0f)), INITIAL_BALL_VELOCITY);
-//    // also disable all active powerups
-//    Effects->Chaos = Effects->Confuse = false;
-//    Ball->PassThrough = Ball->Sticky = false;
-//    Player->Color = glm::vec3(1.0f);
-//    Ball->Color = glm::vec3(1.0f);
-//}
-
-
-//// powerups
-//bool IsOtherPowerUpActive(std::vector<PowerUp> &powerUps, std::string type);
-//
-//void Game::UpdatePowerUps(float dt)
-//{
-//    for (PowerUp &powerUp : this->PowerUps)
-//    {
-//        powerUp.Position += powerUp.Velocity * dt;
-//        if (powerUp.Activated)
-//        {
-//            powerUp.Duration -= dt;
-//
-//            if (powerUp.Duration <= 0.0f)
-//            {
-//                // remove powerup from list (will later be removed)
-//                powerUp.Activated = false;
-//                // deactivate effects
-//                if (powerUp.Type == "sticky")
-//                {
-//                    if (!IsOtherPowerUpActive(this->PowerUps, "sticky"))
-//                    {	// only reset if no other PowerUp of type sticky is active
-//                        Ball->Sticky = false;
-//                        Player->Color = glm::vec3(1.0f);
-//                    }
-//                }
-//                else if (powerUp.Type == "pass-through")
-//                {
-//                    if (!IsOtherPowerUpActive(this->PowerUps, "pass-through"))
-//                    {	// only reset if no other PowerUp of type pass-through is active
-//                        Ball->PassThrough = false;
-//                        Ball->Color = glm::vec3(1.0f);
-//                    }
-//                }
-//                else if (powerUp.Type == "confuse")
-//                {
-//                    if (!IsOtherPowerUpActive(this->PowerUps, "confuse"))
-//                    {	// only reset if no other PowerUp of type confuse is active
-//                        Effects->Confuse = false;
-//                    }
-//                }
-//                else if (powerUp.Type == "chaos")
-//                {
-//                    if (!IsOtherPowerUpActive(this->PowerUps, "chaos"))
-//                    {	// only reset if no other PowerUp of type chaos is active
-//                        Effects->Chaos = false;
-//                    }
-//                }
-//            }
-//        }
-//    }
-//    // Remove all PowerUps from vector that are destroyed AND !activated (thus either off the map or finished)
-//    // Note we use a lambda expression to remove each PowerUp which is destroyed and not activated
-//    this->PowerUps.erase(std::remove_if(this->PowerUps.begin(), this->PowerUps.end(),
-//        [](const PowerUp &powerUp) { return powerUp.Destroyed && !powerUp.Activated; }
-//    ), this->PowerUps.end());
-//}
-
-//bool ShouldSpawn(unsigned int chance)
-//{
-//    unsigned int random = rand() % chance;
-//    return random == 0;
-//}
-//void Game::SpawnPowerUps(GameObject &block)
-//{
-//    if (ShouldSpawn(75)) // 1 in 75 chance
-//        this->PowerUps.push_back(PowerUp("speed", glm::vec3(0.5f, 0.5f, 1.0f), 0.0f, block.Position, ResourceManager::GetTexture("powerup_speed")));
-//    if (ShouldSpawn(75))
-//        this->PowerUps.push_back(PowerUp("sticky", glm::vec3(1.0f, 0.5f, 1.0f), 20.0f, block.Position, ResourceManager::GetTexture("powerup_sticky")));
-//    if (ShouldSpawn(75))
-//        this->PowerUps.push_back(PowerUp("pass-through", glm::vec3(0.5f, 1.0f, 0.5f), 10.0f, block.Position, ResourceManager::GetTexture("powerup_passthrough")));
-//    if (ShouldSpawn(75))
-//        this->PowerUps.push_back(PowerUp("pad-size-increase", glm::vec3(1.0f, 0.6f, 0.4), 0.0f, block.Position, ResourceManager::GetTexture("powerup_increase")));
-//    if (ShouldSpawn(15)) // Negative powerups should spawn more often
-//        this->PowerUps.push_back(PowerUp("confuse", glm::vec3(1.0f, 0.3f, 0.3f), 15.0f, block.Position, ResourceManager::GetTexture("powerup_confuse")));
-//    if (ShouldSpawn(15))
-//        this->PowerUps.push_back(PowerUp("chaos", glm::vec3(0.9f, 0.25f, 0.25f), 15.0f, block.Position, ResourceManager::GetTexture("powerup_chaos")));
-//}
-
-//void ActivatePowerUp(PowerUp &powerUp)
-//{
-//    if (powerUp.Type == "speed")
-//    {
-//        Ball->Velocity *= 1.2;
-//    }
-//    else if (powerUp.Type == "sticky")
-//    {
-//        Ball->Sticky = true;
-//        Player->Color = glm::vec3(1.0f, 0.5f, 1.0f);
-//    }
-//    else if (powerUp.Type == "pass-through")
-//    {
-//        Ball->PassThrough = true;
-//        Ball->Color = glm::vec3(1.0f, 0.5f, 0.5f);
-//    }
-//    else if (powerUp.Type == "pad-size-increase")
-//    {
-//        Player->Size.x += 50;
-//    }
-//    else if (powerUp.Type == "confuse")
-//    {
-//        if (!Effects->Chaos)
-//            Effects->Confuse = true; // only activate if chaos wasn't already active
-//    }
-//    else if (powerUp.Type == "chaos")
-//    {
-//        if (!Effects->Confuse)
-//            Effects->Chaos = true;
-//    }
-//}
-
-//bool IsOtherPowerUpActive(std::vector<PowerUp> &powerUps, std::string type)
-//{
-//    // Check if another PowerUp of the same type is still active
-//    // in which case we don't disable its effect (yet)
-//    for (const PowerUp &powerUp : powerUps)
-//    {
-//        if (powerUp.Activated)
-//            if (powerUp.Type == type)
-//                return true;
-//    }
-//    return false;
-//}
-
-
 // collision detection
-//bool CheckCollision(GameObject &one, GameObject &two);
-//Collision CheckCollision(BallObject &one, GameObject &two);
-//Direction VectorDirection(glm::vec2 closest);
-//
-//void Game::DoCollisions()
-//{
-//    for (GameObject &box : this->Levels[this->Level].Bricks)
-//    {
-//        if (!box.Destroyed)
-//        {
-//            Collision collision = CheckCollision(*Ball, box);
-//            if (std::get<0>(collision)) // if collision is true
-//            {
-//                // destroy block if not solid
-//                if (!box.IsSolid)
-//                {
-//                    box.Destroyed = true;
-//                    this->SpawnPowerUps(box);
-//                    SoundEngine->play2D(FileSystem::getPath("resources/audio/bleep.mp3").c_str(), false);
-//                }
-//                else
-//                {   // if block is solid, enable shake effect
-//                    ShakeTime = 0.05f;
-//                    Effects->Shake = true;
-//                    SoundEngine->play2D(FileSystem::getPath("resources/audio/bleep.mp3").c_str(), false);
-//                }
-//                // collision resolution
-//                Direction dir = std::get<1>(collision);
-//                glm::vec2 diff_vector = std::get<2>(collision);
-//                if (!(Ball->PassThrough && !box.IsSolid)) // don't do collision resolution on non-solid bricks if pass-through is activated
-//                {
-//                    if (dir == LEFT || dir == RIGHT) // horizontal collision
-//                    {
-//                        Ball->Velocity.x = -Ball->Velocity.x; // reverse horizontal velocity
-//                        // relocate
-//                        float penetration = Ball->Radius - std::abs(diff_vector.x);
-//                        if (dir == LEFT)
-//                            Ball->Position.x += penetration; // move ball to right
-//                        else
-//                            Ball->Position.x -= penetration; // move ball to left;
-//                    }
-//                    else // vertical collision
-//                    {
-//                        Ball->Velocity.y = -Ball->Velocity.y; // reverse vertical velocity
-//                        // relocate
-//                        float penetration = Ball->Radius - std::abs(diff_vector.y);
-//                        if (dir == UP)
-//                            Ball->Position.y -= penetration; // move ball bback up
-//                        else
-//                            Ball->Position.y += penetration; // move ball back down
-//                    }
-//                }
-//            }
-//        }    
-//    }
-//
-//    // also check collisions on PowerUps and if so, activate them
-//    for (PowerUp &powerUp : this->PowerUps)
-//    {
-//        if (!powerUp.Destroyed)
-//        {
-//            // first check if powerup passed bottom edge, if so: keep as inactive and destroy
-//            if (powerUp.Position.y >= this->Height)
-//                powerUp.Destroyed = true;
-//
-//            if (CheckCollision(*Player, powerUp))
-//            {	// collided with player, now activate powerup
-//                ActivatePowerUp(powerUp);
-//                powerUp.Destroyed = true;
-//                powerUp.Activated = true;
-//                SoundEngine->play2D(FileSystem::getPath("resources/audio/powerup.wav").c_str(), false);
-//            }
-//        }
-//    }
-//
-//    // and finally check collisions for player pad (unless stuck)
-//    Collision result = CheckCollision(*Ball, *Player);
-//    if (!Ball->Stuck && std::get<0>(result))
-//    {
-//        // check where it hit the board, and change velocity based on where it hit the board
-//        float centerBoard = Player->Position.x + Player->Size.x / 2.0f;
-//        float distance = (Ball->Position.x + Ball->Radius) - centerBoard;
-//        float percentage = distance / (Player->Size.x / 2.0f);
-//        // then move accordingly
-//        float strength = 2.0f;
-//        glm::vec2 oldVelocity = Ball->Velocity;
-//        Ball->Velocity.x = INITIAL_BALL_VELOCITY.x * percentage * strength; 
-//        //Ball->Velocity.y = -Ball->Velocity.y;
-//        Ball->Velocity = glm::normalize(Ball->Velocity) * glm::length(oldVelocity); // keep speed consistent over both axes (multiply by length of old velocity, so total strength is not changed)
-//        // fix sticky paddle
-//        Ball->Velocity.y = -1.0f * abs(Ball->Velocity.y);
-//
-//        // if Sticky powerup is activated, also stick ball to paddle once new velocity vectors were calculated
-//        Ball->Stuck = Ball->Sticky;
-//
-//        SoundEngine->play2D(FileSystem::getPath("resources/audio/bleep.wav").c_str(), false);
-//    }
-//}
+void Game::DoCollisions(double dt) {
+    auto player = pacman->gameObjects[pacman->GetCurrentModelIndex()];
+    auto playerObb = player->GetTransformedBoundingBox(0);
 
-//bool CheckCollision(GameObject &one, GameObject &two) // AABB - AABB collision
-//{
-//    // collision x-axis?
-//    bool collisionX = one.Position.x + one.Size.x >= two.Position.x &&
-//        two.Position.x + two.Size.x >= one.Position.x;
-//    // collision y-axis?
-//    bool collisionY = one.Position.y + one.Size.y >= two.Position.y &&
-//        two.Position.y + two.Size.y >= one.Position.y;
-//    // collision only if on both axes
-//    return collisionX && collisionY;
-//}
+    // CHECK COLLISION PLAYER-WALL
+    GameObjectBase* mazeWall = this->Levels[this->level]->mazeWall;
+    size_t numInstancesMazeWall = mazeWall->GetNumInstances();
+    for (size_t i = 0; i < numInstancesMazeWall; i++) {
+        auto mazeWallObb = mazeWall->GetTransformedBoundingBox(i);
+        if (checkCollision(playerObb, mazeWallObb)) {
+            LoggerManager::LogDebug("There was a collision between PLAYER and WALL number {}", i);
+            // RESOLVE COLLISION PLAYER-WALL
+            glm::vec3 correction = resolveCollision(playerObb, mazeWallObb, this->permittedDirections);
+            player->positions[0] += correction; // Apply the correction vector
+        }
+    }
 
-//Collision CheckCollision(BallObject &one, GameObject &two) // AABB - Circle collision
-//{
-//    // get center point circle first 
-//    glm::vec2 center(one.Position + one.Radius);
-//    // calculate AABB info (center, half-extents)
-//    glm::vec2 aabb_half_extents(two.Size.x / 2.0f, two.Size.y / 2.0f);
-//    glm::vec2 aabb_center(two.Position.x + aabb_half_extents.x, two.Position.y + aabb_half_extents.y);
-//    // get difference vector between both centers
-//    glm::vec2 difference = center - aabb_center;
-//    glm::vec2 clamped = glm::clamp(difference, -aabb_half_extents, aabb_half_extents);
-//    // now that we know the clamped values, add this to AABB_center and we get the value of box closest to circle
-//    glm::vec2 closest = aabb_center + clamped;
-//    // now retrieve vector between center circle and closest point AABB and check if length < radius
-//    difference = closest - center;
-//    
-//    if (glm::length(difference) < one.Radius) // not <= since in that case a collision also occurs when object one exactly touches object two, which they are at the end of each collision resolution stage.
-//        return std::make_tuple(true, VectorDirection(difference), difference);
-//    else
-//        return std::make_tuple(false, UP, glm::vec2(0.0f, 0.0f));
-//}
+    this->chompTimer += dt;
+    // CHECK COLLISION PLAYER-DOT
+    GameObjectBase* dot = this->Levels[this->level]->dot;
+    size_t numInstancesDot = dot->GetNumInstances();
+    std::vector<glm::vec3> dotPositions = this->Levels[this->level]->dotPositions;
+    // When removing elements from an array during iteration, a reverse for loop 
+    // helps avoid problems related to changing the length of the array as you walk through it
+    for (int i = static_cast<int>(numInstancesDot) - 1; i >= 0; i--) {
+        auto dotObb = dot->GetTransformedBoundingBox(i);
+        if (checkCollision(playerObb, dotObb)) {
+            if (chompTimer >= CHOMP_INTERVAL) {
+                soundEngine->play2D(pacmanChompSound, false);
+                chompTimer = 0.0;
+            }
+            LoggerManager::LogDebug("There was a collision between PLAYER and DOT number {}", i);
+            // RESOLVE COLLISION PLAYER-DOT
+            dotPositions.erase(dotPositions.begin() + i);
+            dot->positions.erase(dot->positions.begin() + i);
+            dot->directions.erase(dot->directions.begin() + i);
+            dot->rotations.erase(dot->rotations.begin() + i);
+            dot->scaling.erase(dot->scaling.begin() + i);
+            dot->UpdateNumInstance();
+            this->score += 10;
+        }
+    }
 
-//// calculates which direction a vector is facing (N,E,S or W)
-//Direction VectorDirection(glm::vec2 target)
-//{
-//    glm::vec2 compass[] = {
-//        glm::vec2(0.0f, 1.0f),	// up
-//        glm::vec2(1.0f, 0.0f),	// right
-//        glm::vec2(0.0f, -1.0f),	// down
-//        glm::vec2(-1.0f, 0.0f)	// left
-//    };
-//    float max = 0.0f;
-//    unsigned int best_match = -1;
-//    for (unsigned int i = 0; i < 4; i++)
-//    {
-//        float dot_product = glm::dot(glm::normalize(target), compass[i]);
-//        if (dot_product > max)
-//        {
-//            max = dot_product;
-//            best_match = i;
-//        }
-//    }
-//    return (Direction)best_match;
-//}
+    // CHECK COLLISION PLAYER-ENERGIZER
+    GameObjectBase* energizer = this->Levels[this->level]->energizer;
+    size_t numInstancesEnergizer = energizer->GetNumInstances();
+    std::vector<glm::vec3> energizerPositions = this->Levels[this->level]->energizerPositions;
+    for (int i = static_cast<int>(numInstancesEnergizer) - 1; i >= 0; i--) {
+        auto energizerObb = energizer->GetTransformedBoundingBox(i);
+        if (checkCollision(playerObb, energizerObb)) {
+            if (chompTimer >= CHOMP_INTERVAL) {
+                soundEngine->play2D(pacmanChompSound, false);
+                chompTimer = 0.0;
+            }
+            LoggerManager::LogDebug("There was a collision between PLAYER and ENERGIZER number {}", i);
+            // RESOLVE COLLISION PLAYER-ENERGIZER
+            energizerPositions.erase(energizerPositions.begin() + i);
+            energizer->positions.erase(energizer->positions.begin() + i);
+            energizer->directions.erase(energizer->directions.begin() + i);
+            energizer->rotations.erase(energizer->rotations.begin() + i);
+            energizer->scaling.erase(energizer->scaling.begin() + i);
+            energizer->UpdateNumInstance();
+            vulnerableGhost->SetActive(true);
+            this->score += 50;
+        }
+    }
+
+    // CHECK COLLISION PLAYER-BONUS_SYMBOL
+    GameObjectBase* bonusSymbol = this->Levels[this->level]->bonusSymbol;
+    size_t numInstancesBonusSymbol = bonusSymbol->GetNumInstances();
+    for (int i = static_cast<int>(numInstancesBonusSymbol) - 1; i >= 0; i--) {
+        auto bonusSymbolObb = bonusSymbol->GetTransformedBoundingBox(i);
+        if (checkCollision(playerObb, bonusSymbolObb)) {
+            soundEngine->play2D(pacmanEatFruitSound, false);
+            LoggerManager::LogDebug("There was a collision between PLAYER and BONUS_SYMBOL number {}", i);
+            // RESOLVE COLLISION PLAYER-BONUS_SYMBOL
+            if (this->Levels[this->level]->GetSymbolActive() == 2) {
+                this->Levels[this->level]->SetBonusSymbolPosition(glm::vec3(-2.0f, 0.0f, -2.0f));
+                this->Levels[this->level]->SetPlayerTakeBonusSymbol(true);
+                this->Levels[this->level]->SetSecondActivationTimeAccumulator(11.0f);
+            } else if (this->Levels[this->level]->GetSymbolActive() == 1) {
+                this->Levels[this->level]->SetBonusSymbolPosition(glm::vec3(-2.0f, 0.0f, -2.0f));
+                this->Levels[this->level]->SetPlayerTakeBonusSymbol(true);
+                this->Levels[this->level]->SetFirstActivationTimeAccumulator(11.0f);
+            }
+            this->score += 100;
+        }
+    }
+
+    // CHECK COLLISION PLAYER-GHOSTS
+
+    // CHECK COLLISION PLAYER-VULNERABLE_GHOST
+    if (vulnerableGhost->IsActive()) {
+        for (int j = static_cast<int>(vulnerableGhost->GetCurrentGameObject()->GetNumInstances()) - 1 ; j >= 0; j--) {
+            auto currenGameObjectVulnerableGhost = vulnerableGhost->GetCurrentGameObject();
+            auto currenGameObjectVulnerableGhostObb = currenGameObjectVulnerableGhost->GetTransformedBoundingBox(j);
+            if (checkCollision(playerObb, currenGameObjectVulnerableGhostObb)) {
+                soundEngine->play2D(pacmanEatGhostSound, false);
+                LoggerManager::LogDebug("There was a collision between PLAYER and VULNERABLE_GHOST");
+                // RESOLVE COLLISION PLAYER-VULNERABLE_GHOST
+                if (vulnerableGhost->ghostMapping.blinkyIndex == j) blinky->SetAlive(false);
+                if (vulnerableGhost->ghostMapping.clydeIndex  == j)  clyde->SetAlive(false);
+                if (vulnerableGhost->ghostMapping.inkyIndex   == j)   inky->SetAlive(false);
+                if (vulnerableGhost->ghostMapping.pinkyIndex  == j)  pinky->SetAlive(false);
+                vulnerableGhost->RemoveAnInstace(j);
+                this->ghostCounter++;
+                int points = calculatePoints(this->ghostCounter);
+                this->score += points;
+                if (this->ghostCounter == 4) {
+                    soundEngine->play2D(pacmanEatsAllGhostsSound, false);
+                }
+            }
+        }
+        
+    } else {
+        this->ghostCounter = 0;
+        auto lifeCounter = this->Levels[this->level]->lifeCounter;
+        //TODO:Gestire multi-collisioni se Pac-man e al centro che portano a perdere tutte e 3 le vite in un singolo colpo(Bug Fix #1)
+
+        if (!pacman->IsInvulnerable()) {
+
+            // CHECK COLLISION PLAYER-BLINKY
+            if (blinky->IsAlive()) {
+                auto blinkyObb = blinky->gameObject->GetTransformedBoundingBox(0);
+                if (checkCollision(playerObb, blinkyObb)) {
+                    soundEngine->play2D(pacmanDeathSound, false);
+                    LoggerManager::LogDebug("There was a collision between PLAYER and BLINKY");
+                    // RESOLVE COLLISION PLAYER-BLINKY
+                    this->lives--;
+                    lifeCounter->positions.erase(lifeCounter->positions.begin() + this->lives);
+                    lifeCounter->directions.erase(lifeCounter->directions.begin() + this->lives);
+                    lifeCounter->rotations.erase(lifeCounter->rotations.begin() + this->lives);
+                    lifeCounter->scaling.erase(lifeCounter->scaling.begin() + this->lives);
+                    lifeCounter->UpdateNumInstance();
+                    pacman->SetInvulnerable(true);
+                    if (this->lives == 0) {
+                        this->state = GAME_DEFEAT;
+                    }
+                    else {
+                        ResetPlayerAndGhosts();
+                    }
+                }
+            }
+
+            // CHECK COLLISION PLAYER-CLYDE
+            if (clyde->IsAlive()) {
+                auto clydeObb = clyde->gameObject->GetTransformedBoundingBox(0);
+                if (checkCollision(playerObb, clydeObb)) {
+                    soundEngine->play2D(pacmanDeathSound, false);
+                    LoggerManager::LogDebug("There was a collision between PLAYER and CLYDE");
+                    // RESOLVE COLLISION PLAYER-CLYDE
+                    this->lives--;
+                    lifeCounter->positions.erase(lifeCounter->positions.begin() + this->lives);
+                    lifeCounter->directions.erase(lifeCounter->directions.begin() + this->lives);
+                    lifeCounter->rotations.erase(lifeCounter->rotations.begin() + this->lives);
+                    lifeCounter->scaling.erase(lifeCounter->scaling.begin() + this->lives);
+                    lifeCounter->UpdateNumInstance();
+                    pacman->SetInvulnerable(true);
+                    if (this->lives == 0) {
+                        this->state = GAME_DEFEAT;
+                    }
+                    else {
+                        ResetPlayerAndGhosts();
+                    }
+                }
+            }
+
+
+            // CHECK COLLISION PLAYER-INKY
+            if (inky->IsAlive()) {
+                auto inkyObb = inky->gameObject->GetTransformedBoundingBox(0);
+                if (checkCollision(playerObb, inkyObb)) {
+                    soundEngine->play2D(pacmanDeathSound, false);
+                    LoggerManager::LogDebug("There was a collision between PLAYER and INKY");
+                    // RESOLVE COLLISION PLAYER-INKY
+                    this->lives--;
+                    lifeCounter->positions.erase(lifeCounter->positions.begin() + this->lives);
+                    lifeCounter->directions.erase(lifeCounter->directions.begin() + this->lives);
+                    lifeCounter->rotations.erase(lifeCounter->rotations.begin() + this->lives);
+                    lifeCounter->scaling.erase(lifeCounter->scaling.begin() + this->lives);
+                    lifeCounter->UpdateNumInstance();
+                    pacman->SetInvulnerable(true);
+                    if (this->lives == 0) {
+                        this->state = GAME_DEFEAT;
+                    }
+                    else {
+                        ResetPlayerAndGhosts();
+                    }
+                }
+            }
+
+
+            // CHECK COLLISION PLAYER-PINKY
+            if (pinky->IsAlive()) {
+                auto pinkyObb = pinky->gameObject->GetTransformedBoundingBox(0);
+                if (checkCollision(playerObb, pinkyObb)) {
+                    soundEngine->play2D(pacmanDeathSound, false);
+                    LoggerManager::LogDebug("There was a collision between PLAYER and PINKY");
+                    // RESOLVE COLLISION PLAYER-INKY
+                    this->lives--;
+                    lifeCounter->positions.erase(lifeCounter->positions.begin() + this->lives);
+                    lifeCounter->directions.erase(lifeCounter->directions.begin() + this->lives);
+                    lifeCounter->rotations.erase(lifeCounter->rotations.begin() + this->lives);
+                    lifeCounter->scaling.erase(lifeCounter->scaling.begin() + this->lives);
+                    lifeCounter->UpdateNumInstance();
+                    pacman->SetInvulnerable(true);
+                    if (this->lives == 0) {
+                        this->state = GAME_DEFEAT;
+                    }
+                    else {
+                        ResetPlayerAndGhosts();
+                    }
+                }
+            }
+        }
+
+    }
+
+}
+
+void Game::ResetPlayerAndGhosts() {
+    pacman->gameObjects[pacman->GetCurrentModelIndex()]->positions[0]  = glm::vec3(7.5f, 0.0f, 13.5f);
+    pacman->gameObjects[pacman->GetCurrentModelIndex()]->directions[0] = glm::vec3(0.0f, 0.0f, -1.0f);
+    pacman->UpdateOtherGameObjects();
+
+    if (blinky->IsAlive()) {
+        blinky->gameObject->positions[0]  = glm::vec3(19.0f, 0.0f, 13.75f);
+        blinky->gameObject->directions[0] = glm::vec3(0.0f, 0.0f, -1.0f);
+    }
+
+    if (clyde->IsAlive()) {
+        clyde->gameObject->positions[0]  = glm::vec3(16.0f, 0.0f, 15.5f);
+        clyde->gameObject->directions[0] = glm::vec3(1.0f, 0.0f, 0.0f);
+    }
+
+    if (inky->IsAlive()) {
+        inky->gameObject->positions[0]  = glm::vec3(16.0f, 0.0f, 12.25f);
+        inky->gameObject->directions[0] = glm::vec3(1.0f, 0.0f, 0.0f);
+    }
+
+    if (pinky->IsAlive()) {
+        pinky->gameObject->positions[0]  = glm::vec3(16.0f, 0.0f, 13.85f);
+        pinky->gameObject->directions[0] = glm::vec3(-1.0f, 0.0f, 0.0f);
+    }
+}

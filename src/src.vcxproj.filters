@@ -16,6 +16,9 @@
     <Filter Include="Resource Files\Shaders">
       <UniqueIdentifier>{4972e9f5-1d6c-4f05-b180-facbbd987936}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\imgui">
+      <UniqueIdentifier>{795e36d6-419c-40fa-b361-f61f55a222b8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="program.cpp">
@@ -54,6 +57,63 @@
     <ClCompile Include="GameLevel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="LoggerManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Utility.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PacMan.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Ghost.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Blinky.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Clyde.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Inky.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Pinky.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="VulnerableGhost.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TextRenderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PostProcessor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Menu.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="dependencies\include\imgui\imgui.cpp">
+      <Filter>Source Files\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="dependencies\include\imgui\imgui_demo.cpp">
+      <Filter>Source Files\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="dependencies\include\imgui\imgui_draw.cpp">
+      <Filter>Source Files\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="dependencies\include\imgui\imgui_impl_glfw.cpp">
+      <Filter>Source Files\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="dependencies\include\imgui\imgui_impl_opengl3.cpp">
+      <Filter>Source Files\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="dependencies\include\imgui\imgui_tables.cpp">
+      <Filter>Source Files\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="dependencies\include\imgui\imgui_widgets.cpp">
+      <Filter>Source Files\imgui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FileSystem.hpp">
@@ -89,18 +149,54 @@
     <ClInclude Include="GameLevel.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="LoggerManager.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PacMan.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Ghost.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Blinky.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="custom_types.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Clyde.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Inky.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Pinky.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="VulnerableGhost.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TextRenderer.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PostProcessor.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Menu.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\mazeWall.fs">
       <Filter>Resource Files\Shaders</Filter>
     </None>
     <None Include="shaders\mazeWall.vs">
-      <Filter>Resource Files\Shaders</Filter>
-    </None>
-    <None Include="shaders\model.fs">
-      <Filter>Resource Files\Shaders</Filter>
-    </None>
-    <None Include="shaders\model.vs">
       <Filter>Resource Files\Shaders</Filter>
     </None>
     <None Include="shaders\mazeFloor.fs">
@@ -115,5 +211,51 @@
     <None Include="shaders\dot.vs">
       <Filter>Resource Files\Shaders</Filter>
     </None>
+    <None Include="shaders\pacman.fs">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="shaders\pacman.vs">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="shaders\ghost.fs">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="shaders\ghost.vs">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="shaders\bonusSymbol.fs">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="shaders\bonusSymbol.vs">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="shaders\text.fs">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="shaders\text.vs">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="shaders\hdr.fs">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="shaders\hdr.vs">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="shaders\stencil.fs">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="shaders\stencil.vs">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="src.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\res\textures\logo.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

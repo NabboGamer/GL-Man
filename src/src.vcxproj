@@ -70,6 +70,14 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>$(SolutionDir)bin\GL-Man</OutDir>
+    <TargetName>GL-Man</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>$(SolutionDir)bin\GL-Man</OutDir>
+    <TargetName>GL-Man</TargetName>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -107,14 +115,23 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <EnableModules>true</EnableModules>
-      <AdditionalIncludeDirectories>$(SolutionDir)\src\dependencies\include\glad;$(SolutionDir)\src\dependencies\include\GLFW;$(SolutionDir)\src\dependencies\include\glm;$(SolutionDir)\src\dependencies\include\KHR;$(SolutionDir)\src\dependencies\include\stb;$(SolutionDir)\src\dependencies\include\assimp;$(SolutionDir)\src\dependencies\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\src\dependencies\include\glad;$(SolutionDir)\src\dependencies\include\GLFW;$(SolutionDir)\src\dependencies\include\glm;$(SolutionDir)\src\dependencies\include\KHR;$(SolutionDir)\src\dependencies\include\stb;$(SolutionDir)\src\dependencies\include\assimp;$(SolutionDir)\src\dependencies\include\spdlog;$(SolutionDir)\src\dependencies\include\irrKlang;$(SolutionDir)\src\dependencies\include\freetype;$(SolutionDir)\src\dependencies\include\imgui;$(SolutionDir)\src\dependencies\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)\src\dependencies\lib</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opengl32.lib;user32.lib;gdi32.lib;shell32.lib;glfw3.lib;assimp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;user32.lib;gdi32.lib;shell32.lib;glfw3.lib;assimp.lib;irrKlang.lib;freetype.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy /Y /Q "$(ProjectDir)dependencies\lib\*.dll" "$(SolutionDir)bin\GL-Man"
+xcopy /Y /Q "$(ProjectDir)shaders\*" "$(SolutionDir)bin\GL-Man\shaders\"
+del "$(OutDir)*.pdb"
+del "$(OutDir)*.lib"
+del "$(OutDir)*.exp"
+
+</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -127,7 +144,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <EnableModules>true</EnableModules>
-      <AdditionalIncludeDirectories>$(SolutionDir)\src\dependencies\include\glad;$(SolutionDir)\src\dependencies\include\GLFW;$(SolutionDir)\src\dependencies\include\glm;$(SolutionDir)\src\dependencies\include\KHR;$(SolutionDir)\src\dependencies\include\stb;$(SolutionDir)\src\dependencies\include\assimp;$(SolutionDir)\src\dependencies\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\src\dependencies\include\glad;$(SolutionDir)\src\dependencies\include\GLFW;$(SolutionDir)\src\dependencies\include\glm;$(SolutionDir)\src\dependencies\include\KHR;$(SolutionDir)\src\dependencies\include\stb;$(SolutionDir)\src\dependencies\include\assimp;$(SolutionDir)\src\dependencies\include\spdlog;$(SolutionDir)\src\dependencies\include\irrKlang;$(SolutionDir)\src\dependencies\include\freetype;$(SolutionDir)\src\dependencies\include\imgui;$(SolutionDir)\src\dependencies\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -135,45 +152,103 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)\src\dependencies\lib</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opengl32.lib;user32.lib;gdi32.lib;shell32.lib;glfw3.lib;assimp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;user32.lib;gdi32.lib;shell32.lib;glfw3.lib;assimp.lib;irrKlang.lib;freetype.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy /Y /Q "$(ProjectDir)dependencies\lib\*.dll" "$(SolutionDir)bin\GL-Man"
+xcopy /Y /Q "$(ProjectDir)shaders\*" "$(SolutionDir)bin\GL-Man\shaders\"
+del "$(OutDir)*.pdb"
+del "$(OutDir)*.lib"
+del "$(OutDir)*.exp"
+
+</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Blinky.cpp" />
+    <ClCompile Include="Clyde.cpp" />
+    <ClCompile Include="dependencies\include\imgui\imgui.cpp" />
+    <ClCompile Include="dependencies\include\imgui\imgui_demo.cpp" />
+    <ClCompile Include="dependencies\include\imgui\imgui_draw.cpp" />
+    <ClCompile Include="dependencies\include\imgui\imgui_impl_glfw.cpp" />
+    <ClCompile Include="dependencies\include\imgui\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="dependencies\include\imgui\imgui_tables.cpp" />
+    <ClCompile Include="dependencies\include\imgui\imgui_widgets.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GameLevel.cpp" />
     <ClCompile Include="GameObjectBase.cpp" />
     <ClCompile Include="GameObjectCustom.cpp" />
     <ClCompile Include="GameObjectFromModel.cpp" />
+    <ClCompile Include="Ghost.cpp" />
     <ClCompile Include="glad.c" />
+    <ClCompile Include="Inky.cpp" />
+    <ClCompile Include="LoggerManager.cpp" />
+    <ClCompile Include="Menu.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="Model.cpp" />
+    <ClCompile Include="PacMan.cpp" />
+    <ClCompile Include="Pinky.cpp" />
+    <ClCompile Include="PostProcessor.cpp" />
     <ClCompile Include="program.cpp" />
     <ClCompile Include="ResourceManager.cpp" />
     <ClCompile Include="Shader.cpp" />
+    <ClCompile Include="TextRenderer.cpp" />
     <ClCompile Include="Texture2D.cpp" />
+    <ClCompile Include="Utility.cpp" />
+    <ClCompile Include="VulnerableGhost.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Blinky.hpp" />
+    <ClInclude Include="Clyde.hpp" />
+    <ClInclude Include="custom_types.hpp" />
     <ClInclude Include="FileSystem.hpp" />
     <ClInclude Include="Game.hpp" />
     <ClInclude Include="GameLevel.hpp" />
     <ClInclude Include="GameObjectBase.hpp" />
     <ClInclude Include="GameObjectCustom.hpp" />
     <ClInclude Include="GameObjectFromModel.hpp" />
+    <ClInclude Include="Ghost.hpp" />
+    <ClInclude Include="Inky.hpp" />
+    <ClInclude Include="LoggerManager.hpp" />
+    <ClInclude Include="Menu.hpp" />
     <ClInclude Include="Mesh.hpp" />
     <ClInclude Include="Model.hpp" />
+    <ClInclude Include="PacMan.hpp" />
+    <ClInclude Include="Pinky.hpp" />
+    <ClInclude Include="PostProcessor.hpp" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="ResourceManager.hpp" />
     <ClInclude Include="Shader.hpp" />
+    <ClInclude Include="TextRenderer.hpp" />
     <ClInclude Include="Texture2D.hpp" />
+    <ClInclude Include="Utility.hpp" />
+    <ClInclude Include="VulnerableGhost.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="shaders\bonusSymbol.fs" />
+    <None Include="shaders\bonusSymbol.vs" />
     <None Include="shaders\dot.fs" />
     <None Include="shaders\dot.vs" />
+    <None Include="shaders\ghost.fs" />
+    <None Include="shaders\ghost.vs" />
+    <None Include="shaders\hdr.fs" />
+    <None Include="shaders\hdr.vs" />
     <None Include="shaders\mazeFloor.fs" />
     <None Include="shaders\mazeFloor.vs" />
     <None Include="shaders\mazeWall.fs" />
     <None Include="shaders\mazeWall.vs" />
-    <None Include="shaders\model.fs" />
-    <None Include="shaders\model.vs" />
+    <None Include="shaders\pacman.fs" />
+    <None Include="shaders\pacman.vs" />
+    <None Include="shaders\stencil.fs" />
+    <None Include="shaders\stencil.vs" />
+    <None Include="shaders\text.fs" />
+    <None Include="shaders\text.vs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="src.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\res\textures\logo.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
