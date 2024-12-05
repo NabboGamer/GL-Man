@@ -1,8 +1,4 @@
 #version 330 core
-// For the maze wall, being a hand-built object, it is very complex to implement Normal Mapping. 
-// Since it requires manually calculating the tangent and bitangent vectors for each point that makes up the mesh.
-
-out vec4 FragColor;
 
 in vec3 FragPos;
 in vec3 Normal;
@@ -11,10 +7,10 @@ in vec3 viewPos;
 in float shininess;
 
 in DIR_LIGHT {
-  vec3 direction;
-  vec3 ambient;
-  vec3 diffuse;
-  vec3 specular;
+    vec3 direction;
+    vec3 ambient;
+    vec3 diffuse;
+    vec3 specular;
 } light;
 
 struct Material {
@@ -22,6 +18,7 @@ struct Material {
     sampler2D specular;
 };
 
+out vec4 FragColor;
 
 uniform Material material;
 

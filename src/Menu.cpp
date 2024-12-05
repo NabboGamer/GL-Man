@@ -54,7 +54,7 @@ namespace {
     int selectableAlias = 0;
     int selectableHdr = 1;
     const char* aliasItems[] = { "4x", "8x", "16x" };
-    const char* hdrItems[] = { "0.25", "0.5", "0.75", "1" };
+    const char* hdrItems[]   = { "0.25", "0.5", "0.75", "1" };
 
     //Textures IDs for loading window animation
     std::vector<unsigned int> textureIDs;
@@ -79,7 +79,7 @@ namespace {
 
 Menu::Menu(GLFWwindow* window, const unsigned int width, const unsigned int height, bool& showGame, CustomStructs::Config& config)
     : window(window), width(width), height(height), showGame(showGame), config(config) {
-    scaleX = static_cast<float>(width) / 1920.0f;
+    scaleX = static_cast<float>(width)  / 1920.0f;
     scaleY = static_cast<float>(height) / 1080.0f;
 }
 
@@ -153,7 +153,7 @@ void Menu::Init() {
     }
 }
 
-void Menu::styleOperativeWidget(int page) const {
+void Menu::styleOperativeWidget(const int page) const {
     ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 10.0f * scaleX);
     ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 4.0f * scaleX); 
     ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.0f, 0.0f, 0.54f, 1.0f));
@@ -182,7 +182,7 @@ void Menu::styleDecorativeWidget() const {
     ImGui::PushItemFlag(ImGuiItemFlags_NoNav, true);
 }
 
-void Menu::colorOperativeWidget(ImVec2 buttonPos, bool& focused, bool& actived, int page) const {
+void Menu::colorOperativeWidget(const ImVec2 buttonPos, const bool& focused, const bool& actived, const int page) const {
     ImGui::SetCursorPos(buttonPos);
     if (page == 1) {
         if (!focused)
@@ -209,7 +209,7 @@ void Menu::colorOperativeWidget(ImVec2 buttonPos, bool& focused, bool& actived, 
         
 }
 
-void Menu::clearStyle(int page, int colors, int vars) const { 
+void Menu::clearStyle(const int page, const int colors, const int vars) const { 
     ImGui::PopStyleColor(colors);
     ImGui::PopStyleVar(vars);
     if (page == 1 || page == 2)
@@ -218,7 +218,7 @@ void Menu::clearStyle(int page, int colors, int vars) const {
         ImGui::PopItemFlag();
 }
 
-void Menu::styleWindow(ImVec2 pos, ImVec2 size) const {
+void Menu::styleWindow(const ImVec2 pos, const ImVec2 size) const {
     ImGui::SetNextWindowPos(pos);
     ImGui::SetNextWindowSize(size);
     ImGui::PushStyleVar(ImGuiStyleVar_ChildBorderSize, 5.0f * scaleX);
@@ -228,7 +228,7 @@ void Menu::styleWindow(ImVec2 pos, ImVec2 size) const {
     ImGui::PushFont(myFont);
 }
 
-void Menu::drawDecorativeWidget(ImVec2 pos, const char* label, ImVec2 dim, int type) const {
+void Menu::drawDecorativeWidget(const ImVec2 pos, const char* label, const ImVec2 dim, const int type) const {
     ImGui::SetCursorPos(pos);
     if (type == 1) {
         ImGui::Button(label, dim);
@@ -239,7 +239,7 @@ void Menu::drawDecorativeWidget(ImVec2 pos, const char* label, ImVec2 dim, int t
     }
 }
 
-void Menu::Render(double deltaTime, Game* GLMan) const {
+void Menu::Render(double deltaTime, const Game* GLMan) const {
     //Initializing ImGui Frame
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
@@ -259,7 +259,7 @@ void Menu::Render(double deltaTime, Game* GLMan) const {
        
         //Logo
         ImGui::SetCursorPos(ImVec2(600.0f*scaleX, 100.0f*scaleY));
-        ImGui::Image(prova.id, ImVec2(static_cast<float>(prova.width*scaleX), static_cast<float>(prova.height*scaleY)));
+        ImGui::Image(prova.id, ImVec2(static_cast<float>(prova.width)*scaleX, static_cast<float>(prova.height)*scaleY));
 
         //Start Button
         styleOperativeWidget(1);
@@ -785,8 +785,8 @@ void Menu::Render(double deltaTime, Game* GLMan) const {
             drawDecorativeWidget(ImVec2(585.0f * scaleX, 400.0f * scaleY), "16x", ImVec2(0.0f, 0.0f), 2);
 
         	ImVec2 imagePos(1210.0f * scaleX, 675.0f * scaleY);
-            ImVec2 imagePos1(1375.0f * scaleX, 675.0f * scaleY);
-            ImVec2 imagePos2(1535.0f * scaleX, 675.0f * scaleY);
+            const ImVec2 imagePos1(1375.0f * scaleX, 675.0f * scaleY);
+            const ImVec2 imagePos2(1535.0f * scaleX, 675.0f * scaleY);
             if (!barActiveAlias) {
                 ImGui::GetWindowDrawList()->AddImage(coin.id, imagePos, ImVec2(imagePos.x + imageSize.x, imagePos.y + imageSize.y));
                 ImGui::GetWindowDrawList()->AddImage(coin.id, imagePos1, ImVec2(imagePos1.x + imageSize.x, imagePos1.y + imageSize.y));
@@ -1035,9 +1035,9 @@ void Menu::Render(double deltaTime, Game* GLMan) const {
             drawDecorativeWidget(ImVec2(600.0f * scaleX, 400.0f * scaleY), "1", ImVec2(0.0f, 0.0f), 2);
 
             ImVec2 imagePos(1175.0f * scaleX, 675.0f * scaleY);
-            ImVec2 imagePos1(1295.0f * scaleX, 675.0f * scaleY);
-            ImVec2 imagePos2(1415.0f * scaleX, 675.0f * scaleY);
-            ImVec2 imagePos3(1535.0f * scaleX, 675.0f * scaleY);
+            const ImVec2 imagePos1(1295.0f * scaleX, 675.0f * scaleY);
+            const ImVec2 imagePos2(1415.0f * scaleX, 675.0f * scaleY);
+            const ImVec2 imagePos3(1535.0f * scaleX, 675.0f * scaleY);
             if (!barActiveHdr) {
                 ImGui::GetWindowDrawList()->AddImage(coin.id, imagePos, ImVec2(imagePos.x + imageSize.x, imagePos.y + imageSize.y));
                 ImGui::GetWindowDrawList()->AddImage(coin.id, imagePos1, ImVec2(imagePos1.x + imageSize.x, imagePos1.y + imageSize.y));

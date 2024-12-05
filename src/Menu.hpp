@@ -23,7 +23,7 @@ public:
 	~Menu();
 
 	void Init();
-	void Render(double deltaTime, Game* GLMan) const;
+	void Render(double deltaTime, const Game* GLMan) const;
 
 private:
 
@@ -34,9 +34,10 @@ private:
 	CustomStructs::Config& config;
 
 	GLFWcursor* createCustomCursor(const char* imagePath, int hotspotX, int hotspotY);
+
 	void styleOperativeWidget(int page) const;
 	void styleDecorativeWidget() const;
-	void colorOperativeWidget(ImVec2 buttonPos, bool& focused, bool& actived, int page) const;
+	void colorOperativeWidget(ImVec2 buttonPos, const bool& focused, const bool& actived, int page) const;
 	void clearStyle(int page, int colors, int vars) const;
 	void styleWindow(ImVec2 pos, ImVec2 size) const;
 	void drawDecorativeWidget(ImVec2 pos, const char* label, ImVec2 dim, int type) const;

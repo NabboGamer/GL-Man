@@ -14,11 +14,15 @@ PostProcessor::PostProcessor(const unsigned int width, const unsigned int height
 }
 
 PostProcessor::~PostProcessor() {
+	glDeleteFramebuffers(1, &this->FBO);
+	glDeleteTextures(1, &this->CB);
+	glDeleteRenderbuffers(1, &this->RBO);
 	glDeleteFramebuffers(1, &this->FBOMSAA);
 	glDeleteTextures(1, &this->CBMSAA);
 	glDeleteRenderbuffers(1, &this->RBOMSAA);
-	glDeleteFramebuffers(1, &this->FBO);
-	glDeleteTextures(1, &this->CB);
+	glDeleteFramebuffers(1, &this->FBOHDR);
+	glDeleteTextures(1, &this->CBHDR);
+	glDeleteRenderbuffers(1, &this->RBOHDR);
 }
 
 bool PostProcessor::GetUseMSAA() const{

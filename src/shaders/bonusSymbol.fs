@@ -1,7 +1,5 @@
 #version 330 core
 
-out vec4 FragColor;
-
 in vec3 FragPos;
 in vec3 Normal;
 in vec2 TexCoords;
@@ -9,10 +7,10 @@ in vec3 viewPos;
 in float shininess;
 
 in DIR_LIGHT {
-  vec3 direction;
-  vec3 ambient;
-  vec3 diffuse;
-  vec3 specular;
+    vec3 direction;
+    vec3 ambient;
+    vec3 diffuse;
+    vec3 specular;
 } light;
 
 struct Material {
@@ -20,6 +18,7 @@ struct Material {
     sampler2D specular;
 };
 
+out vec4 FragColor;
 
 uniform Material material;
 

@@ -6,8 +6,7 @@ layout (location = 3) in vec3 aTangent;
 layout (location = 4) in vec3 aBitangent;
 layout (location = 5) in mat4 aInstanceMatrix;
 
-layout (std140) uniform Shared
-{
+layout (std140) uniform Shared {
     mat4 projection;
     mat4 view;
     vec3 lightDir;
@@ -16,15 +15,13 @@ layout (std140) uniform Shared
     float materialShininess;
 };
 
-layout (std140) uniform Other
-{
+layout (std140) uniform Other {
     vec3 lightAmbient;
     vec3 lightDiffuse;
 };
 
 out DIR_LIGHT {
     vec3 direction;
-	
     vec3 ambient;
     vec3 diffuse;
     vec3 specular;
@@ -37,16 +34,16 @@ out vec3 viewPos;
 out float shininess;
 
 void main() {
-     FragPos = vec3(aInstanceMatrix * vec4(aPos, 1.0));
-    Normal = mat3(transpose(inverse(aInstanceMatrix))) * aNormal;
+    FragPos   = vec3(aInstanceMatrix * vec4(aPos, 1.0));
+    Normal    = mat3(transpose(inverse(aInstanceMatrix))) * aNormal;
     TexCoords = aTexCoords;
-    viewPos = lightPos;
+    viewPos   = lightPos;
+    shininess = materialShininess;
 
     light.direction = lightDir;
-    light.specular = lightSpecular;
-    light.ambient = lightAmbient;
-    light.diffuse = lightDiffuse;
-    shininess = materialShininess;
+    light.ambient   = lightAmbient;
+    light.specular  = lightSpecular;
+    light.diffuse   = lightDiffuse;
     
     gl_Position = projection * view * aInstanceMatrix * vec4(aPos, 1.0f);
 }
