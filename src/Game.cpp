@@ -383,8 +383,8 @@ bool Game::ContinueInit() const {
         text = new TextRenderer(this->width, this->height);
         text->Load(FileSystem::getPath("../res/fonts/eight_bit_dragon.ttf"), 32);
         postProcessor = new PostProcessor(this->width, this->height, true, 4,
-            &ResourceManager::GetShader("hdrShader"), false,
-            0.5f, 2.2f);
+                                          &ResourceManager::GetShader("hdrShader"), false,
+                                          0.5f, 2.2f);
 
         scaleX = static_cast<float>(this->width)  / 2048.0f;
         scaleY = static_cast<float>(this->height) / 1152.0f;
