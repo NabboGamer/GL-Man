@@ -231,6 +231,8 @@ del "$(OutDir)*.exp"
     <None Include="shaders\dot.vs" />
     <None Include="shaders\ghost.fs" />
     <None Include="shaders\ghost.vs" />
+    <None Include="shaders\ghostBlend.fs" />
+    <None Include="shaders\ghostBlend.vs" />
     <None Include="shaders\hdr.fs" />
     <None Include="shaders\hdr.vs" />
     <None Include="shaders\mazeFloor.fs" />

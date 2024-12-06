@@ -354,7 +354,7 @@ void VulnerableGhost::init() {
 															    vulnerableGhostDirections,
 															    vulnerableGhostRotations,
 															    vulnerableGhostScaling,
-                                                                &ResourceManager::GetShader("ghostShader"),
+                                                                &ResourceManager::GetShader("ghostShaderBlend"),
                                                                 &ResourceManager::GetModel(completeString)));
     }
 
@@ -366,7 +366,7 @@ void VulnerableGhost::init() {
                                                                  vulnerableGhostDirections,
                                                                  vulnerableGhostRotations,
                                                                  vulnerableGhostScaling,
-                                                                 &ResourceManager::GetShader("ghostShader"),
+                                                                 &ResourceManager::GetShader("ghostShaderBlend"),
                                                                  &ResourceManager::GetModel(completeString)));
     }
 
