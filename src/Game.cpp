@@ -272,7 +272,7 @@ void Game::Init() {
     glUniformBlockBinding(ResourceManager::GetShader("mazeFloorShader").id,   glGetUniformBlockIndex(ResourceManager::GetShader("mazeFloorShader").id,   "Other"), 1);
     glUniformBlockBinding(ResourceManager::GetShader("pacmanShader").id,      glGetUniformBlockIndex(ResourceManager::GetShader("pacmanShader").id,      "Other"), 1);
     glUniformBlockBinding(ResourceManager::GetShader("ghostShader").id,       glGetUniformBlockIndex(ResourceManager::GetShader("ghostShader").id,       "Other"), 1);
-    glUniformBlockBinding(ResourceManager::GetShader("ghostShaderBlend").id,  glGetUniformBlockIndex(ResourceManager::GetShader("ghostShaderBlend").id,   "Other"), 1);
+    glUniformBlockBinding(ResourceManager::GetShader("ghostShaderBlend").id,  glGetUniformBlockIndex(ResourceManager::GetShader("ghostShaderBlend").id,  "Other"), 1);
     glUniformBlockBinding(ResourceManager::GetShader("bonusSymbolShader").id, glGetUniformBlockIndex(ResourceManager::GetShader("bonusSymbolShader").id, "Other"), 1);
     glUniformBlockBinding(ResourceManager::GetShader("lifeCounterShader").id, glGetUniformBlockIndex(ResourceManager::GetShader("lifeCounterShader").id, "Other"), 1);
     glUniformBlockBinding(ResourceManager::GetShader("dotShader").id,         glGetUniformBlockIndex(ResourceManager::GetShader("dotShader").id,         "Other"), 2);
@@ -303,10 +303,10 @@ void Game::Init() {
     ResourceManager::GetShader("hdrShader").Use().SetMatrix4("projection", projection);
 
     ResourceManager::GetShader("stencilShader").Use().SetMatrix4("projection", projection);
-    ResourceManager::GetShader("stencilShader").Use().SetMatrix4("view", view);
-    ResourceManager::GetShader("stencilShader").Use().SetVector3f("color", glm::vec3(0.988f, 0.812f, 0.0f));
+    ResourceManager::GetShader("stencilShader").SetMatrix4("view", view);
+    ResourceManager::GetShader("stencilShader").SetVector3f("color", glm::vec3(0.988f, 0.812f, 0.0f));
 
-    ResourceManager::GetShader("ghostShaderBlend").Use().SetFloat("alpha", 0.7f);
+    ResourceManager::GetShader("ghostShaderBlend").Use().SetFloat("alpha", 0.4f);
 
     /// Load Textures
     ResourceManager::LoadTexture(FileSystem::getPath("../res/textures/wall_diffuse_360.png").c_str(),   "mazeWallDiffuseTexture",   true);
