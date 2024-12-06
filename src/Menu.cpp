@@ -393,14 +393,14 @@ void Menu::Render(double deltaTime, const Game* GLMan) const {
             ImGui::GetWindowDrawList()->AddImage(clyde.id, clydePos, ImVec2(clydePos.x + imageSize.x, clydePos.y + imageSize.y));
 
         //Bar and text
-        drawDecorativeWidget(ImVec2(765 * scaleX, 600 * scaleY), "loading: ", ImVec2(0.0f, 0.0f), 2);
+        drawDecorativeWidget(ImVec2(765 * scaleX, 650 * scaleY), "loading: ", ImVec2(0.0f, 0.0f), 2);
         ImGui::PopFont();
         ImGui::PushFont(myFont3);
          if (progress == 0.99f)
             progress += 0.01f;
         else if (progress >= 1.0f)
             progress = 1.0f;
-        ImGui::SetCursorPos(ImVec2(1000 * scaleX, 588 * scaleY));
+        ImGui::SetCursorPos(ImVec2(1000 * scaleX, 635 * scaleY));
         ImGui::Text("% .0f% %", progress * 100.0f); // Show progress as percentage
 
         if (execution > 30) {
