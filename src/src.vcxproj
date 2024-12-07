@@ -225,10 +225,17 @@ del "$(OutDir)*.exp"
     <ClInclude Include="VulnerableGhost.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="shaders\bloom.fs" />
+    <None Include="shaders\bloom.vs" />
+    <None Include="shaders\bloomFinal.fs" />
+    <None Include="shaders\bloomFinal.vs" />
+    <None Include="shaders\blur.fs" />
+    <None Include="shaders\blur.vs" />
     <None Include="shaders\bonusSymbol.fs" />
     <None Include="shaders\bonusSymbol.vs" />
     <None Include="shaders\dot.fs" />
     <None Include="shaders\dot.vs" />
+    <None Include="shaders\dotLight.fs" />
     <None Include="shaders\ghost.fs" />
     <None Include="shaders\ghost.vs" />
     <None Include="shaders\ghostBlend.fs" />

@@ -20,8 +20,6 @@ struct Material {
     sampler2D specular;
 };
 
-//out vec4 FragColor;
-
 uniform Material material;
 
 // Flag to indicate whether to use textures

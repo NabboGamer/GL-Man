@@ -7,9 +7,10 @@
 
 PostProcessor::PostProcessor(const unsigned int width, const unsigned int height, const bool useMSAA, 
 							 const unsigned int numSampleMSAA, Shader* hdrShader, const bool useHDR,
-							 const float exposure, const float gamma)
+							 const float exposure, const float gamma, Shader* blurShader, Shader* bloomShader)
              : width(width), height(height), useMSAA(useMSAA), numSampleMSAA(numSampleMSAA),
-               hdrShader(hdrShader), useHDR(useHDR), exposure(exposure), gamma(gamma), initialized(false) {
+               hdrShader(hdrShader), useHDR(useHDR), exposure(exposure), gamma(gamma), initialized(false), blurShader(blurShader),
+			   bloomShader(bloomShader) {
 	//this->initRenderData();
 }
 
@@ -18,10 +19,10 @@ PostProcessor::~PostProcessor() {
 	glDeleteTextures(1, &this->CB);
 	glDeleteRenderbuffers(1, &this->RBO);
 	glDeleteFramebuffers(1, &this->FBOMSAA);
-	glDeleteTextures(1, &this->CBMSAA);
+	glDeleteTextures(2, this->CBMSAA);
 	glDeleteRenderbuffers(1, &this->RBOMSAA);
 	glDeleteFramebuffers(1, &this->FBOHDR);
-	glDeleteTextures(1, &this->CBHDR);
+	glDeleteTextures(2, this->CBHDR);
 	glDeleteRenderbuffers(1, &this->RBOHDR);
 }
 
@@ -100,11 +101,21 @@ void PostProcessor::Render(double deltaTime) const {
 	if (this->useMSAA && this->useHDR) {
 		//LoggerManager::LogInfo("Use MSAA, HDR, Gamma Correction");
 		// 1. Transfer MSAA to HDR texture
-		glBindFramebuffer(GL_READ_FRAMEBUFFER, this->FBOMSAA);
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, this->FBOHDR);
-		glBlitFramebuffer(0, 0, static_cast<GLsizei>(this->width), static_cast<GLsizei>(this->height),
-						  0, 0, static_cast<GLsizei>(this->width), static_cast<GLsizei>(this->height),
-						  GL_COLOR_BUFFER_BIT, GL_NEAREST);
+		for (int i = 0; i < 2; ++i) { // Supponiamo di avere due color attachments
+			// Seleziona l'attachment i-esimo come sorgente e destinazione
+			glBindFramebuffer(GL_READ_FRAMEBUFFER, this->FBOMSAA);
+			glReadBuffer(GL_COLOR_ATTACHMENT0 + i); // Color attachment i
+
+			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, this->FBOHDR);
+			glDrawBuffer(GL_COLOR_ATTACHMENT0 + i); // Color attachment i
+
+			// Esegui il blit
+			glBlitFramebuffer(
+				0, 0, static_cast<GLsizei>(this->width), static_cast<GLsizei>(this->height),
+				0, 0, static_cast<GLsizei>(this->width), static_cast<GLsizei>(this->height),
+				GL_COLOR_BUFFER_BIT, GL_NEAREST
+			);
+		}
 
 		// 2. HDR Post-Process
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -114,10 +125,10 @@ void PostProcessor::Render(double deltaTime) const {
 		hdrShader->SetFloat("gamma", this->gamma);
 		hdrShader->SetBool("useHDR", true);
 
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, this->CBHDR);
+		//glActiveTexture(GL_TEXTURE0);
+		//glBindTexture(GL_TEXTURE_2D, this->CBHDR[0]);
 
-		renderQuad();
+		//renderQuad();
 	}
 	else if (this->useHDR) {
 		//LoggerManager::LogInfo("Use HDR, Gamma Correction");
@@ -129,20 +140,29 @@ void PostProcessor::Render(double deltaTime) const {
 		hdrShader->SetFloat("gamma", this->gamma);
 		hdrShader->SetBool("useHDR", true);
 
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, this->CBHDR);
+		//glActiveTexture(GL_TEXTURE0);
+		//glBindTexture(GL_TEXTURE_2D, this->CBHDR[0]);
 
-		renderQuad();
+		//renderQuad();
 	}
 	else if (this->useMSAA) {
 		//LoggerManager::LogInfo("Use MSAA, Gamma Correction");
 		// MSAA without HDR
-		glBindFramebuffer(GL_READ_FRAMEBUFFER, this->FBOMSAA);
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, this->FBOHDR);
-		glBlitFramebuffer(0, 0, static_cast<GLsizei>(this->width), static_cast<GLsizei>(this->height),
-			0, 0, static_cast<GLsizei>(this->width), static_cast<GLsizei>(this->height),
-			GL_COLOR_BUFFER_BIT, GL_NEAREST);
+		for (int i = 0; i < 2; ++i) { // Supponiamo di avere due color attachments
+			// Seleziona l'attachment i-esimo come sorgente e destinazione
+			glBindFramebuffer(GL_READ_FRAMEBUFFER, this->FBOMSAA);
+			glReadBuffer(GL_COLOR_ATTACHMENT0 + i); // Color attachment i
 
+			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, this->FBOHDR);
+			glDrawBuffer(GL_COLOR_ATTACHMENT0 + i); // Color attachment i
+
+			// Esegui il blit
+			glBlitFramebuffer(
+				0, 0, static_cast<GLsizei>(this->width), static_cast<GLsizei>(this->height),
+				0, 0, static_cast<GLsizei>(this->width), static_cast<GLsizei>(this->height),
+				GL_COLOR_BUFFER_BIT, GL_NEAREST
+			);
+		}
 		// Gamma Correction Post-Process
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		hdrShader->Use();
@@ -151,10 +171,10 @@ void PostProcessor::Render(double deltaTime) const {
 		hdrShader->SetFloat("gamma", this->gamma);
 		hdrShader->SetBool("useHDR", false);
 
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, this->CBHDR);
+		//glActiveTexture(GL_TEXTURE0);
+		//glBindTexture(GL_TEXTURE_2D, this->CBHDR[0]);
 
-		renderQuad();
+		//renderQuad();
 	}
 	else {
 		//LoggerManager::LogInfo("Use Gamma Correction");
@@ -165,12 +185,42 @@ void PostProcessor::Render(double deltaTime) const {
 		hdrShader->SetFloat("gamma", this->gamma);
 		hdrShader->SetBool("useHDR", false);
 
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, this->CBHDR);
+		//glActiveTexture(GL_TEXTURE0);
+		//glBindTexture(GL_TEXTURE_2D, this->CBHDR[0]);
 
-		renderQuad();
+		//renderQuad();
 	}
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);  // Return to default framebuffer
+
+	bool horizontal = true, first_iteration = true;
+	unsigned int amount = 10;
+	
+	for (unsigned int i = 0; i < amount; i++)
+	{
+		glBindFramebuffer(GL_FRAMEBUFFER, FBOBLUR[horizontal]);
+		blurShader->Use().SetInteger("horizontal", horizontal);
+		glBindTexture(GL_TEXTURE_2D, first_iteration ? CBHDR[1] : CBBLUR[!horizontal]);  // bind texture of other framebuffer (or scene if first iteration)
+		renderQuad();
+		horizontal = !horizontal;
+		if (first_iteration)
+			first_iteration = false;
+	}
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+	bloomShader->Use();
+	bloomShader->SetFloat("exposure", this->exposure);
+	bloomShader->SetFloat("gamma", this->gamma);
+	bloomShader->SetBool("useHDR", this->useHDR);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, CBHDR[0]);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, CBBLUR[!horizontal]);
+    //bloomShader->SetFloat("exposure", exposure);
+	renderQuad();
+
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
 }
 
 
@@ -209,9 +259,12 @@ void PostProcessor::initRenderData() {
 	glBindFramebuffer(GL_FRAMEBUFFER, this->FBOMSAA);
 
 	// Create a multisample color attachment texture
-	glGenTextures(1, &this->CBMSAA);
-	glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, this->CBMSAA);
-	glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, static_cast<GLsizei>(this->numSampleMSAA), GL_RGBA16F, static_cast<GLsizei>(this->width), static_cast<GLsizei>(this->height), GL_TRUE);
+	glGenTextures(2, this->CBMSAA);
+	for (int i = 0; i < 2; i++) {
+		glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, this->CBMSAA[i]);
+		glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, static_cast<GLsizei>(this->numSampleMSAA), GL_RGBA16F, static_cast<GLsizei>(this->width), static_cast<GLsizei>(this->height), GL_TRUE);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D_MULTISAMPLE, this->CBMSAA[i], 0);
+	}
 
 	// Create a multisample renderbuffer object for depth and stencil attachments
 	glGenRenderbuffers(1, &this->RBOMSAA);
@@ -219,8 +272,9 @@ void PostProcessor::initRenderData() {
 	glRenderbufferStorageMultisample(GL_RENDERBUFFER, static_cast<GLsizei>(this->numSampleMSAA), GL_DEPTH24_STENCIL8, static_cast<GLsizei>(this->width), static_cast<GLsizei>(this->height));
 
 	// Attach buffers
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, this->CBMSAA, 0);
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, this->RBOMSAA);
+	unsigned int attachMSAA[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+	glDrawBuffers(2, attachMSAA);
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
 		LoggerManager::LogError("MSAA Framebuffer not complete!");
 	}
@@ -236,11 +290,16 @@ void PostProcessor::initRenderData() {
 	glBindFramebuffer(GL_FRAMEBUFFER, this->FBOHDR);
 
 	// Create a floating-point color attachment texture
-	glGenTextures(1, &this->CBHDR);
-	glBindTexture(GL_TEXTURE_2D, this->CBHDR);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, static_cast<GLsizei>(this->width), static_cast<GLsizei>(this->height), 0, GL_RGBA, GL_FLOAT, nullptr);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glGenTextures(2, this->CBHDR);
+	for (int i = 0; i < 2; i++) {
+		glBindTexture(GL_TEXTURE_2D, this->CBHDR[i]);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, static_cast<GLsizei>(this->width), static_cast<GLsizei>(this->height), 0, GL_RGBA, GL_FLOAT, nullptr);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, this->CBHDR[i], 0);
+	}
 
 	// Create a renderbuffer for depth (and stencil if needed)
 	glGenRenderbuffers(1, &this->RBOHDR);
@@ -248,16 +307,39 @@ void PostProcessor::initRenderData() {
 	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, static_cast<GLsizei>(this->width), static_cast<GLsizei>(this->height));
 
 	// Attach color and depth buffers
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, this->CBHDR, 0);
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, this->RBOHDR);
-
+	unsigned int attachHDR[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+	glDrawBuffers(2, attachHDR);
 	// Check framebuffer completeness
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
 		LoggerManager::LogError("HDR Framebuffer not complete!");
 	}
 
 	// Unbind everything at the end of the configuration process
-	glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
+	glBindTexture(GL_TEXTURE_2D, 0);
+	glBindRenderbuffer(GL_RENDERBUFFER, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	/// --- BLUR Framebuffer Setup ---
+	glGenFramebuffers(2, this->FBOBLUR);
+	glGenTextures(2, this->CBBLUR);
+	for (unsigned int i = 0; i < 2; i++)
+	{
+		glBindFramebuffer(GL_FRAMEBUFFER, this->FBOBLUR[i]);
+		glBindTexture(GL_TEXTURE_2D, this->CBBLUR[i]);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, static_cast<GLsizei>(this->width), static_cast<GLsizei>(this->height), 0, GL_RGBA, GL_FLOAT, nullptr);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); 
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, this->CBBLUR[i], 0);
+		// also check if framebuffers are complete (no need for depth buffer)
+		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+			LoggerManager::LogError("BLUR Framebuffer {} not complete!", i);
+	}
+
+	// Unbind everything at the end of the configuration process
+	glBindTexture(GL_TEXTURE_2D, 0);
 	glBindRenderbuffer(GL_RENDERBUFFER, 0);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }

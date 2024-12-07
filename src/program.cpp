@@ -93,7 +93,7 @@ int main() {
         return -1;
     }
 
-    GLFWwindow* window = glfwCreateWindow(mode->width, mode->height, "GL-Man", monitor, nullptr);
+    GLFWwindow* window = glfwCreateWindow(mode->width, mode->height, "GL-Man", nullptr, nullptr);
 
     if (!window) {
         glfwTerminate();
