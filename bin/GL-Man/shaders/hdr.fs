@@ -1,9 +1,9 @@
 #version 330 core
 
 // Note: Tone Mapping and Gamma Correction have been moved to the Bloom Shader because:
-//          - Bloom is applied before tonemapping because it works on data in high dynamic range spaces;
-//          - Gamma correction is always the last step in the post-processing pipeline, 
-//            because it is about transforming the image into a visually correct format for the monitor.
+//       - Bloom is applied before tonemapping because it works on data in high dynamic range spaces;
+//       - Gamma correction is always the last step in the post-processing pipeline, 
+//         because it is about transforming the image into a visually correct format for the monitor.
 
 out vec4 FragColor;
 
