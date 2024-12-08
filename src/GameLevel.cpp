@@ -141,6 +141,7 @@ void GameLevel::Draw(const double deltaTime) {
 
         // Draw the energizer only if visible
         if (this->energizerVisible) {
+            // Disable normal drawing of energizer in favor of the version with bloom
             //this->energizer->Draw();
             this->energizerLight->Draw();
         }
@@ -234,7 +235,6 @@ void GameLevel::init(std::vector<std::vector<unsigned int>> wallData) {
                     if (wallData[x][z + 1] == 3 && wallData[x + 1][z] == 3 && wallData[x + 1][z + 1] == 3) {
                         auto position = glm::vec3(static_cast<float>(height - (x + 1)) - 0.25f, 0.0f, static_cast<float>(z) + 0.5f);
                         this->energizerPositions.push_back(position);
-                        //this->energizerPositionsLight.push_back(position);
                     }
                 }
             } else if (wallData[x][z] == 0) {
@@ -293,11 +293,11 @@ void GameLevel::init(std::vector<std::vector<unsigned int>> wallData) {
                                               &ResourceManager::GetModel("energizerModel"));
 
     this->energizerLight = new GameObjectFromModel(this->energizerPositions,
-                                              energizerDirections,
-                                              energizerRotations,
-                                              energizerScaling,
-                                              &ResourceManager::GetShader("energizerLightShader"),
-                                              &ResourceManager::GetModel("energizerModelLight"));
+                                                   energizerDirections,
+                                                   energizerRotations,
+                                                   energizerScaling,
+                                                   &ResourceManager::GetShader("energizerLightShader"),
+                                                   &ResourceManager::GetModel("energizerLightModel"));
     
     size_t numInstancesBonusSymbol = 1;
 	std::vector<glm::vec3> bonusSymbolPositions(numInstancesBonusSymbol, glm::vec3(13.0f, 0.0f, 14.0f));
@@ -321,7 +321,7 @@ void GameLevel::init(std::vector<std::vector<unsigned int>> wallData) {
                                                        bonusSymbolRotationsStencil,
                                                        bonusSymbolScalingStencil,
                                                        &ResourceManager::GetShader("stencilShader"),
-                                                       &ResourceManager::GetModel("cherriesModelStencil"));
+                                                       &ResourceManager::GetModel("cherriesStencilModel"));
 
     size_t numInstancesFruitCounter = 1;
     std::vector<glm::vec3> fruitCounterPositions(numInstancesFruitCounter, glm::vec3(-2.5f, 0.0f, 26.5f));

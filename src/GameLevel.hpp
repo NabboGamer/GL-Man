@@ -24,7 +24,6 @@ public:
     GameObjectBase*         dot;
     std::vector<glm::vec3>  energizerPositions;
     GameObjectBase*         energizer;
-    //std::vector<glm::vec3>  energizerPositionsLight;
     GameObjectBase*         energizerLight;
 
     std::pair<size_t, size_t> levelMatrixDim;

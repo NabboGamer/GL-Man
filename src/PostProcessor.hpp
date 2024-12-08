@@ -16,7 +16,8 @@ public:
 
     // constructor/decostructor
     PostProcessor(unsigned int width, unsigned int height, bool useMSAA, unsigned int numSampleMSAA, 
-                  Shader* hdrShader, bool useHDR, float exposure, float gamma, Shader* blurShader, Shader* bloomShader);
+                  Shader* hdrShader, bool useHDR, float exposure, float gamma, 
+                  Shader* blurShader, Shader* bloomShader);
     ~PostProcessor();
 
     // Getter/Setter
@@ -56,15 +57,15 @@ private:
     unsigned int RBO;
 
     unsigned int FBOMSAA;     // Frame  Buffer Object for Multi-Sample AntiAliasing
-    unsigned int CBMSAA[2];      // Color  Buffer        for Multi-Sample AntiAliasing
+    unsigned int CBMSAA[2];   // Color  Buffer        for Multi-Sample AntiAliasing
     unsigned int RBOMSAA;     // Render Buffer Object for Multi-Sample AntiAliasing
 
     unsigned int FBOHDR;     // Frame  Buffer Object for High Dynamic Range
-    unsigned int CBHDR[2];      // Color  Buffer        for High Dynamic Range
+    unsigned int CBHDR[2];   // Color  Buffer        for High Dynamic Range
     unsigned int RBOHDR;     // Render Buffer Object for High Dynamic Range
 
-    unsigned int FBOBLUR[2];
-    unsigned int CBBLUR[2];
+    unsigned int FBOBLUR[2];  // Frame  Buffer Object for Blur Effect in Bloom
+    unsigned int CBBLUR[2];   // Color  Buffer        for Blur Effect in Bloom
 
     void initRenderData();
     static void renderQuad();
