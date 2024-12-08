@@ -142,8 +142,7 @@ void GameLevel::Draw(const double deltaTime) {
         // Draw the energizer only if visible
         if (this->energizerVisible) {
             // Disable normal drawing of energizer in favor of the version with bloom
-            //this->energizer->Draw();
-            this->energizerLight->Draw();
+            this->energizer->Draw();
         }
     }
 
@@ -289,15 +288,8 @@ void GameLevel::init(std::vector<std::vector<unsigned int>> wallData) {
                                               energizerDirections,
                                               energizerRotations,
                                               energizerScaling,
-                                              &ResourceManager::GetShader("energizerShader"),
+                                              &ResourceManager::GetShader("energizerLightShader"),
                                               &ResourceManager::GetModel("energizerModel"));
-
-    this->energizerLight = new GameObjectFromModel(this->energizerPositions,
-                                                   energizerDirections,
-                                                   energizerRotations,
-                                                   energizerScaling,
-                                                   &ResourceManager::GetShader("energizerLightShader"),
-                                                   &ResourceManager::GetModel("energizerLightModel"));
     
     size_t numInstancesBonusSymbol = 1;
 	std::vector<glm::vec3> bonusSymbolPositions(numInstancesBonusSymbol, glm::vec3(13.0f, 0.0f, 14.0f));

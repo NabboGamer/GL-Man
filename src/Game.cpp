@@ -206,7 +206,6 @@ void Game::Init() {
     ResourceManager::LoadShader("./shaders/mazeWall.vs",   "./shaders/mazeWall.fs",   nullptr, "mazeWallShader");
     ResourceManager::LoadShader("./shaders/mazeFloor.vs",  "./shaders/mazeFloor.fs",  nullptr, "mazeFloorShader");
     ResourceManager::LoadShader("./shaders/dot.vs",        "./shaders/dot.fs",        nullptr, "dotShader");
-    ResourceManager::LoadShader("./shaders/dot.vs",        "./shaders/dot.fs",        nullptr, "energizerShader");
     ResourceManager::LoadShader("./shaders/dot.vs",        "./shaders/dotLight.fs",   nullptr, "energizerLightShader");
     ResourceManager::LoadShader("./shaders/pacman.vs",     "./shaders/pacman.fs",     nullptr, "pacmanShader");
     ResourceManager::LoadShader("./shaders/ghost.vs",      "./shaders/ghost.fs",      nullptr, "ghostShader");
@@ -265,7 +264,6 @@ void Game::Init() {
     glUniformBlockBinding(ResourceManager::GetShader("mazeWallShader").id,       glGetUniformBlockIndex(ResourceManager::GetShader("mazeWallShader").id,       "Shared"), 0);
     glUniformBlockBinding(ResourceManager::GetShader("mazeFloorShader").id,      glGetUniformBlockIndex(ResourceManager::GetShader("mazeFloorShader").id,      "Shared"), 0);
     glUniformBlockBinding(ResourceManager::GetShader("dotShader").id,            glGetUniformBlockIndex(ResourceManager::GetShader("dotShader").id,            "Shared"), 0);
-    glUniformBlockBinding(ResourceManager::GetShader("energizerShader").id,      glGetUniformBlockIndex(ResourceManager::GetShader("energizerShader").id,      "Shared"), 0);
     glUniformBlockBinding(ResourceManager::GetShader("energizerLightShader").id, glGetUniformBlockIndex(ResourceManager::GetShader("energizerLightShader").id, "Shared"), 0);
     glUniformBlockBinding(ResourceManager::GetShader("pacmanShader").id,         glGetUniformBlockIndex(ResourceManager::GetShader("pacmanShader").id,         "Shared"), 0);
     glUniformBlockBinding(ResourceManager::GetShader("ghostShader").id,          glGetUniformBlockIndex(ResourceManager::GetShader("ghostShader").id,          "Shared"), 0);
@@ -280,7 +278,6 @@ void Game::Init() {
     glUniformBlockBinding(ResourceManager::GetShader("bonusSymbolShader").id,    glGetUniformBlockIndex(ResourceManager::GetShader("bonusSymbolShader").id,    "Other"),  1);
     glUniformBlockBinding(ResourceManager::GetShader("lifeCounterShader").id,    glGetUniformBlockIndex(ResourceManager::GetShader("lifeCounterShader").id,    "Other"),  1);
     glUniformBlockBinding(ResourceManager::GetShader("dotShader").id,            glGetUniformBlockIndex(ResourceManager::GetShader("dotShader").id,            "Other"),  2);
-    glUniformBlockBinding(ResourceManager::GetShader("energizerShader").id,      glGetUniformBlockIndex(ResourceManager::GetShader("energizerShader").id,      "Other"),  2);
     glUniformBlockBinding(ResourceManager::GetShader("energizerLightShader").id, glGetUniformBlockIndex(ResourceManager::GetShader("energizerLightShader").id, "Other"),  2);
 
     glBindBufferBase(GL_UNIFORM_BUFFER, 0, uboShared);
@@ -313,7 +310,7 @@ void Game::Init() {
 
     ResourceManager::GetShader("ghostShaderBlend").Use().SetFloat("alpha", 0.7f);
 
-    ResourceManager::GetShader("energizerLightShader").Use().SetVector3f("lightColor", glm::vec3(0.988f, 0.812f, 0.0f));
+    ResourceManager::GetShader("energizerLightShader").Use().SetVector3f("lightColor", glm::vec3(0.730457f, 0.346704f, 0.208637f));
 
     ResourceManager::GetShader("blurShader").Use().SetInteger("image", 0);
 
@@ -329,7 +326,6 @@ void Game::Init() {
     /// Load Models
     ResourceManager::LoadModel("../res/objects/powerup/coin/coin.obj",         "dotModel",                  false);
     ResourceManager::LoadModel("../res/objects/powerup/coin/coin.obj",         "energizerModel",            false);
-    ResourceManager::LoadModel("../res/objects/powerup/coin/coin.obj",         "energizerLightModel",       false);
     ResourceManager::LoadModel("../res/objects/powerup/cherries/cherries.obj", "cherriesModel",             true);
     ResourceManager::LoadModel("../res/objects/powerup/cherries/cherries.obj", "cherriesStencilModel",      false);
     ResourceManager::LoadModel("../res/objects/powerup/cherries/cherries.obj", "cherriesFruitCounterModel", true);
@@ -712,11 +708,9 @@ void Game::DoCollisions(double dt) {
 
     // CHECK COLLISION PLAYER-ENERGIZER
     GameObjectBase* energizer = this->Levels[this->level]->energizer;
-    GameObjectBase* energizerLight = this->Levels[this->level]->energizerLight;
     size_t numInstancesEnergizer = energizer->GetNumInstances();
 
     std::vector<glm::vec3> energizerPositions = this->Levels[this->level]->energizerPositions;
-    std::vector<glm::vec3> energizerPositionsLight = this->Levels[this->level]->energizerPositions;
     for (int i = static_cast<int>(numInstancesEnergizer) - 1; i >= 0; i--) {
         auto energizerObb = energizer->GetTransformedBoundingBox(i);
         if (checkCollision(playerObb, energizerObb)) {
@@ -732,12 +726,6 @@ void Game::DoCollisions(double dt) {
             energizer->rotations.erase(energizer->rotations.begin() + i);
             energizer->scaling.erase(energizer->scaling.begin() + i);
             energizer->UpdateNumInstance();
-            energizerPositionsLight.erase(energizerPositionsLight.begin() + i);
-            energizerLight->positions.erase(energizerLight->positions.begin() + i);
-            energizerLight->directions.erase(energizerLight->directions.begin() + i);
-            energizerLight->rotations.erase(energizerLight->rotations.begin() + i);
-            energizerLight->scaling.erase(energizerLight->scaling.begin() + i);
-            energizerLight->UpdateNumInstance();
             vulnerableGhost->SetActive(true);
             this->score += 50;
         }
