@@ -51,8 +51,8 @@ void main() {
     // phase 1: directional lighting
     vec3 result = CalcDirLight(norm, viewDir);    
     
-    float brightness = dot(result, vec3(10.0, 10.0, 10.0));
-    if(brightness > 1.0)
+    float brightness = dot(result, vec3(-10.0, -10.0, -10.0));
+    if(brightness > 1.0){
         BrightColor = vec4(result, 1.0);
     }
     else {
