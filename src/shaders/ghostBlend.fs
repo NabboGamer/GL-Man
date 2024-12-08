@@ -1,5 +1,8 @@
 #version 330 core
 
+layout (location = 0) out vec4 FragColor;
+layout (location = 1) out vec4 BrightColor;
+
 in vec3 FragPos;
 in vec3 Normal;
 in vec2 TexCoords;
@@ -18,7 +21,7 @@ struct Material {
     sampler2D specular;
 };
 
-out vec4 FragColor;
+//out vec4 FragColor;
 
 uniform Material material;
 uniform float alpha;
@@ -48,6 +51,14 @@ void main() {
     // phase 1: directional lighting
     vec3 result = CalcDirLight(norm, viewDir);    
     
+    float brightness = dot(result, vec3(-1.0, -1.0, -1.0));
+    if(brightness > 1.0) {
+        BrightColor = vec4(result, 1.0);
+    }
+    else {
+        BrightColor = vec4(0.0, 0.0, 0.0, 1.0);
+    }   
+
     FragColor = vec4(result, alpha);
 }
 
