@@ -732,24 +732,27 @@ void Game::DoCollisions(double dt) {
     }
 
     // CHECK COLLISION PLAYER-BONUS_SYMBOL
-    GameObjectBase* bonusSymbol = this->Levels[this->level]->bonusSymbol;
-    size_t numInstancesBonusSymbol = bonusSymbol->GetNumInstances();
-    for (int i = static_cast<int>(numInstancesBonusSymbol) - 1; i >= 0; i--) {
-        auto bonusSymbolObb = bonusSymbol->GetTransformedBoundingBox(i);
-        if (checkCollision(playerObb, bonusSymbolObb)) {
-            soundEngine->play2D(pacmanEatFruitSound, false);
-            LoggerManager::LogDebug("There was a collision between PLAYER and BONUS_SYMBOL number {}", i);
-            // RESOLVE COLLISION PLAYER-BONUS_SYMBOL
-            if (this->Levels[this->level]->GetSymbolActive() == 2) {
-                this->Levels[this->level]->SetBonusSymbolPosition(glm::vec3(-2.0f, 0.0f, -2.0f));
-                this->Levels[this->level]->SetPlayerTakeBonusSymbol(true);
-                this->Levels[this->level]->SetSecondActivationTimeAccumulator(11.0f);
-            } else if (this->Levels[this->level]->GetSymbolActive() == 1) {
-                this->Levels[this->level]->SetBonusSymbolPosition(glm::vec3(-2.0f, 0.0f, -2.0f));
-                this->Levels[this->level]->SetPlayerTakeBonusSymbol(true);
-                this->Levels[this->level]->SetFirstActivationTimeAccumulator(11.0f);
+    if (this->Levels[this->level]->GetSymbolActive() != 0) {
+        GameObjectBase* bonusSymbol = this->Levels[this->level]->bonusSymbol;
+        size_t numInstancesBonusSymbol = bonusSymbol->GetNumInstances();
+        for (int i = static_cast<int>(numInstancesBonusSymbol) - 1; i >= 0; i--) {
+            auto bonusSymbolObb = bonusSymbol->GetTransformedBoundingBox(i);
+            if (checkCollision(playerObb, bonusSymbolObb)) {
+                soundEngine->play2D(pacmanEatFruitSound, false);
+                LoggerManager::LogDebug("There was a collision between PLAYER and BONUS_SYMBOL number {}", i);
+                // RESOLVE COLLISION PLAYER-BONUS_SYMBOL
+                if (this->Levels[this->level]->GetSymbolActive() == 2) {
+                    this->Levels[this->level]->SetBonusSymbolPosition(glm::vec3(-2.0f, 0.0f, -2.0f));
+                    this->Levels[this->level]->SetPlayerTakeBonusSymbol(true);
+                    this->Levels[this->level]->SetSecondActivationTimeAccumulator(11.0f);
+                }
+                else if (this->Levels[this->level]->GetSymbolActive() == 1) {
+                    this->Levels[this->level]->SetBonusSymbolPosition(glm::vec3(-2.0f, 0.0f, -2.0f));
+                    this->Levels[this->level]->SetPlayerTakeBonusSymbol(true);
+                    this->Levels[this->level]->SetFirstActivationTimeAccumulator(11.0f);
+                }
+                this->score += 100;
             }
-            this->score += 100;
         }
     }
 
