@@ -308,7 +308,7 @@ void Game::Init() {
     ResourceManager::GetShader("stencilShader").SetMatrix4("view", view);
     ResourceManager::GetShader("stencilShader").SetVector3f("color", glm::vec3(0.988f, 0.812f, 0.0f));
 
-    ResourceManager::GetShader("ghostShaderBlend").Use().SetFloat("alpha", 0.4f);
+    ResourceManager::GetShader("ghostShaderBlend").Use().SetFloat("alpha", 0.3f);
 
     ResourceManager::GetShader("energizerLightShader").Use().SetVector3f("lightColor", glm::vec3(0.730457f, 0.346704f, 0.208637f));
 
