@@ -99,9 +99,11 @@ Questo sistema consente una facile configurazione delle opzioni grafiche per ada
 
 ### **Utilizzo**
 
-Nella cartella `bin` presente nella radice di progetto è prwesente un file eseguibile, risultato della compilazione del progetto in ambiente Windows 10, CPU Intel x86.
+Nella cartella `bin` presente nella radice di progetto è prwesente un file eseguibile, risultato della compilazione del progetto in ambiente Windows 10 con CPU Intel x64.
 
-In caso di problemi è possibile ricompilare il progetto in maniera semplificata aprendo il file `.sln` con Visual Studio.
+Nel caso in cui all'avvio dell'eseguibile venga lanciato l'errore _"L'esecuzione del codice non può proseguire perchè MSVCCR110.dll non è stato trovato. Per risolvere il problema, prova a reinstallare il programma."_, allora è possibile installare il .dll mancante sulla macchina andando sul [sito ufficiale di Microsoft](https://learn.microsoft.com/it-it/cpp/windows/latest-supported-vc-redist?view=msvc-170) nella sezione _"Visual Studio 2012 (VC++ 11.0) Update 4 (non più supportato)"_, oppure tramite [questo link diretto](https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x64.exe).
+
+In caso di problemi ulteriori è possibile ricompilare il progetto sulla propria macchina in maniera semplificata aprendo il file `.sln` con Visual Studio 2022.
 
 ---
 

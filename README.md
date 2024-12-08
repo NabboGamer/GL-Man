@@ -101,9 +101,11 @@ This system allows easy configuration of graphic options to adapt the game to us
 
 ### **Usage**
 
-In the `bin` folder present in the project root, there is an executable file, resulting from the compilation of the project in Windows 10 environment, Intel x86 CPU.
+In the `bin` folder in the project root there is an executable file, the result of compiling the project in a Windows 10 environment with an Intel x64 CPU.
 
-In case of problems, it is possible to recompile the project simply by opening the `.sln` file with Visual Studio.
+If the error _"The code execution cannot continue because MSVCCR110.dll was not found. To resolve this problem, try reinstalling the program."_ is thrown when starting the executable, then it is possible to install the missing .dll on the machine by going to the [official Microsoft website](https://learn.microsoft.com/it-it/cpp/windows/latest-supported-vc-redist?view=msvc-170) in the section _"Visual Studio 2012 (VC++ 11.0) Update 4 (no longer supported)"_, or via [this direct link](https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x64.exe).
+
+In case of further problems, it is possible to recompile the project on your machine in a simplified way by opening the `.sln` file with Visual Studio 2022.
 
 ---
 
