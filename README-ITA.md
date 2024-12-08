@@ -29,7 +29,7 @@ Durante lo sviluppo di **GL-Man** è stato progettato e implementato un **motore
   - Sistema di caricamento e memorizzazione delle texture, basato sulla libreria ***stb_image*** con supporto per diverse modalità di filtraggio e wrapping.
   
   - Sistema di caricamento e memorizzazione di modelli 3D e dei loro materiali, basato sulla libreria ***Assimp***, con supporto per il formato standard `.obj`.
-  <br />
+  
 
 - **Gestione del Logging**<br />
   Tutte le stampe sono effettuate tramite la classe `LoggerManager`, basata sulla libreria ***spdlog***. La classe `LoggerManager` consente di: registrare messaggi su diversi livelli di log; utilizzare messaggi formattati dinamicamente; stampare utilizzando un thread dedicato e separato da quello di rendering, in modo da non rallentare quest'ultimo.
