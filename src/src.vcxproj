@@ -71,11 +71,11 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>$(SolutionDir)bin\GL-Man</OutDir>
+    <OutDir>$(SolutionDir)bin\GL-Man\</OutDir>
     <TargetName>GL-Man</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(SolutionDir)bin\GL-Man</OutDir>
+    <OutDir>$(SolutionDir)bin\GL-Man\</OutDir>
     <TargetName>GL-Man</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -225,12 +225,19 @@ del "$(OutDir)*.exp"
     <ClInclude Include="VulnerableGhost.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="shaders\bloomFinal.fs" />
+    <None Include="shaders\bloomFinal.vs" />
+    <None Include="shaders\blur.fs" />
+    <None Include="shaders\blur.vs" />
     <None Include="shaders\bonusSymbol.fs" />
     <None Include="shaders\bonusSymbol.vs" />
     <None Include="shaders\dot.fs" />
     <None Include="shaders\dot.vs" />
+    <None Include="shaders\dotLight.fs" />
     <None Include="shaders\ghost.fs" />
     <None Include="shaders\ghost.vs" />
+    <None Include="shaders\ghostBlend.fs" />
+    <None Include="shaders\ghostBlend.vs" />
     <None Include="shaders\hdr.fs" />
     <None Include="shaders\hdr.vs" />
     <None Include="shaders\mazeFloor.fs" />

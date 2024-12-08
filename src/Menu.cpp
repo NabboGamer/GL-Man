@@ -360,7 +360,13 @@ void Menu::Render(double deltaTime, const Game* GLMan) const {
         ImGui::SetCursorPos(ImVec2(310 * scaleX, 530 * scaleY));
         ImGui::ProgressBar(progress, ImVec2(0.0f, 0.0f), "");
         ImGui::PushFont(myFont);
-        const float loadPosX = (300.0f + progress * 1200);
+
+        float loadPosX = (300.0f + progress * 1200);
+        const float maxPosX = 1500.0f * scaleX; // Maximum limit for Pacman
+        if (loadPosX * scaleX > maxPosX) {
+            loadPosX = maxPosX / scaleX; // Stop Pacman at the limit
+        }
+
         constexpr float loadPosY = 460.0f;
         const auto loadPos = ImVec2(loadPosX * scaleX, loadPosY * scaleY);
         const auto blinkyPos = ImVec2(500.0f * scaleX, 490.0f * scaleY);
@@ -393,14 +399,11 @@ void Menu::Render(double deltaTime, const Game* GLMan) const {
             ImGui::GetWindowDrawList()->AddImage(clyde.id, clydePos, ImVec2(clydePos.x + imageSize.x, clydePos.y + imageSize.y));
 
         //Bar and text
-        drawDecorativeWidget(ImVec2(765 * scaleX, 600 * scaleY), "loading: ", ImVec2(0.0f, 0.0f), 2);
+        drawDecorativeWidget(ImVec2(765 * scaleX, 650 * scaleY), "loading: ", ImVec2(0.0f, 0.0f), 2);
         ImGui::PopFont();
         ImGui::PushFont(myFont3);
-         if (progress == 0.99f)
-            progress += 0.01f;
-        else if (progress >= 1.0f)
-            progress = 1.0f;
-        ImGui::SetCursorPos(ImVec2(1000 * scaleX, 588 * scaleY));
+        progress = std::min(progress, 1.0f); // Ensures that progress does not exceed 1.0f
+        ImGui::SetCursorPos(ImVec2(1000 * scaleX, 635 * scaleY));
         ImGui::Text("% .0f% %", progress * 100.0f); // Show progress as percentage
 
         if (execution > 30) {

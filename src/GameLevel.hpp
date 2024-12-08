@@ -24,13 +24,12 @@ public:
     GameObjectBase*         dot;
     std::vector<glm::vec3>  energizerPositions;
     GameObjectBase*         energizer;
-
-    std::pair<size_t, size_t> levelMatrixDim;
-
     GameObjectBase*         bonusSymbol;
     GameObjectBase*         bonusSymbolStencil;
     GameObjectBase*         fruitCounter;
     GameObjectBase*         lifeCounter;
+
+    std::pair<size_t, size_t> levelMatrixDim;
 
     // constructor
     GameLevel() { }

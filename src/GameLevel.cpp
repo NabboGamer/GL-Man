@@ -141,6 +141,7 @@ void GameLevel::Draw(const double deltaTime) {
 
         // Draw the energizer only if visible
         if (this->energizerVisible) {
+            // Disable normal drawing of energizer in favor of the version with bloom
             this->energizer->Draw();
         }
     }
@@ -287,7 +288,7 @@ void GameLevel::init(std::vector<std::vector<unsigned int>> wallData) {
                                               energizerDirections,
                                               energizerRotations,
                                               energizerScaling,
-                                              &ResourceManager::GetShader("energizerShader"),
+                                              &ResourceManager::GetShader("energizerLightShader"),
                                               &ResourceManager::GetModel("energizerModel"));
     
     size_t numInstancesBonusSymbol = 1;
@@ -312,7 +313,7 @@ void GameLevel::init(std::vector<std::vector<unsigned int>> wallData) {
                                                        bonusSymbolRotationsStencil,
                                                        bonusSymbolScalingStencil,
                                                        &ResourceManager::GetShader("stencilShader"),
-                                                       &ResourceManager::GetModel("cherriesModelStencil"));
+                                                       &ResourceManager::GetModel("cherriesStencilModel"));
 
     size_t numInstancesFruitCounter = 1;
     std::vector<glm::vec3> fruitCounterPositions(numInstancesFruitCounter, glm::vec3(-2.5f, 0.0f, 26.5f));

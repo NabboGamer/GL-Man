@@ -17,9 +17,9 @@ extern "C" {
 #include "custom_types.hpp"
 
 // The Width of the screen
-constexpr unsigned int SCREEN_WIDTH = 1920;
+//constexpr unsigned int SCREEN_WIDTH = 1920;
 // The Height of the screen
-constexpr unsigned int SCREEN_HEIGHT = 1080;
+//constexpr unsigned int SCREEN_HEIGHT = 1080;
 
 namespace {
     unsigned int  fps = 0;
