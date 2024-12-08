@@ -29,7 +29,7 @@ During the development of **GL-Man**, a **modular 3D rendering engine** was desi
   - Texture loading and storage system, based on the ***stb_image*** library with support for various filtering and wrapping modes.
   
   - 3D model and material loading and storage system, based on the ***Assimp*** library, with support for the standard `.obj` format.
-  <br />
+  
 
 - **Logging Management**<br />
   All prints are made through the `LoggerManager` class, based on the ***spdlog*** library. The `LoggerManager` class allows: logging messages at different log levels; using dynamically formatted messages; printing using a dedicated thread separate from the rendering thread, so as not to slow down the latter.
