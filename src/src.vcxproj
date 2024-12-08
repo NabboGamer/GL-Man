@@ -225,8 +225,6 @@ del "$(OutDir)*.exp"
     <ClInclude Include="VulnerableGhost.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\bloom.fs" />
-    <None Include="shaders\bloom.vs" />
     <None Include="shaders\bloomFinal.fs" />
     <None Include="shaders\bloomFinal.vs" />
     <None Include="shaders\blur.fs" />

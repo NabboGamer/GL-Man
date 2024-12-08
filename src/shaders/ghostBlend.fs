@@ -1,4 +1,5 @@
 #version 330 core
+
 layout (location = 0) out vec4 FragColor;
 layout (location = 1) out vec4 BrightColor;
 
@@ -53,8 +54,10 @@ void main() {
     float brightness = dot(result, vec3(10.0, 10.0, 10.0));
     if(brightness > 1.0)
         BrightColor = vec4(result, 1.0);
-    else
+    }
+    else {
         BrightColor = vec4(0.0, 0.0, 0.0, 1.0);
+    }   
 
     FragColor = vec4(result, alpha);
 }

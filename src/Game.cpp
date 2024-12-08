@@ -207,8 +207,7 @@ void Game::Init() {
     ResourceManager::LoadShader("./shaders/mazeFloor.vs",  "./shaders/mazeFloor.fs",  nullptr, "mazeFloorShader");
     ResourceManager::LoadShader("./shaders/dot.vs",        "./shaders/dot.fs",        nullptr, "dotShader");
     ResourceManager::LoadShader("./shaders/dot.vs",        "./shaders/dot.fs",        nullptr, "energizerShader");
-    //ResourceManager::LoadShader("./shaders/bloom.vs",      "./shaders/bloom.fs",      nullptr, "energizerBloomShader");
-    ResourceManager::LoadShader("./shaders/dot.vs",      "./shaders/dotLight.fs",   nullptr, "energizerLightShader");
+    ResourceManager::LoadShader("./shaders/dot.vs",        "./shaders/dotLight.fs",   nullptr, "energizerLightShader");
     ResourceManager::LoadShader("./shaders/pacman.vs",     "./shaders/pacman.fs",     nullptr, "pacmanShader");
     ResourceManager::LoadShader("./shaders/ghost.vs",      "./shaders/ghost.fs",      nullptr, "ghostShader");
     ResourceManager::LoadShader("./shaders/ghostBlend.vs", "./shaders/ghostBlend.fs", nullptr, "ghostShaderBlend");
@@ -263,26 +262,26 @@ void Game::Init() {
     glBufferData(GL_UNIFORM_BUFFER, 2 * (sizeof(glm::vec3) + 4), nullptr, GL_STATIC_DRAW);
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-    glUniformBlockBinding(ResourceManager::GetShader("mazeWallShader").id,    glGetUniformBlockIndex(ResourceManager::GetShader("mazeWallShader").id,    "Shared"), 0);
-    glUniformBlockBinding(ResourceManager::GetShader("mazeFloorShader").id,   glGetUniformBlockIndex(ResourceManager::GetShader("mazeFloorShader").id,   "Shared"), 0);
-    glUniformBlockBinding(ResourceManager::GetShader("dotShader").id,         glGetUniformBlockIndex(ResourceManager::GetShader("dotShader").id,         "Shared"), 0);
-    glUniformBlockBinding(ResourceManager::GetShader("energizerShader").id,   glGetUniformBlockIndex(ResourceManager::GetShader("energizerShader").id,   "Shared"), 0);
+    glUniformBlockBinding(ResourceManager::GetShader("mazeWallShader").id,       glGetUniformBlockIndex(ResourceManager::GetShader("mazeWallShader").id,       "Shared"), 0);
+    glUniformBlockBinding(ResourceManager::GetShader("mazeFloorShader").id,      glGetUniformBlockIndex(ResourceManager::GetShader("mazeFloorShader").id,      "Shared"), 0);
+    glUniformBlockBinding(ResourceManager::GetShader("dotShader").id,            glGetUniformBlockIndex(ResourceManager::GetShader("dotShader").id,            "Shared"), 0);
+    glUniformBlockBinding(ResourceManager::GetShader("energizerShader").id,      glGetUniformBlockIndex(ResourceManager::GetShader("energizerShader").id,      "Shared"), 0);
     glUniformBlockBinding(ResourceManager::GetShader("energizerLightShader").id, glGetUniformBlockIndex(ResourceManager::GetShader("energizerLightShader").id, "Shared"), 0);
-    glUniformBlockBinding(ResourceManager::GetShader("pacmanShader").id,      glGetUniformBlockIndex(ResourceManager::GetShader("pacmanShader").id,      "Shared"), 0);
-    glUniformBlockBinding(ResourceManager::GetShader("ghostShader").id,       glGetUniformBlockIndex(ResourceManager::GetShader("ghostShader").id,       "Shared"), 0);
-    glUniformBlockBinding(ResourceManager::GetShader("ghostShaderBlend").id,  glGetUniformBlockIndex(ResourceManager::GetShader("ghostShaderBlend").id,  "Shared"), 0);
-    glUniformBlockBinding(ResourceManager::GetShader("bonusSymbolShader").id, glGetUniformBlockIndex(ResourceManager::GetShader("bonusSymbolShader").id, "Shared"), 0);
-    glUniformBlockBinding(ResourceManager::GetShader("lifeCounterShader").id, glGetUniformBlockIndex(ResourceManager::GetShader("lifeCounterShader").id, "Shared"), 0);
-    glUniformBlockBinding(ResourceManager::GetShader("mazeWallShader").id,    glGetUniformBlockIndex(ResourceManager::GetShader("mazeWallShader").id,    "Other"), 1);
-    glUniformBlockBinding(ResourceManager::GetShader("mazeFloorShader").id,   glGetUniformBlockIndex(ResourceManager::GetShader("mazeFloorShader").id,   "Other"), 1);
-    glUniformBlockBinding(ResourceManager::GetShader("pacmanShader").id,      glGetUniformBlockIndex(ResourceManager::GetShader("pacmanShader").id,      "Other"), 1);
-    glUniformBlockBinding(ResourceManager::GetShader("ghostShader").id,       glGetUniformBlockIndex(ResourceManager::GetShader("ghostShader").id,       "Other"), 1);
-    glUniformBlockBinding(ResourceManager::GetShader("ghostShaderBlend").id,  glGetUniformBlockIndex(ResourceManager::GetShader("ghostShaderBlend").id,   "Other"), 1);
-    glUniformBlockBinding(ResourceManager::GetShader("bonusSymbolShader").id, glGetUniformBlockIndex(ResourceManager::GetShader("bonusSymbolShader").id, "Other"), 1);
-    glUniformBlockBinding(ResourceManager::GetShader("lifeCounterShader").id, glGetUniformBlockIndex(ResourceManager::GetShader("lifeCounterShader").id, "Other"), 1);
-    glUniformBlockBinding(ResourceManager::GetShader("dotShader").id,         glGetUniformBlockIndex(ResourceManager::GetShader("dotShader").id,         "Other"), 2);
-    glUniformBlockBinding(ResourceManager::GetShader("energizerShader").id,   glGetUniformBlockIndex(ResourceManager::GetShader("energizerShader").id,   "Other"), 2);
-    glUniformBlockBinding(ResourceManager::GetShader("energizerLightShader").id, glGetUniformBlockIndex(ResourceManager::GetShader("energizerLightShader").id, "Other"), 2);
+    glUniformBlockBinding(ResourceManager::GetShader("pacmanShader").id,         glGetUniformBlockIndex(ResourceManager::GetShader("pacmanShader").id,         "Shared"), 0);
+    glUniformBlockBinding(ResourceManager::GetShader("ghostShader").id,          glGetUniformBlockIndex(ResourceManager::GetShader("ghostShader").id,          "Shared"), 0);
+    glUniformBlockBinding(ResourceManager::GetShader("ghostShaderBlend").id,     glGetUniformBlockIndex(ResourceManager::GetShader("ghostShaderBlend").id,     "Shared"), 0);
+    glUniformBlockBinding(ResourceManager::GetShader("bonusSymbolShader").id,    glGetUniformBlockIndex(ResourceManager::GetShader("bonusSymbolShader").id,    "Shared"), 0);
+    glUniformBlockBinding(ResourceManager::GetShader("lifeCounterShader").id,    glGetUniformBlockIndex(ResourceManager::GetShader("lifeCounterShader").id,    "Shared"), 0);
+    glUniformBlockBinding(ResourceManager::GetShader("mazeWallShader").id,       glGetUniformBlockIndex(ResourceManager::GetShader("mazeWallShader").id,       "Other"),  1);
+    glUniformBlockBinding(ResourceManager::GetShader("mazeFloorShader").id,      glGetUniformBlockIndex(ResourceManager::GetShader("mazeFloorShader").id,      "Other"),  1);
+    glUniformBlockBinding(ResourceManager::GetShader("pacmanShader").id,         glGetUniformBlockIndex(ResourceManager::GetShader("pacmanShader").id,         "Other"),  1);
+    glUniformBlockBinding(ResourceManager::GetShader("ghostShader").id,          glGetUniformBlockIndex(ResourceManager::GetShader("ghostShader").id,          "Other"),  1);
+    glUniformBlockBinding(ResourceManager::GetShader("ghostShaderBlend").id,     glGetUniformBlockIndex(ResourceManager::GetShader("ghostShaderBlend").id,     "Other"),  1);
+    glUniformBlockBinding(ResourceManager::GetShader("bonusSymbolShader").id,    glGetUniformBlockIndex(ResourceManager::GetShader("bonusSymbolShader").id,    "Other"),  1);
+    glUniformBlockBinding(ResourceManager::GetShader("lifeCounterShader").id,    glGetUniformBlockIndex(ResourceManager::GetShader("lifeCounterShader").id,    "Other"),  1);
+    glUniformBlockBinding(ResourceManager::GetShader("dotShader").id,            glGetUniformBlockIndex(ResourceManager::GetShader("dotShader").id,            "Other"),  2);
+    glUniformBlockBinding(ResourceManager::GetShader("energizerShader").id,      glGetUniformBlockIndex(ResourceManager::GetShader("energizerShader").id,      "Other"),  2);
+    glUniformBlockBinding(ResourceManager::GetShader("energizerLightShader").id, glGetUniformBlockIndex(ResourceManager::GetShader("energizerLightShader").id, "Other"),  2);
 
     glBindBufferBase(GL_UNIFORM_BUFFER, 0, uboShared);
     glBindBuffer(GL_UNIFORM_BUFFER, uboShared);
@@ -330,9 +329,9 @@ void Game::Init() {
     /// Load Models
     ResourceManager::LoadModel("../res/objects/powerup/coin/coin.obj",         "dotModel",                  false);
     ResourceManager::LoadModel("../res/objects/powerup/coin/coin.obj",         "energizerModel",            false);
-    ResourceManager::LoadModel("../res/objects/powerup/coin/coin.obj",         "energizerModelLight",       false);
+    ResourceManager::LoadModel("../res/objects/powerup/coin/coin.obj",         "energizerLightModel",       false);
     ResourceManager::LoadModel("../res/objects/powerup/cherries/cherries.obj", "cherriesModel",             true);
-    ResourceManager::LoadModel("../res/objects/powerup/cherries/cherries.obj", "cherriesModelStencil",      false);
+    ResourceManager::LoadModel("../res/objects/powerup/cherries/cherries.obj", "cherriesStencilModel",      false);
     ResourceManager::LoadModel("../res/objects/powerup/cherries/cherries.obj", "cherriesFruitCounterModel", true);
     ResourceManager::LoadModel("../res/objects/pacman/pacman7/pacman7.obj",    "lifeCounterPacmanModel",    true);
 
@@ -409,7 +408,8 @@ bool Game::ContinueInit() const {
         text->Load(FileSystem::getPath("../res/fonts/eight_bit_dragon.ttf"), 32);
         postProcessor = new PostProcessor(this->width, this->height, true, 4,
                                           &ResourceManager::GetShader("hdrShader"), false,
-                                          0.5f, 2.2f, &ResourceManager::GetShader("blurShader"), 
+                                          0.5f, 2.2f,
+                                          &ResourceManager::GetShader("blurShader"), 
                                           &ResourceManager::GetShader("bloomFinalShader"));
 
         scaleX = static_cast<float>(this->width)  / 2048.0f;
