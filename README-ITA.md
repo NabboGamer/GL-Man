@@ -12,16 +12,16 @@ Durante lo sviluppo di **GL-Man** è stato progettato e implementato un **motore
 
 #### **Caratteristiche Principali**
 
-- **Struttura Modulare**
+- **Struttura Modulare**<br />
   Le classi sono organizzate per fornire funzionalità specifiche in un contesto flessibile con una netta separazione delle responsabilità per garantire la riusabilità del codice e la scalabilità per progetti futuri 
   <br />
 
-- **Gestione del File System**
+- **Gestione del File System**<br />
   Per semplificare l'accesso e la gestione delle risorse di progetto, è stata sviluppata una classe dedicata per l'interazione con il file system del sistema operativo Windows, ovvero la classe `FileSystem`. 
   Questa classe è progettata per astrarre le operazioni comuni di lettura e scrittura di file, garantendo flessibilità e portabilità.
   <br />
 
-- **Gestione delle Risorse**
+- **Gestione delle Risorse**<br />
   Tutte le risorse utilizzate sono caricate, memorizzate e gestite tramite la classe `ResourceManager`, la quale ha le seguenti funzionalità:
 
   - Sistema di caricamento, compilazione e memorizzazione degli shader ***GLSL***, inclusi vertex, fragment e (opzionalmente) geometry shader. Con supporto per tutti i principali formati come `.vs`, `.fs` e `.gs`.
@@ -31,23 +31,23 @@ Durante lo sviluppo di **GL-Man** è stato progettato e implementato un **motore
   - Sistema di caricamento e memorizzazione di modelli 3D e dei loro materiali, basato sulla libreria ***Assimp***, con supporto per il formato standard `.obj`.
   <br />
 
-- **Gestione del Logging**
+- **Gestione del Logging**<br />
   Tutte le stampe sono effettuate tramite la classe `LoggerManager`, basata sulla libreria ***spdlog***. La classe `LoggerManager` consente di: registrare messaggi su diversi livelli di log; utilizzare messaggi formattati dinamicamente; stampare utilizzando un thread dedicato e separato da quello di rendering, in modo da non rallentare quest'ultimo.
   <br />
 
-- **Gestione dei Game Object**
+- **Gestione dei Game Object**<br />
   Per il motore di rendering ogni elemento disegnato a schermo è una istanza della classe `GameObjectBase`. 
   Tale classe tramite le sue sottoclassi `GameObjectCustom` e `GameObjectFromModel` permette il corretto posizionamento e disegno di ogni Game Object. 
   `GameObjectCustom` è utile per definire un Game Object date mesh, diffuseTexture e specularTexture. Mentre `GameObjectFromModel` è utile per definire un Game Object dato un modello. 
   Entrambe le classi precedenti permettono di generare la OBB del Game Object. Una Oriented Bounding Box (OBB) è una rappresentazione compatta del volume di delimitazione, che si adatta strettamente alle geometrie che rappresenta. L'invarianza di un OBB alla traslazione e alla rotazione lo rende ideale come rappresentazione ottimale e predefinita del volume di delimitazione in uno spazio tridimensionale. È inoltre fondamentale per implementare un Collider preciso e ottimizzato.
   <br />
 
-- **Gestione degli effetti di Post-Processing**
+- **Gestione degli effetti di Post-Processing**<br />
   Tutti gli effetti di Post-Processing vengono gestiti dalla classe `PostProcessor`, che  gestisce le operazioni di post-processing nel rendering, come HDR, Bloom e anti-aliasing multisample (MSAA). 
   Il `PostProcessor` è pensato per ottimizzare la qualità visiva, integrandosi con gli shader e migliorando il realismo delle scene.
   <br />
 
-- **Gestione del Testo in Sovrimpressione**
+- **Gestione del Testo in Sovrimpressione**<br />
   Il testo in sovrimpressione viene gestito dalla classe `TextRenderer`, la quale è responsabile del rendering del testo 2D utilizzando font caricati tramite la libreria **FreeType**. 
   Il `TextRenderer` consente di aggiungere testo stilizzato alle scene 3D o 2D, come punteggi, HUD, o notifiche, garantendo flessibilità e alta qualità visiva.
   <br />

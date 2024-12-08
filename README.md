@@ -12,16 +12,16 @@ During the development of **GL-Man**, a **modular 3D rendering engine** was desi
 
 #### **Main Features**
 
-- **Modular Structure**
+- **Modular Structure**<br />
   The classes are organized to provide specific functionalities in a flexible context with a clear separation of responsibilities to ensure code reusability and scalability for future projects. 
   <br />
 
-- **File System Management**
+- **File System Management**<br />
   To simplify access and management of project resources, a dedicated class for interaction with the Windows operating system file system has been developed, namely the `FileSystem` class. 
   This class is designed to abstract common file reading and writing operations, ensuring flexibility and portability.
   <br />
 
-- **Resource Management**
+- **Resource Management**<br />
   All resources are loaded, stored, and managed through the `ResourceManager` class, which has the following functionalities:
 
   - Loading, compilation, and storage system for ***GLSL*** shaders, including vertex, fragment, and (optionally) geometry shaders. With support for all major formats like `.vs`, `.fs`, and `.gs`.
@@ -31,23 +31,23 @@ During the development of **GL-Man**, a **modular 3D rendering engine** was desi
   - 3D model and material loading and storage system, based on the ***Assimp*** library, with support for the standard `.obj` format.
   <br />
 
-- **Logging Management**
+- **Logging Management**<br />
   All prints are made through the `LoggerManager` class, based on the ***spdlog*** library. The `LoggerManager` class allows: logging messages at different log levels; using dynamically formatted messages; printing using a dedicated thread separate from the rendering thread, so as not to slow down the latter.
   <br />
 
-- **Game Object Management**
+- **Game Object Management**<br />
   For the rendering engine, every element drawn on screen is an instance of the `GameObjectBase` class. 
   This class, through its subclasses `GameObjectCustom` and `GameObjectFromModel`, allows the correct positioning and drawing of each Game Object. 
   `GameObjectCustom` is useful for defining a Game Object given meshes, diffuseTexture, and specularTexture. While `GameObjectFromModel` is useful for defining a Game Object given a model. 
   Both previous classes allow generating the OBB of the Game Object. An Oriented Bounding Box (OBB) is a compact representation of the bounding volume, which closely adapts to the geometries it represents. The invariance of an OBB to translation and rotation makes it ideal as an optimal and default representation of the bounding volume in a three-dimensional space. It is also fundamental for implementing a precise and optimized Collider.
   <br />
 
-- **Post-Processing Effects Management**
+- **Post-Processing Effects Management**<br />
   All post-processing effects are managed by the `PostProcessor` class, which handles post-processing operations in rendering, such as HDR, Bloom, and multisampled anti-aliasing (MSAA). 
   The `PostProcessor` is designed to optimize visual quality, integrating with shaders and improving the realism of scenes.
   <br />
 
-- **Overlay Text Management**
+- **Overlay Text Management**<br />
   Overlay text is managed by the `TextRenderer` class, which is responsible for 2D text rendering using fonts loaded via the **FreeType** library. 
   The `TextRenderer` allows adding stylized text to 3D or 2D scenes, such as scores, HUD, or notifications, ensuring flexibility and high visual quality.
   <br />
