@@ -8,8 +8,8 @@
 PostProcessor::PostProcessor(const unsigned int width, const unsigned int height, const bool useMSAA, 
 							 const unsigned int numSampleMSAA, Shader* hdrShader, const bool useHDR,
 							 const float exposure, const float gamma, Shader* blurShader, Shader* bloomShader)
-             : width(width), height(height), useMSAA(useMSAA), numSampleMSAA(numSampleMSAA), hdrShader(hdrShader),
-               useHDR(useHDR), exposure(exposure), gamma(gamma), initialized(false), blurShader(blurShader), bloomShader(bloomShader) {
+             : width(width), height(height), hdrShader(hdrShader), blurShader(blurShader), bloomShader(bloomShader),
+               initialized(false), useMSAA(useMSAA), useHDR(useHDR), numSampleMSAA(numSampleMSAA), exposure(exposure), gamma(gamma) {
 	//this->initRenderData();
 }
 
