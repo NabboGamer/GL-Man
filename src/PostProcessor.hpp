@@ -52,17 +52,17 @@ private:
     float         gamma;
 
     // render state
-    unsigned int FBO;
+    /*unsigned int FBO;
     unsigned int CB;
-    unsigned int RBO;
+    unsigned int RBO;*/
 
     unsigned int FBOMSAA;     // Frame  Buffer Object for Multi-Sample AntiAliasing
     unsigned int CBMSAA[2];   // Color  Buffer        for Multi-Sample AntiAliasing
     unsigned int RBOMSAA;     // Render Buffer Object for Multi-Sample AntiAliasing
 
-    unsigned int FBOHDR;     // Frame  Buffer Object for High Dynamic Range
-    unsigned int CBHDR[2];   // Color  Buffer        for High Dynamic Range
-    unsigned int RBOHDR;     // Render Buffer Object for High Dynamic Range
+    unsigned int FBOHDR;      // Frame  Buffer Object for High Dynamic Range
+    unsigned int CBHDR[2];    // Color  Buffer        for High Dynamic Range
+    unsigned int RBOHDR;      // Render Buffer Object for High Dynamic Range
 
     unsigned int FBOBLUR[2];  // Frame  Buffer Object for Blur Effect in Bloom
     unsigned int CBBLUR[2];   // Color  Buffer        for Blur Effect in Bloom

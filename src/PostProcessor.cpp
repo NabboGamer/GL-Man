@@ -14,9 +14,9 @@ PostProcessor::PostProcessor(const unsigned int width, const unsigned int height
 }
 
 PostProcessor::~PostProcessor() {
-	glDeleteFramebuffers(1, &this->FBO);
+	/*glDeleteFramebuffers(1, &this->FBO);
 	glDeleteTextures(1, &this->CB);
-	glDeleteRenderbuffers(1, &this->RBO);
+	glDeleteRenderbuffers(1, &this->RBO);*/
 
 	glDeleteFramebuffers(1, &this->FBOMSAA);
 	glDeleteTextures(2, this->CBMSAA);
@@ -125,9 +125,9 @@ void PostProcessor::Render(double deltaTime) const {
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		hdrShader->Use();
 		hdrShader->SetInteger("hdrBuffer", 0);
-		hdrShader->SetFloat("exposure", this->exposure);
-		hdrShader->SetFloat("gamma", this->gamma);
-		hdrShader->SetBool("useHDR", true);
+		//hdrShader->SetFloat("exposure", this->exposure);
+		//hdrShader->SetFloat("gamma", this->gamma);
+		//hdrShader->SetBool("useHDR", true);
 
 		//glActiveTexture(GL_TEXTURE0);
 		//glBindTexture(GL_TEXTURE_2D, this->CBHDR[0]);
@@ -140,9 +140,9 @@ void PostProcessor::Render(double deltaTime) const {
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		hdrShader->Use();
 		hdrShader->SetInteger("hdrBuffer", 0);
-		hdrShader->SetFloat("exposure", this->exposure);
-		hdrShader->SetFloat("gamma", this->gamma);
-		hdrShader->SetBool("useHDR", true);
+		//hdrShader->SetFloat("exposure", this->exposure);
+		//hdrShader->SetFloat("gamma", this->gamma);
+		//hdrShader->SetBool("useHDR", true);
 
 		//glActiveTexture(GL_TEXTURE0);
 		//glBindTexture(GL_TEXTURE_2D, this->CBHDR[0]);
@@ -168,9 +168,9 @@ void PostProcessor::Render(double deltaTime) const {
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		hdrShader->Use();
 		hdrShader->SetInteger("hdrBuffer", 0);
-		hdrShader->SetFloat("exposure", this->exposure);
-		hdrShader->SetFloat("gamma", this->gamma);
-		hdrShader->SetBool("useHDR", false);
+		//hdrShader->SetFloat("exposure", this->exposure);
+		//hdrShader->SetFloat("gamma", this->gamma);
+		//hdrShader->SetBool("useHDR", false);
 
 		//glActiveTexture(GL_TEXTURE0);
 		//glBindTexture(GL_TEXTURE_2D, this->CBHDR[0]);
@@ -182,9 +182,9 @@ void PostProcessor::Render(double deltaTime) const {
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		hdrShader->Use();
 		hdrShader->SetInteger("hdrBuffer", 0);
-		hdrShader->SetFloat("exposure", this->exposure);
-		hdrShader->SetFloat("gamma", this->gamma);
-		hdrShader->SetBool("useHDR", false);
+		//hdrShader->SetFloat("exposure", this->exposure);
+		//hdrShader->SetFloat("gamma", this->gamma);
+		//hdrShader->SetBool("useHDR", false);
 
 		//glActiveTexture(GL_TEXTURE0);
 		//glBindTexture(GL_TEXTURE_2D, this->CBHDR[0]);
@@ -223,6 +223,7 @@ void PostProcessor::Render(double deltaTime) const {
 	bloomShader->SetFloat("exposure", this->exposure);
 	bloomShader->SetFloat("gamma", this->gamma);
 	bloomShader->SetBool("useHDR", this->useHDR);
+
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, CBHDR[0]);
 	glActiveTexture(GL_TEXTURE1);
@@ -235,7 +236,7 @@ void PostProcessor::Render(double deltaTime) const {
 
 void PostProcessor::initRenderData() {
 	/// --- Normal Framebuffer setup ---
-	glGenFramebuffers(1, &this->FBO);
+	/*glGenFramebuffers(1, &this->FBO);
 	glBindFramebuffer(GL_FRAMEBUFFER, this->FBO);
 
 	// Color attachment
@@ -260,7 +261,7 @@ void PostProcessor::initRenderData() {
 	// Unbind
 	glBindTexture(GL_TEXTURE_2D, 0);
 	glBindRenderbuffer(GL_RENDERBUFFER, 0);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);*/
 
 
 	/// --- MSAA Framebuffer Setup ---
